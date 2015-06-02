@@ -8,6 +8,7 @@ package server;
 
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,118 +19,143 @@ public class Server implements Runnable {
   private int listeningUDPPort;
   private int listeningTCPPort;
 
-  private ArrayList< Pergunta >perguntas;
-  private HashMap< String,Cliente >clientes;
-  private String[] nicks=new String[ 1000 ];
-  private HashMap< String,Jogo >jogos;
-  private Hashtable< String,Jogo >jogados=new Hashtable< String,Jogo >();
-  private ServerPduBuilder builder;
-  private ServerIO io;
-  private Counter counter=new Counter();
+  private ArrayList< Pergunta > perguntas;
+  private HashMap< String,Cliente > clientes;
+  private HashMap< String , String > activeConnections;
+  private HashMap< String , String > clientGameBounds;
+  private HashMap< String,Jogo > jogos;
+  private Hashtable< String,Jogo > jogados;
+
+  private ServerPduReader pduReader;
 
   // Cr8tor
 
   public Server ( int udpPort, int tcpPort ){
     this.listeningUDPPort = udpPort;
     this.listeningTCPPort = tcpPort;
+    this.setPduReader(new ServerPduReader ( this ));
   }
 
-  public Server( ServerIO io )
-  {
-    this.builder=new ServerPduBuilder();
-    this.jogos=new HashMap< String,Jogo >();
-    this.clientes=new HashMap< String,Cliente >();
-    this.perguntas=new ArrayList< Pergunta >();
-    add_Games();
-    this.io = io;
-    // Admin account
-    Cliente admin=new Cliente( "admin",( short )0,"admin",( ""+'\0' ).getBytes() );
-    nicks[ 0 ]="admin";
-    this.clientes.put( ( "admin" ),admin );
-  }
   // Account Management
-  //public void helLo(){ io.send( builder.REPLY_OK( -1 )); }
-  public void registar( String name,String nick,byte[] pass )
+  public boolean registar( String nome ,String alcunha ,byte[] sec_info ,  InetAddress remoteAddress, int remotePort)
   {
-    if( this.clientes.containsKey( nick ))
-      io.send( builder.REPLY_ERRO( ( short )-1,nick ) );
+    if( this.clientes.containsKey( alcunha )){
+      return false;
+      //  io.send( builder.REPLY_ERRO( ( short )-1,nick ) ,  );
+    }
     else
     {
-      short newID=counter.genID();
-      nicks[ newID ]=nick;
-      Cliente client = new Cliente( name,newID,nick,pass );
-      clientes.put( nick,client );
-      io.send( builder.REPLY_ALCUNHA( newID,nick ) );
+      Cliente client = new Cliente( nome , alcunha , sec_info );
+      clientes.put( alcunha , client );
+      return true;
+      // io.send( builder.REPLY_ALCUNHA( newID,nick ) );
     }	
   }
 
-  public void login( String nick,byte[] pass )
+  public boolean  isThisSocketBound ( InetAddress remoteAddress, int remotePort ){
+    StringBuilder key = new StringBuilder();
+    key.append( remoteAddress.toString() );
+    key.append( remotePort);
+    boolean isBound = false;
+    if ( this.activeConnections.containsKey( key ) ){
+      isBound = true;
+    }
+    return isBound;
+  }
+
+  public String whoAmI ( InetAddress remoteAddress, int remotePort ){
+    StringBuilder key = new StringBuilder();
+    key.append( remoteAddress.toString() );
+    key.append( remotePort);
+    String boundTo = new String();
+    if ( this.activeConnections.containsKey( key ) ){
+      this.activeConnections.get(key);
+    }
+    return boundTo;
+  }
+
+
+  public boolean login( String alcunha , byte[] sec_info , InetAddress remoteAddress, int remotePort  )
   {
-    if( !this.clientes.containsKey( nick ))
+    if( !this.clientes.containsKey( alcunha ))
     {
-      io.send( builder.REPLY_ERRO( ( short )-2,nick ) );
+      //io.send( builder.REPLY_ERRO( ( short )-2,nick ) );
+      return false;
     }
     else
     {
-      Cliente cl=this.clientes.get( nick );
-      if( cl.login( pass ))
-        io.send( builder.REPLY_NOME( cl.getId(),nick ));
-      else
-        io.send( builder.REPLY_ERRO( ( short )-1,nick ) );
+      Cliente cl=this.clientes.get( alcunha );
+      if( cl.login( sec_info )){
+        StringBuilder key = new StringBuilder();
+        key.append( remoteAddress.toString() );
+        key.append( remotePort);
+        this.activeConnections.put( key.toString() , alcunha);
+        return true;
+        //io.send( builder.REPLY_NOME( cl.getId() , nick ));
+      }
+      else{
+        return false;
+        // io.send( builder.REPLY_ERRO( ( short )-1, nick ) );
+      }
     }
   }
 
-  public void logout( short id )
+  public boolean logout( String alcunha , InetAddress remoteAddress, int remotePort )
   {
-    if( this.clientes.containsKey( nicks[ id ] ))
+    if( this.clientes.containsKey( alcunha ))
     {
-      this.clientes.get( nicks[ id ] ).logout();
-      io.send( builder.REPLY_OK( id ));
+      this.clientes.get( alcunha ).logout();
+      StringBuilder key = new StringBuilder();
+      key.append( remoteAddress.toString() );
+      key.append( remotePort);
+      this.activeConnections.remove(key.toString());
+      //io.send( builder.REPLY_OK( id ));
+      return true;
+    }
+    else {
+      return false;
     }
   }
 
   // Challenges Management
-  public void list_Challenges( short id ){ io.send( builder.REPLY( id,jogos )); }
-
-  public void make_Desafio( short id,String desafio,short[] time )
-  {
-    if( this.jogos.containsKey( desafio ))
-      io.send( builder.REPLY_ERRO( id,"Desafio ja existe." ) );
-    else
-    {
-
-      Jogo jogo=new Jogo( desafio,id,time );
-      this.jogos.put( desafio,jogo );
-      System.out.println( jogos.get( desafio ).toString() );
-      io.send( builder.REPLY_DESAFIO( id,desafio ));
-    }
+  public void list_Challenges( InetAddress remoteAddress, int remotePort ){ 
+    // io.send( builder.REPLY( id,jogos )); 
   }
-  public void aceitar_Desafio( short id,String desafio )
-  {
-    if( !this.jogos.containsKey( desafio ))
-      io.send( builder.REPLY_ERRO( id,"Desafio nao existe." ));
-    else
-    {
-      Jogo j=this.jogos.get( desafio );
-      j.add_player2( id );
-      JogoThread jThread=new JogoThread( this,j );
-      j.setThread( jThread );
-      Thread thread=new Thread( jThread );
-      thread.start();
+
+  public void make_Desafio( String alcunha , String nomeDesafio, byte[] data, byte[] hora , InetAddress remoteAddress, int remotePort ){
+    if( this.jogos.containsKey( nomeDesafio )){
+      // io.send( builder.REPLY_ERRO( id,"Desafio ja existe." ) );
     }
-  }
-  public void delete_Challange( short id,String desafio )
-  {
-    if( !this.jogos.containsKey( desafio ))
-      io.send( builder.REPLY_ERRO( id,"Desafio nao existe." ));
-    else
-    {
-      this.jogos.remove( desafio );
-      io.send( builder.REPLY_DESAFIO( id,desafio ));
+    else{
+      // io.send( builder.REPLY_DESAFIO( id,desafio ));
     }
   }
 
-  public String listar_clientes()
+  public boolean aceitar_Desafio( String alcunha ,String nomeDesafio,  InetAddress remoteAddress, int remotePort )
+  {
+    if( !this.jogos.containsKey( nomeDesafio )){
+      return false;
+      //  io.send( builder.REPLY_ERRO( id,"Desafio nao existe." ));
+    }
+    else{
+      Jogo j=this.jogos.get( nomeDesafio );
+      j.adicionaJogador ( alcunha );
+      return true;
+    }
+  }
+
+  public void delete_Challange( String alcunha ,String nomeDesafio , InetAddress remoteAddress, int remotePort ){
+
+    if( !this.jogos.containsKey( nomeDesafio )){
+      //io.send( builder.REPLY_ERRO( id,"Desafio nao existe." ));
+    }
+    else{
+      this.jogos.remove( nomeDesafio );
+      // io.send( builder.REPLY_DESAFIO( id,desafio ));
+    }
+  }
+
+  public String listar_clientes( )
   {
     StringBuilder s = new StringBuilder();
     s.append( ": Clientes :\n" );
@@ -165,34 +191,32 @@ public class Server implements Runnable {
   public void ask( int question,short p1,short p2 )
   {
     Pergunta p=perguntas.get( question );
-    io.send( builder.REPLY_QUESTAO( p1,question,p.get_pergunta(),p.get_ops() ));
+    //  io.send( builder.REPLY_QUESTAO( p1,question,p.get_pergunta(),p.get_ops() ));
     //io.send( builder.REPLY_QUESTAO( p1,question,p.get_pergunta(),p.get_ops() ));
   }
 
-  public void answer( short id,int questao,int resposta,String desafio )
+  public void answer( String alcunha , int escolha , String desafio , int questao,  InetAddress remoteAddress, int remotePort )
   {
-    if( perguntas.get( questao ).is_Certa( resposta ) )
-    {
-      io.send( builder.REPLY_CERTA( id,1 ));
-      jogos.get( desafio ).right_Answer( id );
+    if( perguntas.get( questao ).is_Certa( escolha ) ){
+      // io.send( builder.REPLY_CERTA( id,1 ));
+      // jogos.get( desafio ).right_Answer( id );
     }
-    else
-    { 
-      io.send( builder.REPLY_CERTA( id,0 ));
-      Pergunta p=perguntas.get( questao );
-      io.send( builder.REPLY_QUESTAO( id,questao,p.get_pergunta(),p.get_ops() ));
+    else{ 
+      //io.send( builder.REPLY_CERTA( id,0 ));
+      //Pergunta p=perguntas.get( questao );
+      //io.send( builder.REPLY_QUESTAO( id,questao,p.get_pergunta(),p.get_ops() ));
     }
   }
 
-  public void end( short id,String desafio )
+  public void end( String alcunha ,  InetAddress remoteAddress, int remotePort)
   {
-    Jogo J=jogos.get( desafio );
-    jogados.put( desafio,J );
-    jogos.remove( desafio );
-    short[] scores=J.end( id );
+    /*
+       Jogo J=jogos.get( desafio );
+       jogados.put( desafio,J );
+       jogos.remove( desafio );
+       short[] scores=J.end( id );
 
-    io.send( builder.REPLY_SCORE( id,scores[ 1 ] ));
-    //io.send( builder.REPLY_SCORE( scores[ 0 ],scores[ 2 ] ));
+*/
   }
 
   public int[] rand_perguntas(){ return new int[]{ 1,2,3 }; }
@@ -221,5 +245,30 @@ public class Server implements Runnable {
     } catch ( SocketException e ) {
     }
 
+  }
+
+  public ServerPduReader getPduReader() {
+    return pduReader;
+  }
+
+  public void setPduReader(ServerPduReader pduReader) {
+    this.pduReader = pduReader;
+  }
+
+  public void retransmit(String nomeDesafio, int questao, int bloco,
+      InetAddress remoteAddress, int remotePort) {
+    // TODO Auto-generated method stub
+  }
+
+  public void hello(InetAddress remoteAddress, int remotePort) {
+    // TODO Auto-generated method stub
+  }
+
+  public void quit(String alcunha, InetAddress remoteAddress, int remotePort) {
+    // TODO Auto-generated method stub
+  }
+
+  public void listRanking(InetAddress remoteAddress, int remotePort) {
+    // TODO Auto-generated method stub
   }
 }

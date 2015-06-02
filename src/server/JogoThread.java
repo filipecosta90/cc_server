@@ -20,9 +20,8 @@ public class JogoThread implements Runnable
   }
 
   @Override
-    public synchronized void run() 
-    {
-      ask( jogo.getId( 1 ), jogo.getId( 2 ) );
+    public synchronized void run() {
+      /*ask( jogo.getId( 1 ), jogo.getId( 2 ) );
     }
       public void ask( short id1,short id2 ){
         server.ask( question++,id1,id2 );
@@ -31,5 +30,6 @@ public class JogoThread implements Runnable
       public synchronized void certa( short id ){
         this.is_Certa=true;
         notifyAll();
-      }
+      }*/
     }
+}

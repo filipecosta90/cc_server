@@ -7,24 +7,17 @@ package server;
 */
 
 import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
 
 
 public class ServerIO implements Runnable
 {
   private ServerPduReader reader;
   private Server server;
-  private ClientIO cio;
-  /* Client Recognition through IpAdress */
-  // private HashMap< String,String >clientIp;
-  // Cr8tor
-  public ServerIO( ClientIO cio )
-  {
-    this.cio = cio;
-    this.server=new Server( this );
-    this.reader=new ServerPduReader( server );		
-    //this.clientIp=new HashMap< String,String >();
-  }
-
+  
+  
   @Override
     public synchronized void run()
     {
@@ -34,12 +27,13 @@ public class ServerIO implements Runnable
     }
 
   // IO functions
-  public void recieve( byte[] pdu ){ reader.byteRead( pdu ); }
-  public void send( byte[] pdu )
+  
+  public void send( byte[] pdu ,  DatagramSocket outSocket , InetAddress remoteAddress, int remotePort )
   { 
     try 
     {
-      cio.receive( pdu );
+    	  DatagramPacket sendPacket = new DatagramPacket( pdu , pdu.length, remoteAddress, remotePort);
+    	  outSocket.send(sendPacket);
     } catch( IOException e ) {
       System.out.println( e.toString() );
     }

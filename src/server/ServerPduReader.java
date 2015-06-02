@@ -1,191 +1,233 @@
 package server;
 
 /*
-* @author Filipe Oliveira, Ricardo Agra, Sérgio Caldas
-* @author a57816(at)alunos.uminho.pt , a47069(at)alunos.uminho.pt , a57779(at)alunos.uminho.pt
-* @version 0.1
-*/
+ * @author Filipe Oliveira, Ricardo Agra, Sérgio Caldas
+ * @author a57816(at)alunos.uminho.pt , a47069(at)alunos.uminho.pt , a57779(at)alunos.uminho.pt
+ * @version 0.1
+ */
 
 import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.nio.ByteBuffer;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.util.ArrayList;
 
 public class ServerPduReader {
-  private Server server;
-  // Cr8tor
-  public ServerPduReader( Server server ){ this.server=server; }
-
-  public void byteRead( byte[] bytes )
-  {			
-    short id=( short )(( bytes[ 1 ] << 8 )+( bytes[ 0 ]&0xFF ));
-    int code=( int )bytes[ 2 ];
-    
-    ///*      DEBUGGER
-
-    System.out.print( "( ID: "+id );
-    System.out.print( " , Code: "+code );
-    System.out.println( " , Size: "+bytes.length+" )" );
+  private Server serverPointer;
   
-    switch( code )
-    {
+  // Constructor
+  public ServerPduReader( Server server ){ 
+    this.serverPointer=server; 
+  }
+
+  public void byteRead( byte[] receivedBytes , DatagramSocket receivedSocket , InetAddress remoteAddress , int remotePort ){
+
+    ByteArrayInputStream inputByteArray = new ByteArrayInputStream( receivedBytes );
+    int totalLength = inputByteArray.available();
+    byte version[] = new byte[1];
+    byte security[] = new byte[1];
+    byte[] label = new byte[2];
+    byte type[] = new byte[1];
+    byte[] followingFieldsSize_bytes =  new byte[2];
+    byte numberFollowingFields[] = new byte[1];
+
+    inputByteArray.read(version , 0 , 1 );
+    inputByteArray.read( security , 0 , 1);
+    inputByteArray.read(label, 0, 2);
+    inputByteArray.read( type , 0 , 1);
+    inputByteArray.read( numberFollowingFields , 0 , 1);
+    inputByteArray.read( followingFieldsSize_bytes , 0 , 2);
+    Byte Decimal = new Byte (followingFieldsSize_bytes[0]);
+    Byte Unit = new Byte (followingFieldsSize_bytes[1]);
+    int followingFieldsSize = Decimal.intValue() * 10 + Unit.intValue();
+    Byte type_Byte = new Byte ( type[0] );
+    int tipo = type_Byte.intValue();
+    byte[] fields_bytes = new byte[followingFieldsSize];
+    ByteArrayInputStream inputByteFields = new ByteArrayInputStream( fields_bytes );
+    if ( followingFieldsSize > 0 ) {
+      inputByteArray.read( fields_bytes , 0 ,  followingFieldsSize );
+    }
+
+    System.out.print( "\ttotal Length: " + totalLength );
+    System.out.print( "\tversion: "+ version[0] );
+    System.out.println( "\tsecurity: "+ security[0] );
+    System.out.println( "\tlabel: "+ label[0]+label[1] );
+    System.out.print( "\ttype: "+ type[0] );
+    System.out.println( "\tnumber of following fields: "+ numberFollowingFields[0] );
+    System.out.println( "\tfollowing fields size: "+ followingFieldsSize );
+
+    switch( tipo ){
       case 1 :
         {
           System.out.println( "- HELLO -" );
-          //server.helLo();
+          serverPointer.hello( remoteAddress, remotePort );
           break;
         }
       case 2 :
         {
           System.out.println( "- REGISTER -" );
-          ArrayList< String >arrl=byteToString( bytes,2 );
-          server.registar( arrl.get( 0 ),arrl.get( 1 ),
-              subByteArray( bytes,Integer.parseInt( arrl.get( 2 )),bytes.length-1 ));
+          ArrayList < String > campos = byteToString( fields_bytes , 2 , 0 );
+          String nome = campos.get( 0 );
+          String alcunha = campos.get( 1 );
+          int tamanhoNomeEAlcunha = nome.length() + alcunha.length() + 2;
+          int tamanhoSec = followingFieldsSize - tamanhoNomeEAlcunha;
+          byte[] sec_info = new byte[tamanhoSec];
+          inputByteFields.read(sec_info, tamanhoNomeEAlcunha, tamanhoSec);
+          serverPointer.registar( nome , alcunha , sec_info , remoteAddress, remotePort );
           break;
         }
       case 3 : 
         {
           System.out.println( "- LOGIN -" );
-          ArrayList< String >arrl=byteToString( bytes,1 );
-
-          server.login( arrl.get( 0 ),
-              subByteArray( bytes,Integer.parseInt( arrl.get( 1 )),bytes.length-1 ));
+          ArrayList< String > campos = byteToString( fields_bytes , 1 , 0 );
+          String alcunha = campos.get ( 0 );
+          int tamanhoAlcunha = alcunha.length() + 1;
+          int tamanhoSec = followingFieldsSize - tamanhoAlcunha;
+          byte[] sec_info = new byte[tamanhoSec];
+          inputByteFields.read(sec_info, tamanhoAlcunha, tamanhoSec);
+          serverPointer.login( alcunha , sec_info , remoteAddress , remotePort );
           break;
         }
       case 4 : 
         {
           System.out.println( "- LOGOUT -" );
-          server.logout( id );
+          boolean answer = serverPointer.isThisSocketBound (  remoteAddress , remotePort );
+          if ( answer == true ){
+            String alcunha = serverPointer.whoAmI ( remoteAddress , remotePort );
+            serverPointer.logout ( alcunha , remoteAddress , remotePort  );
+          }
           break;
         }
       case 5 :
         {
           System.out.println( "- QUIT -" );
+          boolean answer = serverPointer.isThisSocketBound (  remoteAddress , remotePort );
+          if ( answer == true ){
+            String alcunha = serverPointer.whoAmI ( remoteAddress , remotePort );
+            serverPointer.quit ( alcunha , remoteAddress , remotePort  );
+          }
           break;
         }
       case 6 :
         {
           System.out.println( "- END -" );
-          ArrayList< String >arrl=byteToString( bytes,1 );
-          server.end( id,arrl.get( 0 ));
+          boolean answer = serverPointer.isThisSocketBound ( remoteAddress, remotePort );
+          if ( answer == true ){
+            String alcunha = serverPointer.whoAmI ( remoteAddress, remotePort );
+            serverPointer.end ( alcunha , remoteAddress, remotePort);
+          }
           break;
         }
       case 7 :
         {
-          System.out.println( "- LIST_CHANLLENGES -" );
-          server.list_Challenges( id );
+          System.out.println( "- LIST_CHALLENGES -" );
+          boolean answer = serverPointer.isThisSocketBound (  remoteAddress, remotePort );
+          if ( answer == true ){
+            serverPointer.list_Challenges ( remoteAddress , remotePort );
+          }
           break;
         }
       case 8 :
         {
           System.out.println( "- MAKE_CHALLANGE -" );
-          ArrayList< String >arrl=byteToString( bytes,1 );
-          server.make_Desafio( id,arrl.get( 0 ),
-              byteToShort( bytes,Integer.parseInt( arrl.get( 1 ))+1,6 ));
+          boolean answer = serverPointer.isThisSocketBound (  remoteAddress, remotePort );
+          if ( answer == true ){
+            String alcunha = serverPointer.whoAmI ( remoteAddress, remotePort );
+            ArrayList< String > campos =byteToString( fields_bytes , 1 , 0 );
+            String nomeDesafio = campos.get ( 0 );
+            int tamanhoNome = nomeDesafio.length() +1 ;
+            byte data[] = new byte[6];
+            inputByteArray.read(data, 1, tamanhoNome);
+            byte hora[] = new byte[6];
+            inputByteFields.read(data, 1, tamanhoNome + 6);
+            serverPointer.make_Desafio(  alcunha , nomeDesafio, data , hora , remoteAddress, remotePort );
+          }
           break;
         }
       case 9 :
         {
           System.out.println( "- ACCEPT_CHALLANGE -" );
-          server.aceitar_Desafio( id,byteToString( bytes,1 ).get( 0 ) );
+          boolean answer = serverPointer.isThisSocketBound (  remoteAddress, remotePort );
+          if ( answer == true ){
+            String alcunha = serverPointer.whoAmI ( remoteAddress, remotePort );
+            ArrayList< String > campos =byteToString( fields_bytes , 1 , 0 );
+            String nomeDesafio = campos.get ( 0 );
+            serverPointer.aceitar_Desafio( alcunha , nomeDesafio , remoteAddress, remotePort );
+          }
           break;
         }
       case 10 :
         {
           System.out.println( "- DELETE_CHALLANGE -" );
-          server.delete_Challange( id,byteToString( bytes,1 ).get( 0 ));
+          boolean answer = serverPointer.isThisSocketBound (  remoteAddress, remotePort );
+          if ( answer == true ){
+            String alcunha = serverPointer.whoAmI ( remoteAddress, remotePort );
+            ArrayList< String > campos =byteToString( fields_bytes , 1 , 0 );
+            String nomeDesafio = campos.get ( 0 );
+            serverPointer.delete_Challange( alcunha , nomeDesafio , remoteAddress, remotePort );
+          }
           break;
         }
       case 11 :
         {
           System.out.println( "- ANSWER -" );
-          int questao=( int )bytes[ 3 ];
-          int resposta=( int )bytes[ 4 ];
-          ArrayList< String >arrl=byteToString( bytes,1 );
-          server.answer( id,questao,resposta,singleString( bytes,5 ) );
-
-          //System.out.println( "Answer: "+( int )bytes[ index ]);
-          //System.out.println( "Question: "+( int )bytes[ index+1 ]);
+          boolean answer = serverPointer.isThisSocketBound (  remoteAddress, remotePort );
+          if ( answer == true ){
+            String alcunha = serverPointer.whoAmI ( remoteAddress, remotePort );
+            int escolha = inputByteFields.read();
+            int tamanhoNomeDesafio = followingFieldsSize -2 ;
+            byte[]  nomeDesafio_bytes = new byte[tamanhoNomeDesafio];
+            inputByteFields.read(nomeDesafio_bytes, 1, tamanhoNomeDesafio);
+            int questao = inputByteFields.read();
+            ArrayList< String >campos=byteToString( nomeDesafio_bytes , 1 , 0 );
+            String nomeDesafio = campos.get( 0 );
+            serverPointer.answer( alcunha , escolha , nomeDesafio , questao , remoteAddress, remotePort );
+          }
           break;
         }
       case 12 :
         {
           System.out.println( "- RETRANSMIT -" );
-          //int index=byteToString( bytes,1 );
-          //System.out.println( "Question: "+( int )bytes[ index ]);
-          //System.out.println( "Block: "+( int )bytes[ index+1 ]);
+          boolean answer = serverPointer.isThisSocketBound (  remoteAddress, remotePort );
+          if ( answer == true ){
+            int tamanhoNomeDesafio = followingFieldsSize -2 ;
+            byte[]  nomeDesafio_bytes = new byte[tamanhoNomeDesafio];
+            inputByteFields.read(nomeDesafio_bytes, 1, tamanhoNomeDesafio);
+            int questao = inputByteFields.read();
+            int bloco = inputByteFields.read();
+            ArrayList< String >campos=byteToString( nomeDesafio_bytes , 1 , 0 );
+            String nomeDesafio = campos.get( 0 );
+            serverPointer.retransmit( nomeDesafio , questao , bloco , remoteAddress, remotePort );
+          }
           break;
         }
       case 13 :
         {
           System.out.println( "- LIST_RANKING -" );
-          // QUIT HANDLER
+          boolean answer = serverPointer.isThisSocketBound ( remoteAddress, remotePort );
+          if ( answer == true ){
+            serverPointer.listRanking (  remoteAddress, remotePort );
+          }
           break;
         }
-      default : System.out.println( "- CODE_INVALID -" );
-                break;
+      default : 
+        System.out.println( "- CODE_INVALID -" + tipo );
+        break;
     }
   }
-  public String singleString( byte[] bytes,int start )
-  {
-    StringBuilder reader=new StringBuilder();
-    byte next=bytes[ start ];
-    for( int i=start; next!=0 ; i++,next=bytes[ i ])
-    {
-      //System.out.println( "At index: "+i+" ,Read: "+( char )bytes[ i ]);
-      reader.append(( char )bytes[ i ]);	
-    }
-    return reader.toString();
-  }
-  public ArrayList< String >byteToString( byte[] bytes,int strings )
-  {
-    ArrayList< String >message=new ArrayList< String >();
-    StringBuilder reader=new StringBuilder();
-    int i=2;
-    byte next;
 
-    for( int s=0 ; s<strings ; s++ )
-    {
-      i++; next=bytes[ i ];
-      //System.out.println( "Iteracao s: "+s+" index at: "+i+" ,next char: "+( char )next );
-      for( ; next!=0 ; i++,next=bytes[ i ])
-      {
-        //System.out.println( "At index: "+i+" ,Read: "+( char )bytes[ i ]);
-        reader.append(( char )bytes[ i ]);	
+  public ArrayList< String > byteToString ( byte[] bytes, int strings , int offset ){
+
+    ArrayList< String >message=new ArrayList< String >();
+    int pos=offset;
+    byte next = bytes[pos];
+    for( int numberString = 0 ;  numberString < strings ; numberString++ ){
+      StringBuilder reader=new StringBuilder();
+      next = bytes[ pos ];
+      for( ; next!=0 ; pos++ , next=bytes[ pos ]){
+        reader.append(( char )bytes[ pos ]);	
       }
       message.add( reader.toString() );
-      reader=new StringBuilder();
-    }
-    message.add( ""+i );
-    /** 
-     * System.out.println( "End of s, index at: "+i );
-     * System.out.println( "ArrayList: "+message.toString() );
-     */
+    }  
     return( message );
-  }
-  public short[] byteToShort( byte[] bytes,int start,int shorts )
-  {
-    ByteBuffer bb=ByteBuffer.wrap( bytes,start,2*shorts );
-    short[] time=new short[ shorts ];
-    int i=0;
-
-    while( bb.hasRemaining() )
-    {
-      time[ i++ ]=bb.getShort();
-    }
-
-    for( short s : time )
-      System.out.print( s+" " );
-
-    return time;
-  }
-  public byte[] subByteArray( byte[] bytes,int start,int end )
-  {
-    byte[] subBytes=new byte[ end-start ];
-
-    for( int i=start ; i<( end )&&( i<bytes.length ) ; i++ )		
-      subBytes[ i-start ]=bytes[ i ];
-
-    return subBytes;
   }
 }
