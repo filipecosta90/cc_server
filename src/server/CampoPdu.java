@@ -99,6 +99,25 @@ public class CampoPdu {
     tamanhoTotal+=6;
   }
 
+
+  public int getCampoDataAno() {
+    int temp0 = dadosCampo[0] & 0xFF;
+    int temp1 = dadosCampo[1] & 0xFF;
+    return ((temp0 << 8) + temp1);
+  }
+
+  public int getCampoDataMes() {
+    int temp0 = dadosCampo[2] & 0xFF;
+    int temp1 = dadosCampo[3] & 0xFF;
+    return ((temp0 << 8) + temp1);
+  }
+
+  public int getCampoDataDia() {
+    int temp0 = dadosCampo[4] & 0xFF;
+    int temp1 = dadosCampo[5] & 0xFF;
+    return ((temp0 << 8) + temp1);
+  }
+
   public void adicionaHora( Date data ) {
     int horas =  data.getHours();
     int minutos = data.getMinutes();
@@ -115,6 +134,24 @@ public class CampoPdu {
     dadosCampo[4] = buffer[0];
     dadosCampo[5] = buffer[1];
     tamanhoTotal+=6;
+  }
+
+  public int getCampoHoraHora() {
+    int temp0 = dadosCampo[0] & 0xFF;
+    int temp1 = dadosCampo[1] & 0xFF;
+    return ((temp0 << 8) + temp1);
+  }
+
+  public int getCampoHoraMinutos() {
+    int temp0 = dadosCampo[2] & 0xFF;
+    int temp1 = dadosCampo[3] & 0xFF;
+    return ((temp0 << 8) + temp1);
+  }
+
+  public int getCampoHoraSegundos() {
+    int temp0 = dadosCampo[4] & 0xFF;
+    int temp1 = dadosCampo[5] & 0xFF;
+    return ((temp0 << 8) + temp1);
   }
 
   public void adicionaInteiro1Byte( int aConverter ) {
@@ -160,6 +197,16 @@ public class CampoPdu {
     data[0] = (byte) (aConverter & 0xFF);
     data[1] = (byte) ((aConverter >> 8) & 0xFF);
     return data;
+  }
+
+  public int getCampoInt1Byte (){
+    return (int)dadosCampo[0] & 0xFF;
+  }
+
+  public int getCampoInt2Bytes (){
+    int temp0 = dadosCampo[0] & 0xFF;
+    int temp1 = dadosCampo[1] & 0xFF;
+    return ((temp0 << 8) + temp1);
   }
 
   public void adicionaString ( String aConverter ){
@@ -422,6 +469,4 @@ public class CampoPdu {
     }
     return resultado;
   }
-
-
 }

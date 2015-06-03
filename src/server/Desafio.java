@@ -10,23 +10,23 @@ import java.util.Date;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-public class Jogo {
+public class Desafio {
   private String nomeDesafio;
   private String criadoPor;
   TreeSet < String > alcunhasJogadores;
   TreeMap < String, Integer > pontuacoesJogadores;
-  private Date data;
-  private Date hora;
+  private Date dataCriacao;
+  private Date dataHoraInicioDesafio;
   private boolean temMinimoJogadores;
 
   // Cr8tor
-  public Jogo( String game_name , String alcunhaJogadorCriador , Date data , Date hora )
+  public Desafio( String game_name , String alcunhaJogadorCriador , Date dataCriacao , Date dataHoraDesafio )
   {
     this.nomeDesafio=game_name;
     this.criadoPor = alcunhaJogadorCriador;
     this.alcunhasJogadores.add( alcunhaJogadorCriador );
-    this.data = data;
-    this.hora = hora;
+    this.dataCriacao = dataCriacao;
+    this.dataHoraInicioDesafio = dataHoraDesafio;
     temMinimoJogadores = false;
   }
 
@@ -39,4 +39,12 @@ public class Jogo {
     {
       return( "Nome desafio: "+this.nomeDesafio );
     }
+
+  public String getNomeDesafio() {
+    return this.nomeDesafio;
+  }
+
+  public Date getDataHoraInicioDesafio() {
+    return this.dataHoraInicioDesafio;
+  }
 }

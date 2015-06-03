@@ -11,6 +11,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Hashtable;
 
@@ -19,9 +20,12 @@ public class Server implements Runnable {
   private int listeningUDPPort;
   private int listeningTCPPort;
 
-  private HashMap< String,Cliente > mapClientes;
+  private HashMap< String , Cliente > mapClientes;
   private HashMap< String , Coneccao > coneccoesActivas;
-
+  private HashMap< String , Coneccao > historicoConeccoes;
+  private HashMap< String , Desafio > desafiosCriadosEspera;
+  private HashMap< String , Desafio > desafiosEmJogo;
+  private HashMap< String , Desafio > desafiosTerminados;
 
   // Cr8tor
 
@@ -30,6 +34,11 @@ public class Server implements Runnable {
     this.listeningTCPPort = tcpPort;
     this.mapClientes = new HashMap< String,Cliente > ();
     this.coneccoesActivas = new HashMap< String , Coneccao > ();
+    this.historicoConeccoes = new HashMap< String , Coneccao > ();
+    this.desafiosCriadosEspera = new HashMap< String , Desafio > ();
+    this.desafiosEmJogo = new HashMap< String , Desafio > ();
+    this.desafiosTerminados = new HashMap< String , Desafio > ();
+
   }
 
   public boolean  isThisSocketBound ( InetAddress remoteAddress, int remotePort ){
@@ -131,6 +140,28 @@ public class Server implements Runnable {
   public Cliente getCliente ( String alcunha ){
     Cliente clientPointer = mapClientes.get(alcunha);
     return clientPointer;
+  }
+
+  public Desafio getDesafiosCriadosEmEspera(String nomeDesafio) {
+    Desafio desafioPointer = null;
+    if ( this.desafiosCriadosEspera.containsKey( nomeDesafio ) ){
+      desafioPointer = desafiosCriadosEspera.get(nomeDesafio);
+    }
+    return desafioPointer;
+  }
+
+  public boolean CriaDesafio(String nomeDesafio, Date dataHoraDesafio, String alcunhaClienteAssociado) {
+    boolean resultado = false;
+    if ( this.desafiosCriadosEspera.containsKey( nomeDesafio ) || this.desafiosEmJogo.containsKey( nomeDesafio ) || this.desafiosTerminados.containsKey( nomeDesafio ) ){
+      resultado = false;
+    }
+    else {
+      Date dataCriacao = new Date();
+      Desafio novoDesafio = new Desafio ( nomeDesafio , alcunhaClienteAssociado , dataCriacao , dataHoraDesafio );
+      new Thread(new DesafioManager ( this , novoDesafio )).start(); 
+      resultado = true;
+    }
+    return resultado;
   }
 
 }

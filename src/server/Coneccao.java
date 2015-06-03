@@ -50,8 +50,8 @@ public class Coneccao {
   public static final byte SERVIDOR_CONTINUA = (byte) 254;
   public static final byte SERVIDOR_NOME = (byte)1;
   public static final byte SERVIDOR_ALCUNHA = (byte)2;
-  public static final byte SERVIDOR_DATA = (byte)4;
-  public static final byte SERVIDOR_HORA = (byte)5;
+  public static final byte SERVIDOR_DATA_DESAFIO = (byte)4;
+  public static final byte SERVIDOR_HORA_DESAFIO = (byte)5;
   public static final byte SERVIDOR_NOME_DESAFIO = (byte)7;
   public static final byte SERVIDOR_NUM_QUESTAO = (byte)10;	  
   public static final byte SERVIDOR_TXT_QUESTAO = (byte)11;
@@ -281,6 +281,47 @@ public class Coneccao {
         }
       case MAKE_CHALLENGE :
         {
+          boolean ok = false;
+          String descricaoErro = new String();
+          if (  pduAResolver.contemCampo( SERVIDOR_NOME_DESAFIO ) ){
+            CampoPdu campoNomeDesafio = pduAResolver.popCampo();
+            String nomeDesafio = campoNomeDesafio.getCampoString();
+            Date dataHoraDesafio = new Date();
+            if ( pduAResolver.contemCampo( SERVIDOR_DATA_DESAFIO ) && pduAResolver.contemCampo( SERVIDOR_HORA_DESAFIO )){
+              CampoPdu campoDataDesafio = pduAResolver.popCampo();
+              CampoPdu campoHoraDesafio = pduAResolver.popCampo();
+              dataHoraDesafio.setYear(campoDataDesafio.getCampoDataAno());
+              dataHoraDesafio.setMonth(campoDataDesafio.getCampoDataMes());
+              dataHoraDesafio.setDate(campoDataDesafio.getCampoDataDia());
+              dataHoraDesafio.setHours( campoHoraDesafio.getCampoHoraHora());
+              dataHoraDesafio.setMinutes( campoHoraDesafio.getCampoHoraMinutos());
+              dataHoraDesafio.setSeconds( campoHoraDesafio.getCampoHoraSegundos());
+            }
+            else {
+              final long ONE_MINUTE_IN_MILLIS=60000;//millisecs
+              long t=dataHoraDesafio.getTime();
+              dataHoraDesafio=new Date(t + (5 * ONE_MINUTE_IN_MILLIS));
+            }
+            boolean resultadoCriacao = false;
+            resultadoCriacao = this.localServerPointer.CriaDesafio( nomeDesafio , dataHoraDesafio , this.alcunhaClienteAssociado );
+            if ( resultadoCriacao == true){
+              Desafio desafioPointer;
+              desafioPointer = this.localServerPointer.getDesafiosCriadosEmEspera( nomeDesafio );
+              replyPdu.replyDesafioDataHora( desafioPointer.getNomeDesafio() , desafioPointer.getDataHoraInicioDesafio() );
+              ok = true;
+            }
+            else {
+              descricaoErro = "Erro na criacao do desafio.";
+              ok = false;
+            }
+          }
+          else {
+            descricaoErro = "O PDU não contém os dados necessários!";
+          }
+          if ( !ok ) {
+            replyPdu.replyErro( descricaoErro );
+          }
+          enviaPacote(replyPdu);
           break;
         }
       case ACCEPT_CHALLENGE :

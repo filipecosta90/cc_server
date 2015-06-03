@@ -13,6 +13,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.util.ArrayList;
+import java.util.Date;
 
 public class BasePdu {
 
@@ -307,6 +308,11 @@ public class BasePdu {
     CampoPdu popCampo = this.ArrayListCamposSeguintes.get(posPopCamposSeguintes);
     posPopCamposSeguintes++;
     return popCampo;
+  }
+
+  public void replyDesafioDataHora(String nomeDesafio, Date dataHoraInicioDesafio) {
+    // TODO Auto-generated method stub
+
   }
 
 }
