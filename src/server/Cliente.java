@@ -25,7 +25,7 @@ public class Cliente
   }
 
   // Getter
-  public String getNome(){ 
+  public String getNomeCliente(){ 
     return this.nome; 
   }
 
@@ -37,19 +37,36 @@ public class Cliente
     return this.isLogged; 
   }
 
-  public int getScore() { 
+  public int getScoreCliente() { 
     return this.score; 
   }
 
   // Log
-  public boolean login( byte[] sec_info )
+  public boolean checkAndSetLoggedIn( String sec_info )
   {
-    if( new String( this.sec_info ).equals( new String( sec_info )))
+    boolean result = false;
+    if( this.sec_info.equals(  sec_info ) && isLogged == false){
       isLogged=true;
-    return isLogged;
+      result = true;
+    }
+    return result;
   }
 
-  public void logout(){ 
+  public boolean checkAndSetLoggedOut( )
+  {
+    boolean result = false;
+    if( isLogged == true){
+      isLogged=false;
+      result = true;
+    }
+    return result;
+  }
+
+  public void setLoggedIn(){
+    this.isLogged = true;
+  }
+
+  public void setLoggedOut(){ 
     this.isLogged=false; 
   }
 

@@ -7,6 +7,7 @@
 package server;
 
 import java.io.ByteArrayOutputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -116,9 +117,15 @@ public class CampoPdu {
     tamanhoTotal+=6;
   }
 
-  public void adicionaInteiro( int aConverter ) {
+  public void adicionaInteiro1Byte( int aConverter ) {
     dadosCampo = new byte[1];
     dadosCampo[0] = (byte) (aConverter & 0xFF);
+    tamanhoTotal+=1;
+  }
+
+  public void adicionaByteAZero( ) {
+    dadosCampo = new byte[1];
+    dadosCampo[0] = (byte) (0);
     tamanhoTotal+=1;
   }
 
@@ -161,15 +168,9 @@ public class CampoPdu {
     tamanhoTotal+=tamanhoString;
   }
 
-  public byte[] getBytes (){
-    byte aux[] = new byte[tamanhoTotal];
-    aux[0]=tipoCampo;
-    int pos = 1;
-    for ( byte b : dadosCampo ){
-      aux[pos]= b;
-      pos++;
-    }
-    return aux;
+  public String getCampoString() throws UnsupportedEncodingException {
+    String campoConvertido = new String( dadosCampo, StandardCharsets.UTF_8);  // example for one encoding type
+    return campoConvertido;
   }
 
   public void paraStringDoByteArray ( byte[] bytes, int posArray ){
@@ -179,6 +180,17 @@ public class CampoPdu {
     }
     tamanhoTotal += outByte.size();
     dadosCampo = outByte.toByteArray();
+  }
+
+  public byte[] getBytes (){
+    byte aux[] = new byte[tamanhoTotal];
+    aux[0]=tipoCampo;
+    int pos = 1;
+    for ( byte b : dadosCampo ){
+      aux[pos]= b;
+      pos++;
+    }
+    return aux;
   }
 
   private void paraDataDoByteArray(byte[] camposSeguintes, int posCamposSeguintes) {
@@ -402,4 +414,14 @@ public class CampoPdu {
       s.append( this.getTamanhoDados() );
       return s.toString();
     }
+
+  public boolean mesmoTipo(byte tipoCampoTeste ) {
+    boolean resultado = false; 
+    if (this.tipoCampo == tipoCampoTeste ){
+      resultado = true;
+    }
+    return resultado;
+  }
+
+
 }

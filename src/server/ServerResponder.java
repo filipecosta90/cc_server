@@ -6,6 +6,7 @@
 
 package server;
 
+import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -16,7 +17,6 @@ public class ServerResponder implements Runnable {
   DatagramPacket receivedPacket = null;
   InetAddress remoteAddress;
   int remotePort;
-
   Server localServerPointer;
 
   public ServerResponder( Server localServer , DatagramSocket receivedSocket, DatagramPacket receivedPacket) {
@@ -32,11 +32,22 @@ public class ServerResponder implements Runnable {
     Coneccao coneccaoEstabelecida;
     if( this.localServerPointer.isThisSocketBound(remoteAddress, remotePort)){
       coneccaoEstabelecida = this.localServerPointer.getConeccao( remoteAddress , remotePort );
-      coneccaoEstabelecida.adicionaPacote(this.receivedPacket);
+      try {
+        coneccaoEstabelecida.adicionaPacote(this.receivedPacket);
+      } catch (IOException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      }
     }
     /* Nova coneccao */
     else {
       coneccaoEstabelecida = new Coneccao ( this.localServerPointer , this.receivedSocket , this.remoteAddress, this.remotePort );
+      try {
+        coneccaoEstabelecida.adicionaPacote(this.receivedPacket);
+      } catch (IOException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      }
       this.localServerPointer.adicionaConeccao( coneccaoEstabelecida );
     }
   }

@@ -19,7 +19,7 @@ public class Server implements Runnable {
   private int listeningUDPPort;
   private int listeningTCPPort;
 
-  private HashMap< String,Cliente > clientes;
+  private HashMap< String,Cliente > mapClientes;
   private HashMap< String , Coneccao > coneccoesActivas;
 
 
@@ -28,7 +28,7 @@ public class Server implements Runnable {
   public Server ( int udpPort, int tcpPort ){
     this.listeningUDPPort = udpPort;
     this.listeningTCPPort = tcpPort;
-    this.clientes = new HashMap< String,Cliente > ();
+    this.mapClientes = new HashMap< String,Cliente > ();
     this.coneccoesActivas = new HashMap< String , Coneccao > ();
   }
 
@@ -49,7 +49,7 @@ public class Server implements Runnable {
     key.append( remotePort);
     String boundTo = new String();
     if ( this.coneccoesActivas.containsKey( key ) ){
-      boundTo = this.coneccoesActivas.get(key).getNomeClienteAssociado();
+      boundTo = this.coneccoesActivas.get(key).getAlcunhaClienteAssociado();
     }
     return boundTo;
   }
@@ -90,7 +90,47 @@ public class Server implements Runnable {
     key.append( coneccaoEstabelecida.getEnderecoRemoto().toString() );
     key.append( coneccaoEstabelecida.getPortaRemota());
     this.coneccoesActivas.put( key.toString() , coneccaoEstabelecida );
+  }
 
+  public boolean registarCliente(String nome, String alcunha, String sec_info) {
+    boolean resultado = false;
+    if ( this.mapClientes.containsKey( alcunha ) ){
+      resultado = false;
+    }
+    else {
+      Cliente novoCliente = new Cliente ( nome , alcunha , sec_info );
+      novoCliente.setLoggedIn();
+      this.mapClientes.put( alcunha , novoCliente );
+      resultado = true;
+    }
+    return resultado;
+  }
+
+  public boolean loginCliente(String alcunha, String sec_info) {
+    boolean resultado = false;
+    if ( this.mapClientes.containsKey( alcunha ) ){
+      Cliente clientPointer = mapClientes.get(alcunha);
+      if (clientPointer.checkAndSetLoggedIn(sec_info)){
+        resultado = true;
+      }
+    }
+    return resultado;
+  }
+
+  public boolean logoutCliente ( String alcunha ) {
+    boolean resultado = false;
+    if ( this.mapClientes.containsKey( alcunha ) ){
+      Cliente clientPointer = mapClientes.get(alcunha);
+      if (clientPointer.checkAndSetLoggedOut()){
+        resultado = true;
+      }
+    }
+    return resultado;
+  }
+
+  public Cliente getCliente ( String alcunha ){
+    Cliente clientPointer = mapClientes.get(alcunha);
+    return clientPointer;
   }
 
 }
