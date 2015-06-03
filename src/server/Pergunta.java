@@ -1,10 +1,10 @@
-package server;
-
 /*
-* @author Filipe Oliveira, Ricardo Agra, Sérgio Caldas
-* @author a57816(at)alunos.uminho.pt , a47069(at)alunos.uminho.pt , a57779(at)alunos.uminho.pt
-* @version 0.1
-*/
+ * @author Filipe Oliveira, Ricardo Agra, Sérgio Caldas
+ * @author a57816(at)alunos.uminho.pt , a47069(at)alunos.uminho.pt , a57779(at)alunos.uminho.pt
+ * @version 0.1
+ */
+
+package server;
 
 public class Pergunta {
   private String musica;
@@ -12,6 +12,7 @@ public class Pergunta {
   private String pergunta;
   private String[] ops=new String[ 3 ];
   private int certa;
+
   // Cr8tor
   public Pergunta( String mp3 , String img , String[] pgt, int certa )
   {

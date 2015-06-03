@@ -45,9 +45,10 @@ public class BasePdu {
   private int  tamanhoPdu;
   private int tamanhoCamposSeguintes;
   private byte[] rawData;
+  private boolean esperaDadosNovoPacote;
   ByteArrayInputStream inputByteArray;
 
-  public BasePdu ( ) { 
+  public BasePdu ( DatagramPacket pacote ) { 
     versao = new byte[1];
     seguranca = new byte[1];
     label = new byte[2];
@@ -56,14 +57,54 @@ public class BasePdu {
     tamanhoBytesCamposSeguintes = new byte[2];
     tamanhoCamposSeguintes = 0;
     tamanhoPdu = 8;
-  }
-
-  public DatagramPacket getPacote() { 
-    return pacoteUdp; 
-  }
-
-  public boolean parseCabecalho( DatagramPacket pacote ) {
     rawData = pacote.getData();
+    esperaDadosNovoPacote = false;
+  }
+
+  public synchronized void recevePDU () throws IOException, InterruptedException{
+    this.parseCabecalho();
+    this.parseCampos();
+  }   
+
+  public synchronized void mergePDU ( BasePdu toMerge ){
+    this.tamanhoPdu = toMerge.getTamanhoCamposSeguintesPdu();
+    for ( CampoPdu toMergeCampo : toMerge.getArrayListCamposSeguintes() ){
+      this.ArrayListCamposSeguintes.add( toMergeCampo);
+      if( toMerge.dadosParciais() ){
+        this.esperaDadosNovoPacote = true;
+      }
+      else {
+        this.esperaDadosNovoPacote = false;
+      }
+    }
+  }
+
+  public int getTamanhoCamposSeguintesPdu(){
+    return this.tamanhoCamposSeguintes;
+  }
+
+  public ArrayList < CampoPdu > getArrayListCamposSeguintes(){
+    ArrayList < CampoPdu > novoArray = new ArrayList <CampoPdu>();
+    for ( CampoPdu copyCampo : ArrayListCamposSeguintes ){
+      novoArray.add( copyCampo);
+    }
+    return novoArray;
+  }
+
+  public boolean dadosParciais (){
+    return esperaDadosNovoPacote;
+  }
+  private void respondePedido() {
+    // TODO Auto-generated method stub
+
+  }
+
+  private void resolvePedido(  ) {
+    // TODO Auto-generated method stub
+
+  }
+
+  public boolean parseCabecalho( ) {
     inputByteArray = new ByteArrayInputStream( rawData );
     tamanhoPdu = inputByteArray.available();
     if( tamanhoPdu >= 8 ){
@@ -123,16 +164,28 @@ public class BasePdu {
     camposSeguintes = novoOut.toByteArray();
   }
 
-  public void parseCampos() throws IOException {
+  public void parseCampos()  {
     int posCamposSeguintes = 0;
     int tamanhoCampoLido = 0;
     while ( posCamposSeguintes < tamanhoCamposSeguintes ){
       CampoPdu campo = new CampoPdu ( camposSeguintes[posCamposSeguintes] );
+      if(campo.campoDadosParciais()){
+        this.esperaDadosNovoPacote = true;
+      }
       posCamposSeguintes++;
       campo.parseDados ( camposSeguintes , posCamposSeguintes );
       tamanhoCampoLido = campo.getTamanhoDados();
       posCamposSeguintes += tamanhoCampoLido;
       ArrayListCamposSeguintes.add( campo );
     }
+  }
+
+  public boolean MesmaLabel(BasePdu pacoteATestar) {
+
+    return false;
+  }
+
+  public boolean pduCompleto() {
+    return esperaDadosNovoPacote;
   }
 }

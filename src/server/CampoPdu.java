@@ -71,6 +71,15 @@ public class CampoPdu {
     tamanhoTotal = 1;
   }
 
+  public boolean campoDadosParciais(){
+    if ( this.tipoCampo == SERVIDOR_CONTINUA ){
+      return true;
+    }
+    else {
+      return false;
+    }
+  }
+
   public void adicionaData( Date data ) {
     int ano =  data.getYear();
     int mes = data.getMonth();

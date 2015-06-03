@@ -1,3 +1,9 @@
+/*
+ * @author Filipe Oliveira, Ricardo Agra, Sérgio Caldas
+ * @author a57816(at)alunos.uminho.pt , a47069(at)alunos.uminho.pt , a57779(at)alunos.uminho.pt
+ * @version 0.1
+ */
+
 package server;
 
 import java.net.DatagramPacket;
@@ -10,7 +16,7 @@ public class ServerResponder implements Runnable {
   DatagramPacket receivedPacket = null;
   InetAddress remoteAddress;
   int remotePort;
-  
+
   Server localServerPointer;
 
   public ServerResponder( Server localServer , DatagramSocket receivedSocket, DatagramPacket receivedPacket) {
@@ -22,10 +28,16 @@ public class ServerResponder implements Runnable {
   }
 
   public void run() {
-	  byte[] received = receivedPacket.getData();
-	  localServerPointer.getPduReader().byteRead( received , receivedSocket , remoteAddress , remotePort );
-
-      String sentence = new String( received , 0, receivedPacket.getLength() );
-    System.out.println("packet received:" + sentence );
+    System.out.println("packet received from: " + remoteAddress );
+    Coneccao coneccaoEstabelecida;
+    if( this.localServerPointer.isThisSocketBound(remoteAddress, remotePort)){
+      coneccaoEstabelecida = this.localServerPointer.getConeccao( remoteAddress , remotePort );
+      coneccaoEstabelecida.adicionaPacote(this.receivedPacket);
+    }
+    /* Nova coneccao */
+    else {
+      coneccaoEstabelecida = new Coneccao ( this.localServerPointer , this.receivedSocket , this.remoteAddress, this.remotePort );
+      this.localServerPointer.adicionaConeccao( coneccaoEstabelecida );
+    }
   }
 }

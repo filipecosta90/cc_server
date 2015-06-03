@@ -1,21 +1,21 @@
-package server;
-
 /*
  * @author Filipe Oliveira, Ricardo Agra, Sérgio Caldas
  * @author a57816(at)alunos.uminho.pt , a47069(at)alunos.uminho.pt , a57779(at)alunos.uminho.pt
  * @version 0.1
  */
 
+package server;
+
 public class Cliente 
 {
   private String nome;
   private String alcunha;
-  private byte[] sec_info;
+  private String sec_info;
   private boolean isLogged;
   private int score;
 
   // Constructor
-  public Cliente( String nome , String alcunha , byte[] sec_info )
+  public Cliente( String nome , String alcunha , String sec_info )
   {
     this.nome = nome;
     this.alcunha = alcunha;
