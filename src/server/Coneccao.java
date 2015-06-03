@@ -13,6 +13,25 @@ import java.util.ArrayList;
 import java.util.Date;
 
 public class Coneccao {
+
+  // Tipos de pedido servidor
+  public static final byte REPLY = 0;
+  public static final byte HELLO = 1;
+  public static final byte REGISTER = 2;
+  public static final byte LOGIN = 3;
+  public static final byte LOGOUT = 4;
+  public static final byte QUIT = 5;
+  public static final byte END = 6;
+  public static final byte LIST_CHALLENGES = 7;
+  public static final byte MAKE_CHALLENGE = 8;
+  public static final byte ACCEPT_CHALLENGE = 9;
+  public static final byte DELETE_CHALLENGE = 10;
+  public static final byte ANSWER = 11;
+  public static final byte RETRANSMIT = 12;
+  public static final byte LIST_RANKING = 13;
+  public static final byte INFO = 14;
+  public static final int TAMANHO_MAX_PDU = 256;
+
   String nomeClienteAssociado;
   private ArrayList < BasePdu > stackEspera;
   private ArrayList < BasePdu > historialPdus;
@@ -24,6 +43,7 @@ public class Coneccao {
   DatagramSocket boundedSocket;
   InetAddress enderecoLigacao;
   int portaRemota;
+  BasePdu replyPdu;
 
   public Coneccao( Server localServer , DatagramSocket inSocket , InetAddress remoteAddress , int remotePort ){
     stackEspera = new ArrayList < BasePdu > ();
@@ -49,6 +69,9 @@ public class Coneccao {
         this.stackEspera.add( novoPdu );
       }
     }
+    else{
+      this.resolvePacote( novoPdu );
+    }
   }
 
   public void mergePacotesEspera ( BasePdu pacoteAFundir ){
@@ -57,20 +80,9 @@ public class Coneccao {
         pduNaStack.mergePDU(pacoteAFundir);
         if ( pduNaStack.pduCompleto()){
           this.resolvePacote( pduNaStack );
-          this.respondeRemoto( pduNaStack );
         }
       }
     }
-  }
-
-  private void respondeRemoto(BasePdu pduNaStack) {
-    // TODO Auto-generated method stub
-
-  }
-
-  private void resolvePacote(BasePdu pduNaStack) {
-    // TODO Auto-generated method stub
-
   }
 
   public boolean parteDePduEmEspera( BasePdu pacoteATestar ){
@@ -93,5 +105,63 @@ public class Coneccao {
 
   public int getPortaRemota() {
     return this.portaRemota;
+  }
+
+  private void resolvePacote(BasePdu pduAResolver) {
+    replyPdu = new BasePdu ( REPLY , pduAResolver.label ); 
+    switch( pduAResolver.getTipo() ){
+      case HELLO :
+        {
+          break;
+        }
+      case REGISTER :
+        {
+          break;
+        }
+      case LOGIN :
+        {
+          break;
+        }
+      case LOGOUT :
+        {
+          break;
+        }
+      case QUIT :
+        {
+          break;
+        }
+      case END :
+        {
+          break;
+        }
+      case LIST_CHALLENGES :
+        {
+          break;
+        }
+      case MAKE_CHALLENGE :
+        {
+          break;
+        }
+      case ACCEPT_CHALLENGE :
+        {
+          break;
+        }
+      case DELETE_CHALLENGE :
+        {
+          break;
+        }
+      case ANSWER :
+        {
+          break;
+        }
+      case RETRANSMIT :
+        {
+          break;
+        }
+      case LIST_RANKING :
+        {
+          break;
+        }
+    }
   }
 }

@@ -14,24 +14,6 @@ import java.util.ArrayList;
 
 public class BasePdu {
 
-  // Tipos de pedido servidor
-  public static final byte REPLY = 0;
-  public static final byte HELLO = 1;
-  public static final byte REGISTER = 2;
-  public static final byte LOGIN = 3;
-  public static final byte LOGOUT = 4;
-  public static final byte QUIT = 5;
-  public static final byte END = 6;
-  public static final byte LIST_CHALLENGES = 7;
-  public static final byte MAKE_CHALLENGE = 8;
-  public static final byte ACCEPT_CHALLENGE = 9;
-  public static final byte DELETE_CHALLENGE = 10;
-  public static final byte ANSWER = 11;
-  public static final byte RETRANSMIT = 12;
-  public static final byte LIST_RANKING = 13;
-  public static final byte INFO = 14;
-  public static final int TAMANHO_MAX_PDU = 256;
-
   protected byte versao[];
   protected byte seguranca[];
   protected byte label[];
@@ -58,6 +40,21 @@ public class BasePdu {
     tamanhoCamposSeguintes = 0;
     tamanhoPdu = 8;
     rawData = pacote.getData();
+    esperaDadosNovoPacote = false;
+  }
+
+  public BasePdu ( byte tipo , byte[] label ) { 
+    versao = new byte[1];
+    seguranca = new byte[1];
+    this.label = new byte[2];
+    this.label[0] = label[0];
+    this.label[1] = label[1];
+    this.tipo = new byte[1];
+    this.tipo[0] = tipo;
+    numeroCamposSeguintes =  new byte[1];
+    tamanhoBytesCamposSeguintes = new byte[2];
+    tamanhoCamposSeguintes = 0;
+    tamanhoPdu = 8;
     esperaDadosNovoPacote = false;
   }
 
@@ -93,15 +90,6 @@ public class BasePdu {
 
   public boolean dadosParciais (){
     return esperaDadosNovoPacote;
-  }
-  private void respondePedido() {
-    // TODO Auto-generated method stub
-
-  }
-
-  private void resolvePedido(  ) {
-    // TODO Auto-generated method stub
-
   }
 
   public boolean parseCabecalho( ) {
@@ -181,11 +169,24 @@ public class BasePdu {
   }
 
   public boolean MesmaLabel(BasePdu pacoteATestar) {
+    byte[] testLabel = pacoteATestar.getLabel();
+    if ( this.label[0] ==  testLabel[0] && this.label[1] ==  testLabel[1] ){
+      return true;
+    }
+    else {
+      return false;
+    }
+  }
 
-    return false;
+  private byte[] getLabel() {
+    return this.label;
   }
 
   public boolean pduCompleto() {
     return esperaDadosNovoPacote;
+  }
+
+  public byte getTipo() {
+    return this.tipo[0];
   }
 }
