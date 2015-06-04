@@ -11,22 +11,26 @@ public class DesafioManager implements Runnable {
   }
 
   public String getNomeDesafioGerir() {
-		return this.desafioAGerir.getNomeDesafio();
-	}
-  
+    return this.desafioAGerir.getNomeDesafio();
+  }
+
   public void run() {
-	  System.out.println("Criado um novo gestor para o desafio: " + desafioAGerir.getNomeDesafio() );
+    System.out.println("Criado um novo gestor para o desafio: " + desafioAGerir.getNomeDesafio() );
   }
-  
+
+  public Desafio getDesafio(){
+    return this.desafioAGerir;
+  }
+
   @Override 
-  public boolean equals ( Object other ){
-	  boolean resultado = false;
-	    if (other instanceof DesafioManager) {
-	        DesafioManager that = (DesafioManager) other;
-	        resultado = this.getNomeDesafioGerir().equals(that.getNomeDesafioGerir());
-	    }
-	    return resultado;
-  }
+    public boolean equals ( Object other ){
+      boolean resultado = false;
+      if (other instanceof DesafioManager) {
+        DesafioManager that = (DesafioManager) other;
+        resultado = this.getNomeDesafioGerir().equals(that.getNomeDesafioGerir());
+      }
+      return resultado;
+    }
 
 
 }

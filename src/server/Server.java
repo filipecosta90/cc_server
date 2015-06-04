@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.TreeMap;
 
 public class Server implements Runnable {
 
@@ -23,9 +24,9 @@ public class Server implements Runnable {
   private HashMap< String , Cliente > mapClientes;
   private HashMap< String , Coneccao > coneccoesActivas;
   private HashMap< String , Coneccao > historicoConeccoes;
-  private HashMap< String , Desafio > desafiosCriadosEspera;
-  private HashMap< String , Desafio > desafiosEmJogo;
-  private HashMap< String , Desafio > desafiosTerminados;
+  private HashMap< String , DesafioManager > desafiosCriadosEspera;
+  private HashMap< String , DesafioManager > desafiosEmJogo;
+  private HashMap< String , DesafioManager > desafiosTerminados;
   public boolean mainServer;
 
   // Cr8tor
@@ -36,9 +37,9 @@ public class Server implements Runnable {
     this.mapClientes = new HashMap< String,Cliente > ();
     this.coneccoesActivas = new HashMap< String , Coneccao > ();
     this.historicoConeccoes = new HashMap< String , Coneccao > ();
-    this.desafiosCriadosEspera = new HashMap< String , Desafio > ();
-    this.desafiosEmJogo = new HashMap< String , Desafio > ();
-    this.desafiosTerminados = new HashMap< String , Desafio > ();
+    this.desafiosCriadosEspera = new HashMap< String , DesafioManager > ();
+    this.desafiosEmJogo = new HashMap< String , DesafioManager > ();
+    this.desafiosTerminados = new HashMap< String , DesafioManager > ();
     mainServer=true;
   }
 
@@ -144,11 +145,11 @@ public class Server implements Runnable {
   }
 
   public Desafio getDesafiosCriadosEmEspera(String nomeDesafio) {
-    Desafio desafioPointer = null;
+    DesafioManager desafioManagerPointer = null;
     if ( this.desafiosCriadosEspera.containsKey( nomeDesafio ) ){
-      desafioPointer = desafiosCriadosEspera.get(nomeDesafio);
+      desafioManagerPointer = desafiosCriadosEspera.get(nomeDesafio);
     }
-    return desafioPointer;
+    return desafioManagerPointer.getDesafio();
   }
 
   public boolean CriaDesafio(String nomeDesafio, Date dataHoraDesafio, String alcunhaClienteAssociado) {
@@ -167,10 +168,55 @@ public class Server implements Runnable {
 
   public ArrayList<Desafio> listaDesafiosEspera() {
     ArrayList <Desafio> listaDesafios = new ArrayList<Desafio> ();
-    for ( Desafio desafioPointer : this.desafiosCriadosEspera.values() ){
-      listaDesafios.add( desafioPointer.clone() );
+    for ( DesafioManager desafioManagerPointer : this.desafiosCriadosEspera.values() ){
+      listaDesafios.add( desafioManagerPointer.getDesafio().clone() );
     }
     return listaDesafios;
+  }
+
+  public HashMap< String , Cliente > getMapClientes(){
+    HashMap< String , Cliente > mapRetornar = new HashMap< String , Cliente > ();
+    for ( Cliente clienteRetornar : this.mapClientes.values() ){
+      mapRetornar.put( clienteRetornar.getAlcunhaCliente() , clienteRetornar.clone() );
+    }
+    return mapRetornar;
+  }
+
+  public Desafio getDesafioTerminadoAssociadoCliente( String alcunhaClienteAssociado ) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  public TreeMap<String, Integer> getPontuacoesDesafioTerminado(String nomeDesafio) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  public boolean ExisteDesafioEsperaEPodeAceitar(String nomeDesafio,
+      String alcunhaClienteAssociado) {
+    // TODO Auto-generated method stub
+    return false;
+  }
+
+  public boolean AceitaDesafio(String nomeDesafio, String alcunhaClienteAssociado) {
+    // TODO Auto-generated method stub
+    return false;
+  }
+
+  public boolean DesafioPertenceCliente(String nomeDesafio,
+      String alcunhaClienteAssociado) {
+    // TODO Auto-generated method stub
+    return false;
+  }
+
+  public boolean EliminaDesafio(String nomeDesafio, String alcunhaClienteAssociado) {
+    // TODO Auto-generated method stub
+    return false;
+  }
+
+  public Desafio getDesafioEliminado(String nomeDesafio) {
+    // TODO Auto-generated method stub
+    return null;
   }
 
 }

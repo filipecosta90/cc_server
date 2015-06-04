@@ -12,6 +12,8 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.TreeMap;
 
 public class Coneccao {
 
@@ -224,7 +226,7 @@ public class Coneccao {
               this.boundAlcunhaCliente ( alcunha );
               Cliente clientPointer;
               clientPointer = this.localServerPointer.getCliente( alcunha );
-              replyPdu.replyNomeScore( clientPointer.getNomeCliente() , clientPointer.getScoreCliente() );
+              replyPdu.replyAlcunhaScore( clientPointer.getAlcunhaCliente() , clientPointer.getScoreCliente() );
               ok = true;
             }
             else {
@@ -273,20 +275,37 @@ public class Coneccao {
         }
       case END :
         {
+          boolean ok = false;
+          String descricaoErro = new String();
+          Desafio desafioPointer = this.localServerPointer.getDesafioTerminadoAssociadoCliente( this.alcunhaClienteAssociado );
+          if(desafioPointer != null){
+            TreeMap < String, Integer > pontuacoesJogadores;
+            pontuacoesJogadores = this.localServerPointer.getPontuacoesDesafioTerminado( desafioPointer.getNomeDesafio() );
+            for ( String alcunhaCliente : pontuacoesJogadores.keySet() ){
+              replyPdu.replyAlcunhaScore( alcunhaCliente , pontuacoesJogadores.get( alcunhaCliente ) );
+            }
+            ok = true;
+          }
+          else{
+            descricaoErro = "Nao existe uma sessão com login nesta ligação!";
+          }
+          if ( !ok ) {
+            replyPdu.replyErro( descricaoErro );
+          }
+          enviaPacote(replyPdu);
           break;
         }
       case LIST_CHALLENGES :
         {
-              ArrayList < Desafio > desafiosEmEspera;
-              desafiosEmEspera = this.localServerPointer.listaDesafiosEspera();
-              if ( desafiosEmEspera != null){
-                for ( Desafio desafioPointer : desafiosEmEspera ){
-                replyPdu.replyDesafioDataHora( desafioPointer.getNomeDesafio() , desafioPointer.getDataHoraInicioDesafio() );
-                }
-              }
-            enviaPacote(replyPdu);
-            break;
-
+          ArrayList < Desafio > desafiosEmEspera;
+          desafiosEmEspera = this.localServerPointer.listaDesafiosEspera();
+          if ( desafiosEmEspera != null){
+            for ( Desafio desafioPointer : desafiosEmEspera ){
+              replyPdu.replyDesafioDataHora( desafioPointer.getNomeDesafio() , desafioPointer.getDataHoraInicioDesafio() );
+            }
+          }
+          enviaPacote(replyPdu);
+          break;
         }
       case MAKE_CHALLENGE :
         {
@@ -335,10 +354,66 @@ public class Coneccao {
         }
       case ACCEPT_CHALLENGE :
         {
+          boolean ok = false;
+          String descricaoErro = new String();
+          if (  pduAResolver.contemCampo( SERVIDOR_NOME_DESAFIO ) ){
+            CampoPdu campoNomeDesafio = pduAResolver.popCampo();
+            String nomeDesafio = campoNomeDesafio.getCampoString();
+            boolean podeAceitar = false;
+            podeAceitar = this.localServerPointer.ExisteDesafioEsperaEPodeAceitar( nomeDesafio , this.alcunhaClienteAssociado );
+            if ( podeAceitar ){
+              boolean resultadoAceitacao = false;
+              resultadoAceitacao = this.localServerPointer.AceitaDesafio( nomeDesafio , this.alcunhaClienteAssociado );
+              if ( resultadoAceitacao == true){
+                replyPdu.replyOK();
+                ok = true;
+              }
+            }
+            else {
+              descricaoErro = "O desafio não está em espera ou não pode associar-se a ele.";
+              ok = false;
+            }
+          }
+          else {
+            descricaoErro = "O PDU não contém os dados necessários!";
+          }
+          if ( !ok ) {
+            replyPdu.replyErro( descricaoErro );
+          }
+          enviaPacote(replyPdu);
           break;
         }
       case DELETE_CHALLENGE :
         {
+          boolean ok = false;
+          String descricaoErro = new String();
+          if (  pduAResolver.contemCampo( SERVIDOR_NOME_DESAFIO ) ){
+            CampoPdu campoNomeDesafio = pduAResolver.popCampo();
+            String nomeDesafio = campoNomeDesafio.getCampoString();
+            boolean desafioPertence = false;
+            desafioPertence = this.localServerPointer.DesafioPertenceCliente( nomeDesafio , this.alcunhaClienteAssociado );
+            if ( desafioPertence ){
+              boolean resultadoEliminacao = false;
+              resultadoEliminacao = this.localServerPointer.EliminaDesafio( nomeDesafio , this.alcunhaClienteAssociado );
+              if ( resultadoEliminacao == true){
+                Desafio desafioPointer;
+                desafioPointer = this.localServerPointer.getDesafioEliminado( nomeDesafio );
+                replyPdu.replyDesafioDataHora( desafioPointer.getNomeDesafio() , desafioPointer.getDataHoraInicioDesafio() );
+                ok = true;
+              }
+            }
+            else {
+              descricaoErro = "O desafio não lhe pertence para o poder eliminar.";
+              ok = false;
+            }
+          }
+          else {
+            descricaoErro = "O PDU não contém os dados necessários!";
+          }
+          if ( !ok ) {
+            replyPdu.replyErro( descricaoErro );
+          }
+          enviaPacote(replyPdu);
           break;
         }
       case ANSWER :
@@ -351,6 +426,14 @@ public class Coneccao {
         }
       case LIST_RANKING :
         {
+          HashMap < String , Cliente > mapClientes;
+          mapClientes = this.localServerPointer.getMapClientes();
+          if ( mapClientes != null){
+            for ( Cliente clientPointer : mapClientes.values() ){
+              replyPdu.replyAlcunhaScore( clientPointer.getAlcunhaCliente() , clientPointer.getScoreCliente() );
+            }
+          }
+          enviaPacote(replyPdu);
           break;
         }
     }

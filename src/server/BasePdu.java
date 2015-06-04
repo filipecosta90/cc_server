@@ -34,8 +34,8 @@ public class BasePdu {
   public static final byte SERVIDOR_CONTINUA = (byte) 254;
   public static final byte SERVIDOR_NOME = (byte)1;
   public static final byte SERVIDOR_ALCUNHA = (byte)2;
-  public static final byte SERVIDOR_DATA = (byte)4;
-  public static final byte SERVIDOR_HORA = (byte)5;
+  public static final byte SERVIDOR_DATA_DESAFIO = (byte)4;
+  public static final byte SERVIDOR_HORA_DESAFIO = (byte)5;
   public static final byte SERVIDOR_NOME_DESAFIO = (byte)7;
   public static final byte SERVIDOR_NUM_QUESTAO = (byte)10;	  
   public static final byte SERVIDOR_TXT_QUESTAO = (byte)11;
@@ -283,10 +283,10 @@ public class BasePdu {
     this.preparaEnvio();
   }
 
-  public void replyNomeScore( String nomeCliente , int scoreCliente ) throws IOException {
-    CampoPdu campoNome = new CampoPdu ( SERVIDOR_NOME );
-    campoNome.adicionaString( nomeCliente );
-    this.ArrayListCamposSeguintes.add(campoNome);
+  public void replyAlcunhaScore( String alcunhaCliente , int scoreCliente ) throws IOException {
+    CampoPdu campoAlcunha = new CampoPdu ( SERVIDOR_ALCUNHA );
+    campoAlcunha.adicionaString( alcunhaCliente );
+    this.ArrayListCamposSeguintes.add(campoAlcunha);
     CampoPdu campoPontos = new CampoPdu ( SERVIDOR_PONTOS );
     campoPontos.adicionaInteiro1Byte ( scoreCliente );
     this.ArrayListCamposSeguintes.add(campoPontos);
@@ -311,8 +311,15 @@ public class BasePdu {
   }
 
   public void replyDesafioDataHora(String nomeDesafio, Date dataHoraInicioDesafio) {
-    // TODO Auto-generated method stub
-
+    CampoPdu campoNomeDesafio = new CampoPdu ( SERVIDOR_NOME_DESAFIO );
+    campoNomeDesafio.adicionaString( nomeDesafio );
+    this.ArrayListCamposSeguintes.add(campoNomeDesafio);
+    CampoPdu campoDataDesafio = new CampoPdu ( SERVIDOR_DATA_DESAFIO );
+    campoDataDesafio.adicionaData( dataHoraInicioDesafio );
+    this.ArrayListCamposSeguintes.add(campoDataDesafio);
+    CampoPdu campoHoraDesafio = new CampoPdu ( SERVIDOR_HORA_DESAFIO );
+    campoHoraDesafio.adicionaHora( dataHoraInicioDesafio );
+    this.ArrayListCamposSeguintes.add(campoHoraDesafio);
   }
 
 }

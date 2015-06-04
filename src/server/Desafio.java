@@ -103,14 +103,14 @@ public class Desafio {
     public Desafio clone(){
       return new Desafio(this);
     }
-  
+
   @Override 
-  public boolean equals ( Object other ){
-	  boolean resultado = false;
-	    if (other instanceof Desafio) {
-	        Desafio that = (Desafio) other;
-	        resultado = this.getNomeDesafio().equals(that.getNomeDesafio());
-	    }
-	    return resultado;
-  }
+    public boolean equals ( Object other ){
+      boolean resultado = false;
+      if (other instanceof Desafio) {
+        Desafio that = (Desafio) other;
+        resultado = this.getNomeDesafio().equals(that.getNomeDesafio());
+      }
+      return resultado;
+    }
 }

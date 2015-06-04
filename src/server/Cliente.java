@@ -14,7 +14,7 @@ public class Cliente
   private boolean isLogged;
   private int score;
 
-  // Constructor
+  // Construtores
   public Cliente( String nome , String alcunha , String sec_info )
   {
     this.nome = nome;
@@ -24,13 +24,29 @@ public class Cliente
     this.score = 0;
   }
 
-  // Getter
-  public String getNomeCliente(){ 
-    return this.nome; 
+  public Cliente( Cliente makeCopy )
+  {
+    this.nome = makeCopy.getNomeCliente();
+    this.alcunha = makeCopy.getAlcunhaCliente();
+    this.sec_info = makeCopy.getSecInfo();
+    this.isLogged = makeCopy.isLogged();
+    this.score = makeCopy.getScoreCliente();
   }
 
-  public String getAlcunha(){ 
-    return this.alcunha; 
+  // Getter
+  public String getNomeCliente(){ 
+    String nomeReply = new String ( this.nome );
+    return nomeReply; 
+  }
+
+  public String getAlcunhaCliente(){ 
+    String alcunhaReply = new String ( this.alcunha );
+    return alcunhaReply; 
+  }
+
+  private String getSecInfo(){
+    String stringRetornar = new String ( this.sec_info );
+    return stringRetornar;
   }
 
   public boolean isLogged(){ 
@@ -78,5 +94,20 @@ public class Cliente
       s.append( "Alcunha: "+ alcunha +" , " );
       s.append( "Score: "+ score +" , " );
       return s.toString();
+    }
+
+  @Override
+    public Cliente clone(){
+      return new Cliente(this);
+    }
+
+  @Override 
+    public boolean equals ( Object other ){
+      boolean resultado = false;
+      if (other instanceof Cliente) {
+        Cliente that = (Cliente) other;
+        resultado = this.getAlcunhaCliente().equals(that.getAlcunhaCliente());
+      }
+      return resultado;
     }
 }
