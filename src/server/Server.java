@@ -26,6 +26,7 @@ public class Server implements Runnable {
   private HashMap< String , Desafio > desafiosCriadosEspera;
   private HashMap< String , Desafio > desafiosEmJogo;
   private HashMap< String , Desafio > desafiosTerminados;
+  public boolean mainServer;
 
   // Cr8tor
 
@@ -38,7 +39,7 @@ public class Server implements Runnable {
     this.desafiosCriadosEspera = new HashMap< String , Desafio > ();
     this.desafiosEmJogo = new HashMap< String , Desafio > ();
     this.desafiosTerminados = new HashMap< String , Desafio > ();
-
+    mainServer=true;
   }
 
   public boolean  isThisSocketBound ( InetAddress remoteAddress, int remotePort ){
@@ -162,6 +163,14 @@ public class Server implements Runnable {
       resultado = true;
     }
     return resultado;
+  }
+
+  public ArrayList<Desafio> listaDesafiosEspera() {
+    ArrayList <Desafio> listaDesafios = new ArrayList<Desafio> ();
+    for ( Desafio desafioPointer : this.desafiosCriadosEspera.values() ){
+      listaDesafios.add( desafioPointer.clone() );
+    }
+    return listaDesafios;
   }
 
 }

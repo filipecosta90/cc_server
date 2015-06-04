@@ -277,7 +277,16 @@ public class Coneccao {
         }
       case LIST_CHALLENGES :
         {
-          break;
+              ArrayList < Desafio > desafiosEmEspera;
+              desafiosEmEspera = this.localServerPointer.listaDesafiosEspera();
+              if ( desafiosEmEspera != null){
+                for ( Desafio desafioPointer : desafiosEmEspera ){
+                replyPdu.replyDesafioDataHora( desafioPointer.getNomeDesafio() , desafioPointer.getDataHoraInicioDesafio() );
+                }
+              }
+            enviaPacote(replyPdu);
+            break;
+
         }
       case MAKE_CHALLENGE :
         {
