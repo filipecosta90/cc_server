@@ -11,13 +11,19 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 public class Desafio {
+
+  public enum EstadoDesafio { EM_ESPERA , EM_JOGO , TERMINADO , ELIMINADO , PASSOU_PRAZO }
+
   private String nomeDesafio;
   private String criadoPor;
   TreeSet < String > alcunhasJogadores;
+  TreeSet < String > alcunhasJogadoresActivos;
   TreeMap < String, Integer > pontuacoesJogadores;
   private Date dataCriacao;
   private Date dataHoraInicioDesafio;
   private boolean temMinimoJogadores;
+  private FicheiroPerguntas perguntasDesafio;
+  EstadoDesafio estado;
 
   // Construtores
   public Desafio( String game_name , String alcunhaJogadorCriador , Date dataCriacao , Date dataHoraDesafio )
@@ -29,6 +35,8 @@ public class Desafio {
     this.dataCriacao = dataCriacao;
     this.dataHoraInicioDesafio = dataHoraDesafio;
     temMinimoJogadores = false;
+    this.estado = EstadoDesafio.EM_ESPERA;
+
   }
 
   public Desafio ( Desafio makeCopy ){
@@ -39,12 +47,18 @@ public class Desafio {
     this.dataCriacao = makeCopy.getDataCriacao();
     this.dataHoraInicioDesafio = makeCopy.getDataHoraInicioDesafio();
     this.temMinimoJogadores = makeCopy.getTemMinimoJogadores();
+    this.estado = makeCopy.getEstado();
   }
 
   // Métodos Get
   public String getCriadoPor() {
     String novoCriadoPor = new String ( this.criadoPor);
     return novoCriadoPor;
+  }
+
+  public EstadoDesafio getEstado(){
+    EstadoDesafio estadoRetornar = this.estado;
+    return estadoRetornar;
   }
 
   private boolean getTemMinimoJogadores() {
@@ -86,11 +100,69 @@ public class Desafio {
     return alcunhas;
   }
 
-  /* Outros métodos */
-  public void adicionaJogador ( String alcunha ){
-    this.alcunhasJogadores.add( alcunha );
-    this.pontuacoesJogadores.put( alcunha , 0 );
+  public TreeSet < String > getAlcunhasJogadoresActivos() {
+    TreeSet < String > alcunhasActivas = new TreeSet < String > ();
+    for ( String alcunha : this.alcunhasJogadoresActivos ){
+      String copiaAlcunha = new String ( alcunha );
+      alcunhasActivas.add( copiaAlcunha );
+    }
+    return alcunhasActivas;
   }
+
+  /* Outros métodos */
+  public boolean adicionaJogador ( String alcunha ){
+    boolean resultado = false;
+    if ( this.alcunhasJogadores.contains( alcunha )){
+      resultado = false;
+    }
+    else{
+      this.alcunhasJogadores.add( alcunha );
+      this.pontuacoesJogadores.put( alcunha , 0 );
+      this.temMinimoJogadores = true;
+      resultado = true;
+    }
+    return resultado;
+  }
+
+  public boolean podeAdicionarJogador ( String alcunhaJogador ){
+    boolean resultado = false;
+    if ( this.alcunhasJogadores.contains( alcunhaJogador )){
+      resultado = false;
+    }
+    else {
+      resultado = true;
+    }
+    return resultado;
+  }
+
+  public boolean clienteParticipa(String alcunhaJogador ) {
+    boolean resultado = false;
+    if ( this.alcunhasJogadores.contains( alcunhaJogador )){
+      resultado = true;
+    }
+    return resultado;
+  }
+
+  public void elimina(){
+    this.estado = EstadoDesafio.ELIMINADO;
+  }
+
+  public void iniciaJogo(){
+    this.estado = EstadoDesafio.EM_JOGO;
+  }
+  public void updateEstadoEsperaIniciaCancela(){
+    Date agora = new Date();
+    if ( agora.after(this.dataHoraInicioDesafio) ){
+      if ( this.estado == EstadoDesafio.EM_ESPERA && this.temMinimoJogadores == false ){
+        this.estado = EstadoDesafio.PASSOU_PRAZO;
+      }
+      else if ( this.estado == EstadoDesafio.EM_ESPERA && this.temMinimoJogadores == true ){
+        this.estado = EstadoDesafio.EM_JOGO;
+
+      }
+    }
+  }
+
 
   /* toString & clone */
   @Override
@@ -113,4 +185,12 @@ public class Desafio {
       }
       return resultado;
     }
+
+  public void rageQuit(String nomeJogador) {
+    this.alcunhasJogadoresActivos.remove(nomeJogador);
+  }
+
+  public TreeMap < Integer , Pergunta > getPerguntas( ) {
+    return this.perguntasDesafio.getMapPerguntas();
+  }
 }

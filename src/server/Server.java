@@ -16,7 +16,11 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.TreeMap;
 
+
+
 public class Server implements Runnable {
+
+	public enum EstadoServidor { INICIANDO_SERVIDOR , SERVIDOR_ACTIVO , PARANDO_SERVIDOR , SERVIDOR_PARADO , ERRO_SERVIDOR }
 
   private int listeningUDPPort;
   private int listeningTCPPort;
@@ -27,9 +31,11 @@ public class Server implements Runnable {
   private HashMap< String , DesafioManager > desafiosCriadosEspera;
   private HashMap< String , DesafioManager > desafiosEmJogo;
   private HashMap< String , DesafioManager > desafiosTerminados;
+  private HashMap< String , DesafioManager > desafiosEliminados;
+
   public boolean mainServer;
 
-  // Cr8tor
+  // Construtores
 
   public Server ( int udpPort, int tcpPort ){
     this.listeningUDPPort = udpPort;
@@ -40,6 +46,8 @@ public class Server implements Runnable {
     this.desafiosCriadosEspera = new HashMap< String , DesafioManager > ();
     this.desafiosEmJogo = new HashMap< String , DesafioManager > ();
     this.desafiosTerminados = new HashMap< String , DesafioManager > ();
+    this.desafiosEliminados = new HashMap< String , DesafioManager > ();
+
     mainServer=true;
   }
 
@@ -64,7 +72,17 @@ public class Server implements Runnable {
     }
     return boundTo;
   }
-
+  public Coneccao getConeccaoCliente ( String nomeCliente ){
+	    
+	  Coneccao coneccaoRetornar = null;
+	  for ( Coneccao coneccaoPointer : this.coneccoesActivas.values() ){
+		 if ( coneccaoPointer.getAlcunhaClienteAssociado().equals(nomeCliente)){
+			 coneccaoRetornar = coneccaoPointer;
+		 }
+	  }
+	   return coneccaoRetornar; 
+	  }
+  
   public void run() {
     byte[] udpReceber;
     DatagramSocket udpSocket;
@@ -183,40 +201,83 @@ public class Server implements Runnable {
   }
 
   public Desafio getDesafioTerminadoAssociadoCliente( String alcunhaClienteAssociado ) {
-    // TODO Auto-generated method stub
-    return null;
+    Desafio desafioRetornar = null;
+    boolean alreadyFound = false;
+    for( DesafioManager desafioManagerPointer : this.desafiosTerminados.values() ){
+    	if ( desafioManagerPointer.getDesafio().clienteParticipa( alcunhaClienteAssociado ) && alreadyFound == false){
+    		desafioRetornar = desafioManagerPointer.getDesafio();
+    		alreadyFound = true;
+    	}
+    }
+    return desafioRetornar;
   }
 
   public TreeMap<String, Integer> getPontuacoesDesafioTerminado(String nomeDesafio) {
-    // TODO Auto-generated method stub
-    return null;
+	  TreeMap<String, Integer> scoreBoard = null;
+	  DesafioManager desafioManagerPointer = this.desafiosTerminados.get(nomeDesafio);
+	  if( desafioManagerPointer != null ){
+		  scoreBoard = desafioManagerPointer.getDesafio().getPontuacoesJogadores();
+	  }
+	  return scoreBoard;
   }
 
-  public boolean ExisteDesafioEsperaEPodeAceitar(String nomeDesafio,
-      String alcunhaClienteAssociado) {
-    // TODO Auto-generated method stub
-    return false;
+  public boolean ExisteDesafioEsperaEPodeAceitar(String nomeDesafio , String alcunhaClienteAssociado) {
+    boolean resultado = false;
+    if ( this.desafiosCriadosEspera.containsKey(nomeDesafio)){
+    	DesafioManager desafioManagerPointer = this.desafiosCriadosEspera.get(nomeDesafio);
+    	if ( desafioManagerPointer.getDesafio().podeAdicionarJogador( alcunhaClienteAssociado )){
+    		resultado = true;
+    	}
+    }
+    return resultado;
   }
 
-  public boolean AceitaDesafio(String nomeDesafio, String alcunhaClienteAssociado) {
-    // TODO Auto-generated method stub
-    return false;
+  public boolean AceitaDesafio(String nomeDesafio, String alcunhaClienteAssociar ) {
+	  boolean resultado = false;
+	  DesafioManager desafioManagerPointer = this.desafiosCriadosEspera.get(nomeDesafio);
+	  if( desafioManagerPointer != null ){
+		  resultado = desafioManagerPointer.aceitaDesafio( alcunhaClienteAssociar );
+	  }
+    return resultado;
   }
 
-  public boolean DesafioPertenceCliente(String nomeDesafio,
-      String alcunhaClienteAssociado) {
-    // TODO Auto-generated method stub
-    return false;
+  public boolean DesafioPertenceCliente(String nomeDesafio, String alcunhaClienteAssociado) {
+boolean resultado = false;
+DesafioManager desafioManagerPointer = this.desafiosCriadosEspera.get(nomeDesafio);
+if( desafioManagerPointer != null ){
+	  if ( desafioManagerPointer.getDesafio().getCriadoPor().equals(alcunhaClienteAssociado)){
+		  resultado = true;
+	  }
+}
+return resultado;
   }
 
   public boolean EliminaDesafio(String nomeDesafio, String alcunhaClienteAssociado) {
-    // TODO Auto-generated method stub
-    return false;
-  }
+	  boolean resultado = false;
+	  DesafioManager desafioManagerPointer = this.desafiosCriadosEspera.get(nomeDesafio);
+	  if( desafioManagerPointer != null ){
+	  	  if ( desafioManagerPointer.getDesafio().getCriadoPor().equals(alcunhaClienteAssociado)){
+	  		  desafioManagerPointer.getDesafio().elimina();
+	  		  this.desafiosCriadosEspera.remove(nomeDesafio);
+	  		  this.desafiosEliminados.put( nomeDesafio , desafioManagerPointer);
+	  		  resultado = true;
+	  	  }
+	  }
+	  return resultado;
+	    }
 
   public Desafio getDesafioEliminado(String nomeDesafio) {
-    // TODO Auto-generated method stub
-    return null;
+	  DesafioManager desafioManagerPointer = this.desafiosCriadosEspera.get(nomeDesafio);
+	  Desafio desafioRetornar = null;
+	  if( desafioManagerPointer != null ){
+	  	   		desafioRetornar = desafioManagerPointer.getDesafio();
+	  	  }  
+	  return desafioRetornar;
   }
+
+public void TerminaDesafio(String nomeDesafio, String criadoPor) {
+	// TODO Auto-generated method stub
+	
+}
 
 }

@@ -95,6 +95,7 @@ public class Coneccao {
   InetAddress enderecoLigacao;
   int portaRemota;
   BasePdu replyPdu;
+  int numeroPdu;
 
   public Coneccao( Server localServer , DatagramSocket inSocket , InetAddress remoteAddress , int remotePort ){
     stackEspera = new ArrayList < BasePdu > ();
@@ -441,11 +442,48 @@ public class Coneccao {
       this.stackEspera.remove( pduAResolver);
     }
     this.historialPdus.add( pduAResolver );
+    this.numeroPdu++;
   }
 
   private void UnboundAlcunhaCliente() {
     this.anonima = true;
     this.alcunhaClienteAssociado = new String();
+  }
+
+  public boolean mesmoEnderecoPortaSocket(Coneccao coneccaoNoDesafio) {
+    boolean resultado = false;
+    if ( this.enderecoLigacao.equals( coneccaoNoDesafio.getEnderecoRemoto()) && this.enderecoLigacao.equals( coneccaoNoDesafio.getPortaRemota() ) && this.boundedSocket.equals( coneccaoNoDesafio.getBoundedSocket())){
+      resultado = true;
+    }
+    return resultado;
+  }
+
+  private DatagramSocket getBoundedSocket() {
+    return this.boundedSocket;
+  }
+
+  public void copiaEnderecoPortaSocket(Coneccao coneccaoRetornada) {
+    this.setEnderecoLigacao ( coneccaoRetornada.getEnderecoRemoto());
+    this.setPortaRemota ( coneccaoRetornada.getPortaRemota());
+    this.setSocket ( coneccaoRetornada.getBoundedSocket());
+
+  }
+
+  private void setSocket(DatagramSocket remoteSocket) {
+    this.boundedSocket = remoteSocket;
+  }
+
+  private void setPortaRemota(int copiaPortaRemota ) {
+    this.portaRemota = copiaPortaRemota;
+  }
+
+  private void setEnderecoLigacao(InetAddress enderecoRemoto) {
+    this.enderecoLigacao = enderecoRemoto;
+  }
+
+  public void enviaPergunta(Pergunta perguntaActual) {
+    // TODO Auto-generated method stub
+    this.numeroPdu++;
   }
 
 }
