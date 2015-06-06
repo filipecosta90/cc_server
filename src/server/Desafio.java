@@ -6,6 +6,7 @@
 
 package server;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -26,7 +27,7 @@ public class Desafio {
   EstadoDesafio estado;
 
   // Construtores
-  public Desafio( String game_name , String alcunhaJogadorCriador , Date dataCriacao , Date dataHoraDesafio )
+  public Desafio( String game_name , String alcunhaJogadorCriador , Date dataCriacao , Date dataHoraDesafio , String nomeFicheiroPerguntas )
   {
     this.nomeDesafio=game_name;
     this.criadoPor = alcunhaJogadorCriador;
@@ -36,6 +37,8 @@ public class Desafio {
     this.dataHoraInicioDesafio = dataHoraDesafio;
     temMinimoJogadores = false;
     this.estado = EstadoDesafio.EM_ESPERA;
+    this.perguntasDesafio = new FicheiroPerguntas ( nomeFicheiroPerguntas );
+    this.perguntasDesafio.carregaPerguntas();
 
   }
 
@@ -48,6 +51,7 @@ public class Desafio {
     this.dataHoraInicioDesafio = makeCopy.getDataHoraInicioDesafio();
     this.temMinimoJogadores = makeCopy.getTemMinimoJogadores();
     this.estado = makeCopy.getEstado();
+    this.perguntasDesafio = makeCopy.getPerguntasDesafio();
   }
 
   // Métodos Get
@@ -190,7 +194,30 @@ public class Desafio {
     this.alcunhasJogadoresActivos.remove(nomeJogador);
   }
 
-  public TreeMap < Integer , Pergunta > getPerguntas( ) {
-    return this.perguntasDesafio.getMapPerguntas();
+  public FicheiroPerguntas getPerguntasDesafio (){
+    return this.perguntasDesafio;
+  }
+
+  public ArrayList < Pergunta > getPerguntas( ) {
+    return this.perguntasDesafio.getArrayListPerguntas();
+  }
+
+  public boolean respondePergunta(String alcunhaClienteAssociado , int numeroQuestao, int escolha) {
+    boolean resultado = false;
+    int pontuacaoAnterior = this.pontuacoesJogadores.get(alcunhaClienteAssociado);
+    if ( this.getPerguntasDesafio().getPergunta(numeroQuestao).acertou(escolha) ){
+      pontuacaoAnterior += 2;
+      resultado = true;
+    }
+    else {
+      pontuacaoAnterior -= 1;
+    }
+    this.pontuacoesJogadores.replace( alcunhaClienteAssociado, pontuacaoAnterior );
+    return resultado;
+  }
+
+  public void quitPergunta(String alcunhaClienteAssociado) {
+    // TODO Auto-generated method stub
+
   }
 }

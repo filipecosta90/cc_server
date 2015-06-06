@@ -7,13 +7,20 @@
 package server;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 
 public class CampoPdu {
+
+  /* tamanho máximo do campo = 49152 - 256 */
+  public static final int  TAMANHO_MAX_CAMPO = 48896;
 
   /* Campos dos tipos de pedidos que os clientes podem enviar aos servidores */
   public static final byte CLIENTE_NOME = (byte)1;
@@ -66,10 +73,29 @@ public class CampoPdu {
   protected byte tipoCampo;
   protected byte[] dadosCampo;
   protected int tamanhoTotal;
+  protected int tamanhoDados;
+  protected byte[] tamanhoDadosBytes;
+  protected int blocoNumero;
+  protected boolean dadosParcelados;
 
-  CampoPdu ( byte tipo ){
+
+  public CampoPdu ( byte tipo ){
     tipoCampo = tipo;
-    tamanhoTotal = 1;
+    tamanhoTotal = 3;
+    tamanhoDados=0;
+    blocoNumero=1;
+    dadosParcelados = false;
+    tamanhoDadosBytes = new byte [2];
+  }
+
+  public CampoPdu ( byte tipo , int numeroBloco , byte[] dados , int tamanhoDadosCopiar ){
+    this.tipoCampo = tipo;
+    this.tamanhoTotal = 3+tamanhoDadosCopiar;
+    this.tamanhoDados = tamanhoDadosCopiar;
+    tamanhoDadosBytes = new byte [2];
+    this.tamanhoDadosBytes = this.intPara2Bytes(tamanhoDadosCopiar);
+    this.blocoNumero= numeroBloco;
+    this.dadosParcelados = true;
   }
 
   public boolean campoDadosParciais(){
@@ -79,6 +105,10 @@ public class CampoPdu {
     else {
       return false;
     }
+  }
+
+  public int getNumeroBloco(){
+    return this.blocoNumero;
   }
 
   public void adicionaData( Date data ) {
@@ -97,8 +127,8 @@ public class CampoPdu {
     dadosCampo[4] = buffer[0];
     dadosCampo[5] = buffer[1];
     tamanhoTotal+=6;
+    tamanhoDados=6;
   }
-
 
   public int getCampoDataAno() {
     int temp0 = dadosCampo[0] & 0xFF;
@@ -134,6 +164,7 @@ public class CampoPdu {
     dadosCampo[4] = buffer[0];
     dadosCampo[5] = buffer[1];
     tamanhoTotal+=6;
+    tamanhoDados=6;
   }
 
   public int getCampoHoraHora() {
@@ -158,12 +189,14 @@ public class CampoPdu {
     dadosCampo = new byte[1];
     dadosCampo[0] = (byte) (aConverter & 0xFF);
     tamanhoTotal+=1;
+    tamanhoDados=1;
   }
 
   public void adicionaByteAZero( ) {
     dadosCampo = new byte[1];
     dadosCampo[0] = (byte) (0);
     tamanhoTotal+=1;
+    tamanhoDados=1;
   }
 
   public void adicionaInteiro2Bytes( int aConverter ) {
@@ -171,6 +204,7 @@ public class CampoPdu {
     dadosCampo[0] = (byte) (aConverter & 0xFF);
     dadosCampo[1] = (byte) ((aConverter >> 8) & 0xFF);
     tamanhoTotal+=2;
+    tamanhoDados=2;
   }
 
   public void adicionaPortaAplicacional( int aConverter ) {
@@ -178,21 +212,24 @@ public class CampoPdu {
     dadosCampo[0] = (byte) (aConverter & 0xFF);
     dadosCampo[1] = (byte) ((aConverter >> 8) & 0xFF);
     tamanhoTotal+=2;
+    tamanhoDados=2;
   }
 
   public void adicionaEnderecoIPv4( InetAddress ip ) {
     dadosCampo = new byte[4];
     dadosCampo = ip.getAddress();
     tamanhoTotal+=4;
+    tamanhoDados=4;
   }
 
   public void adicionaBytes ( byte[] bytesAInserir ) {
     int tamanhoAuxiliar = bytesAInserir.length;
     dadosCampo = Arrays.copyOf(bytesAInserir, tamanhoAuxiliar);
     tamanhoTotal+=tamanhoAuxiliar;
+    tamanhoDados=tamanhoAuxiliar;
   }
 
-  public byte[] intPara2Bytes ( int aConverter ){ 
+  public static byte[] intPara2Bytes ( int aConverter ){ 
     byte[] data = new byte[2];
     data[0] = (byte) (aConverter & 0xFF);
     data[1] = (byte) ((aConverter >> 8) & 0xFF);
@@ -213,6 +250,44 @@ public class CampoPdu {
     dadosCampo = aConverter.getBytes(StandardCharsets.UTF_8);
     int  tamanhoString = aConverter.length();
     tamanhoTotal+=tamanhoString;
+    tamanhoDados=tamanhoString;
+  }
+
+  public ArrayList <CampoPdu> adicionaFicheiro ( String pathFicheiro ){
+    ArrayList <CampoPdu> blocosFicheiroExtra = new ArrayList <CampoPdu> ();
+    File file = new File( pathFicheiro );
+    FileInputStream fis;
+    try {
+      fis = new FileInputStream(file);
+      byte[] buf = new byte[TAMANHO_MAX_CAMPO];
+      int readNum = 0;
+      readNum = fis.read(buf);
+      ByteArrayOutputStream bos_esteCampo = new ByteArrayOutputStream();
+      bos_esteCampo.write(buf, 0, readNum); 
+      dadosCampo = bos_esteCampo.toByteArray();
+      tamanhoDados=bos_esteCampo.size();
+      tamanhoTotal+=tamanhoDados;
+      int numeroBloco = 2;
+      for (; readNum != -1 && numeroBloco <= 250; numeroBloco++ ) {
+        byte[] bufferNovosCampos = new byte[TAMANHO_MAX_CAMPO];
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        readNum = fis.read(bufferNovosCampos);
+        if( readNum > 0 ){
+          bos.write(bufferNovosCampos, 0, readNum); 
+          byte[] dadosCampoNovo = bos.toByteArray();
+          CampoPdu novoCampoBloco = new CampoPdu ( this.tipoCampo , numeroBloco , dadosCampoNovo , bos.size() ); 
+          blocosFicheiroExtra.add( novoCampoBloco);
+        }
+      }
+      fis.close();
+    } catch (IOException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+    if ( blocosFicheiroExtra.size() > 0 ){
+      this.dadosParcelados = true;
+    }
+    return blocosFicheiroExtra;
   }
 
   public String getCampoString() throws UnsupportedEncodingException {
@@ -227,12 +302,15 @@ public class CampoPdu {
     }
     tamanhoTotal += outByte.size();
     dadosCampo = outByte.toByteArray();
+    tamanhoDados=outByte.size();
   }
 
   public byte[] getBytes (){
     byte aux[] = new byte[tamanhoTotal];
     aux[0]=tipoCampo;
-    int pos = 1;
+    aux[1]= (byte) (tamanhoDados & 0xFF);
+    aux[2]= (byte) ((tamanhoDados >> 8) & 0xFF);
+    int pos = 3;
     for ( byte b : dadosCampo ){
       aux[pos]= b;
       pos++;
@@ -241,23 +319,27 @@ public class CampoPdu {
   }
 
   private void paraDataDoByteArray(byte[] camposSeguintes, int posCamposSeguintes) {
-    dadosCampo = Arrays.copyOfRange(camposSeguintes, 0, 6);
+    dadosCampo = Arrays.copyOfRange(camposSeguintes, posCamposSeguintes, 6);
     tamanhoTotal += 6;
+    tamanhoDados= 6;
   }
 
   private void paraHoraDoByteArray(byte[] camposSeguintes, int posCamposSeguintes) {
-    dadosCampo = Arrays.copyOfRange(camposSeguintes, 0, 6);
+    dadosCampo = Arrays.copyOfRange(camposSeguintes, posCamposSeguintes, 6);
     tamanhoTotal += 6;
+    tamanhoDados= 6;
   }
 
   private void umByteAZeroDoByteArray(byte[] camposSeguintes, int posCamposSeguintes) {
-    dadosCampo = Arrays.copyOfRange(camposSeguintes, 0, 1);
+    dadosCampo = Arrays.copyOfRange(camposSeguintes, posCamposSeguintes, 1);
     tamanhoTotal += 1;
+    tamanhoDados= 1;
   }
 
   private void paraInteiro1ByteDoByteArray(byte[] camposSeguintes , int posCamposSeguintes) {
-    dadosCampo = Arrays.copyOfRange(camposSeguintes, 0, 1);
+    dadosCampo = Arrays.copyOfRange(camposSeguintes, posCamposSeguintes, 1);
     tamanhoTotal += 1;	
+    tamanhoDados= 1;
   }
 
   private void paraJpgDoByteArray(byte[] camposSeguintes , int posCamposSeguintes) {
@@ -266,28 +348,41 @@ public class CampoPdu {
   }
 
   private void paraInteiro2BytesDoByteArray(byte[] camposSeguintes , int posCamposSeguintes) {
-    dadosCampo = Arrays.copyOfRange(camposSeguintes, 0, 2);
+    dadosCampo = Arrays.copyOfRange(camposSeguintes, posCamposSeguintes, 2);
     tamanhoTotal += 2;
+    tamanhoDados= 2;
   }
 
-  private void paraAudioDoByteArray(byte[] camposSeguintes,
-      int posCamposSeguintes) {
+  private void paraAudioDoByteArray(byte[] camposSeguintes, int posCamposSeguintes) {
     // TODO Auto-generated method stub
 
   }
 
   private void paraIPv4DoByteArray(byte[] camposSeguintes , int posCamposSeguintes) {
-    dadosCampo = Arrays.copyOfRange(camposSeguintes, 0, 4);
+    dadosCampo = Arrays.copyOfRange(camposSeguintes, posCamposSeguintes, 4);
     tamanhoTotal += 4;
+    tamanhoDados= 4;
   }
 
   private void paraPortaAplicacionalDoByteArray(byte[] camposSeguintes , int posCamposSeguintes) {
-    dadosCampo = Arrays.copyOfRange(camposSeguintes, 0, 2);
+    dadosCampo = Arrays.copyOfRange(camposSeguintes, posCamposSeguintes, 2);
     tamanhoTotal += 2;
+    tamanhoDados= 2;
   }
 
-  public void parseDados(byte[] camposSeguintes, int posCamposSeguintes) {		
-    switch( tipoCampo ){
+  public void parseTamanhoCampo(byte[] b , int posCamposSeguintes) {
+    int temp0 = b[posCamposSeguintes] & 0xFF;
+    int temp1 = dadosCampo[posCamposSeguintes+1] & 0xFF;
+    this.tamanhoDados =  ((temp0 << 8) + temp1);
+    this.tamanhoDadosBytes[0] = b[posCamposSeguintes];
+    this.tamanhoDadosBytes[1] = b[posCamposSeguintes+1];
+  }
+
+  public void parseDados(byte[] camposSeguintes, int posCamposSeguintes) {	
+    this.parseTamanhoCampo( camposSeguintes, posCamposSeguintes);
+    posCamposSeguintes+=2;
+
+    switch( tipoCampo ){ 
 
       /* ************************************************************************ */
       /* Campos dos tipos de pedidos que os clientes podem enviar aos servidores  */
@@ -447,8 +542,10 @@ public class CampoPdu {
     }
   }
 
+
+
   public int getTamanhoDados() {
-    return tamanhoTotal - 1 ;
+    return tamanhoDados;
   }
 
   @Override

@@ -96,6 +96,7 @@ public class BasePdu {
     esperaDadosNovoPacote = false;
     numeroCamposSeguintesInt = 0;
     posPopCamposSeguintes = 0;
+    this.ArrayListCamposSeguintes = new ArrayList <CampoPdu>();
   }
 
   public BasePdu ( byte tipo , byte[] label ) { 
@@ -113,11 +114,47 @@ public class BasePdu {
     esperaDadosNovoPacote = false;
     numeroCamposSeguintesInt = 0;
     posPopCamposSeguintes = 0;
+    this.ArrayListCamposSeguintes = new ArrayList <CampoPdu>();
   }
 
+  public BasePdu ( byte[] versaoC, byte[] segurancaC , byte[] labelC , byte tipoC[] ) { 
+    this.versao = new byte[1];
+    this.versao = versaoC;
+    this.seguranca = new byte[1];
+    this.seguranca = segurancaC;
+    this.label = new byte[2];
+    this.label[0] = labelC[0];
+    this.label[1] = labelC[1];
+    this.tipo = new byte[1];
+    this.tipo = tipoC;
+    numeroCamposSeguintes =  new byte[1];
+    tamanhoBytesCamposSeguintes = new byte[2];
+    tamanhoCamposSeguintes = 0;
+    tamanhoPdu = 8;
+    esperaDadosNovoPacote = false;
+    numeroCamposSeguintesInt = 0;
+    posPopCamposSeguintes = 0;
+    this.ArrayListCamposSeguintes = new ArrayList <CampoPdu>();
+  }
+
+  private byte[] getVersao() {
+    return this.versao;
+  }
+
+  private byte[] getSeguranca() {
+    return this.seguranca;
+  }
+
+  private byte[] getLabel() {
+    return this.label;
+  }
+
+  public byte[] getTipo() {
+    return this.tipo;
+  }
 
   public synchronized void mergePDU ( BasePdu toMerge ){
-    this.tamanhoPdu = toMerge.getTamanhoCamposSeguintesPdu();
+    this.tamanhoPdu += toMerge.getTamanhoCamposSeguintesPdu();
     for ( CampoPdu toMergeCampo : toMerge.getArrayListCamposSeguintes() ){
       this.ArrayListCamposSeguintes.add( toMergeCampo);
     }
@@ -128,7 +165,6 @@ public class BasePdu {
     else {
       this.esperaDadosNovoPacote = false;
     }
-
   }
 
   public int getNumeroCamposSeguintesInt() {
@@ -142,7 +178,7 @@ public class BasePdu {
   public ArrayList < CampoPdu > getArrayListCamposSeguintes(){
     ArrayList < CampoPdu > novoArray = new ArrayList <CampoPdu>();
     for ( CampoPdu copyCampo : ArrayListCamposSeguintes ){
-      novoArray.add( copyCampo);
+      novoArray.add( copyCampo );
     }
     return novoArray;
   }
@@ -166,6 +202,7 @@ public class BasePdu {
       Byte Decimal = new Byte (tamanhoBytesCamposSeguintes[0]);
       Byte Unit = new Byte (tamanhoBytesCamposSeguintes[1]);
       int tamanhoCamposSeguintes = Decimal.intValue() * 10 + Unit.intValue();
+      this.tamanhoPdu += tamanhoCamposSeguintes;
       if ( tamanhoCamposSeguintes > 0 ) {
         camposSeguintes = new byte[tamanhoCamposSeguintes];
         inputByteArray.read( camposSeguintes , 0 ,  tamanhoCamposSeguintes );
@@ -210,15 +247,19 @@ public class BasePdu {
       novoOut.write(t.getBytes());
     }
     numeroCamposSeguintesInt = ArrayListCamposSeguintes.size();
+    this.numeroCamposSeguintes = CampoPdu.intPara2Bytes ( numeroCamposSeguintesInt );
     tamanhoCamposSeguintes = novoOut.size();
+    this.tamanhoBytesCamposSeguintes = CampoPdu.intPara2Bytes ( tamanhoCamposSeguintes );
     camposSeguintes = novoOut.toByteArray();
-    tamanhoPdu += tamanhoCamposSeguintes;
-
+    tamanhoPdu = 8 + tamanhoCamposSeguintes;
     ByteArrayOutputStream outBytes = new ByteArrayOutputStream();
+    outBytes.write( this.versao );
+    outBytes.write( this.seguranca );
+    outBytes.write( this.label );
     outBytes.write( this.tipo );
+    outBytes.write( this.tamanhoBytesCamposSeguintes );
     outBytes.write( this.camposSeguintes );
     rawData = outBytes.toByteArray();
-
   }
 
   /* Métodos auxiliares */
@@ -235,10 +276,12 @@ public class BasePdu {
         this.esperaDadosNovoPacote = true;
       }
       posCamposSeguintes++;
+      campo.parseTamanhoCampo( camposSeguintes , posCamposSeguintes) ;
+      posCamposSeguintes+=2;
       campo.parseDados ( camposSeguintes , posCamposSeguintes );
       tamanhoCampoLido = campo.getTamanhoDados();
       posCamposSeguintes += tamanhoCampoLido;
-      ArrayListCamposSeguintes.add( campo );
+      this.ArrayListCamposSeguintes.add( campo );
     }
     numeroCamposSeguintesInt = ArrayListCamposSeguintes.size();
   }
@@ -253,16 +296,8 @@ public class BasePdu {
     }
   }
 
-  private byte[] getLabel() {
-    return this.label;
-  }
-
   public boolean pduCompleto() {
     return esperaDadosNovoPacote;
-  }
-
-  public byte getTipo() {
-    return this.tipo[0];
   }
 
   public int getTamanhoTotalPdu() {
@@ -272,24 +307,29 @@ public class BasePdu {
   public void replyOK() throws IOException {
     CampoPdu campoOk = new CampoPdu ( SERVIDOR_OK );
     campoOk.adicionaByteAZero();
-    this.ArrayListCamposSeguintes.add(campoOk);
+    this.adicionaCampoPdu(campoOk);
     this.preparaEnvio();
+  }
+
+  private void adicionaCampoPdu(CampoPdu campoInserir) {
+    this.tamanhoCamposSeguintes += campoInserir.tamanhoTotal;
+    this.ArrayListCamposSeguintes.add(campoInserir);
   }
 
   public void replyErro( String descricaoErro ) throws IOException {
     CampoPdu campoErro = new CampoPdu ( SERVIDOR_ERRO );
     campoErro.adicionaString( descricaoErro );
-    this.ArrayListCamposSeguintes.add(campoErro);
+    this.adicionaCampoPdu(campoErro);
     this.preparaEnvio();
   }
 
   public void replyAlcunhaScore( String alcunhaCliente , int scoreCliente ) throws IOException {
     CampoPdu campoAlcunha = new CampoPdu ( SERVIDOR_ALCUNHA );
     campoAlcunha.adicionaString( alcunhaCliente );
-    this.ArrayListCamposSeguintes.add(campoAlcunha);
+    this.adicionaCampoPdu(campoAlcunha);
     CampoPdu campoPontos = new CampoPdu ( SERVIDOR_PONTOS );
     campoPontos.adicionaInteiro1Byte ( scoreCliente );
-    this.ArrayListCamposSeguintes.add(campoPontos);
+    this.adicionaCampoPdu(campoPontos);
     this.preparaEnvio();
   }
 
@@ -313,13 +353,105 @@ public class BasePdu {
   public void replyDesafioDataHora(String nomeDesafio, Date dataHoraInicioDesafio) {
     CampoPdu campoNomeDesafio = new CampoPdu ( SERVIDOR_NOME_DESAFIO );
     campoNomeDesafio.adicionaString( nomeDesafio );
-    this.ArrayListCamposSeguintes.add(campoNomeDesafio);
+    this.adicionaCampoPdu(campoNomeDesafio);
     CampoPdu campoDataDesafio = new CampoPdu ( SERVIDOR_DATA_DESAFIO );
     campoDataDesafio.adicionaData( dataHoraInicioDesafio );
-    this.ArrayListCamposSeguintes.add(campoDataDesafio);
+    this.adicionaCampoPdu(campoDataDesafio);
     CampoPdu campoHoraDesafio = new CampoPdu ( SERVIDOR_HORA_DESAFIO );
     campoHoraDesafio.adicionaHora( dataHoraInicioDesafio );
-    this.ArrayListCamposSeguintes.add(campoHoraDesafio);
+    this.adicionaCampoPdu(campoHoraDesafio);
+  }
+
+  public void replyPergunta(String nomeDesafio, int numeroQuestao , Pergunta perguntaEnviar) {
+    CampoPdu campoNomeDesafio = new CampoPdu ( SERVIDOR_NOME_DESAFIO );
+    campoNomeDesafio.adicionaString( nomeDesafio );
+    this.adicionaCampoPdu(campoNomeDesafio);
+    CampoPdu campoNumeroQuestao = new CampoPdu ( SERVIDOR_NUM_QUESTAO );
+    campoNumeroQuestao.adicionaInteiro1Byte( numeroQuestao );
+    this.adicionaCampoPdu(campoNumeroQuestao);
+    CampoPdu campoTextoQuestao = new CampoPdu ( SERVIDOR_TXT_QUESTAO );
+    campoTextoQuestao.adicionaString( perguntaEnviar.get_pergunta() );
+    this.adicionaCampoPdu(campoTextoQuestao);
+    CampoPdu campoOpcao1 = new CampoPdu ( SERVIDOR_NUM_RESPOSTA );
+    campoOpcao1.adicionaInteiro1Byte(1);
+    this.adicionaCampoPdu(campoOpcao1);
+    CampoPdu campoTextoOpcao1 = new CampoPdu ( SERVIDOR_TXT_RESPOSTA );
+    campoTextoOpcao1.adicionaString(perguntaEnviar.getTextoOpcao(0));
+    this.adicionaCampoPdu(campoTextoOpcao1);
+    CampoPdu campoOpcao2 = new CampoPdu ( SERVIDOR_NUM_RESPOSTA );
+    campoOpcao2.adicionaInteiro1Byte(2);
+    this.adicionaCampoPdu(campoOpcao2);
+    CampoPdu campoTextoOpcao2 = new CampoPdu ( SERVIDOR_TXT_RESPOSTA );
+    campoTextoOpcao2.adicionaString(perguntaEnviar.getTextoOpcao(1));
+    this.adicionaCampoPdu(campoTextoOpcao2);
+    CampoPdu campoOpcao3 = new CampoPdu ( SERVIDOR_NUM_RESPOSTA );
+    campoOpcao3.adicionaInteiro1Byte(3);
+    this.adicionaCampoPdu(campoOpcao3);
+    CampoPdu campoTextoOpcao3 = new CampoPdu ( SERVIDOR_TXT_RESPOSTA );
+    campoTextoOpcao3.adicionaString(perguntaEnviar.getTextoOpcao(2));
+    this.adicionaCampoPdu(campoTextoOpcao3);
+    CampoPdu campoCerta = new CampoPdu ( SERVIDOR_RESPOSTA_CERTA );
+    campoCerta.adicionaInteiro1Byte(perguntaEnviar.getCerta());
+    this.adicionaCampoPdu(campoCerta);
+    CampoPdu campoImagem = new CampoPdu ( SERVIDOR_IMAGEM );
+    ArrayList <CampoPdu > blocosExtraImagem = new  ArrayList <CampoPdu > ();
+    blocosExtraImagem = campoImagem.adicionaFicheiro( perguntaEnviar.get_Imagem() );
+    this.adicionaCampoPdu(campoImagem);
+    for ( CampoPdu blocoImagem : blocosExtraImagem ){
+      CampoPdu campoNumeroBlocoImagemExtra = new CampoPdu ( SERVIDOR_NUM_BLOCO );
+      campoNumeroBlocoImagemExtra.adicionaInteiro1Byte( blocoImagem.getNumeroBloco());
+      this.adicionaCampoPdu(campoNumeroBlocoImagemExtra);
+      this.adicionaCampoPdu(blocoImagem);
+    }
+    CampoPdu campoNumeroBlocoMusica = new CampoPdu ( SERVIDOR_NUM_BLOCO );
+    campoNumeroBlocoMusica.adicionaInteiro1Byte(1);
+    this.adicionaCampoPdu(campoNumeroBlocoMusica);
+    CampoPdu campoBlocoMusica = new CampoPdu ( SERVIDOR_AUDIO );
+    ArrayList <CampoPdu > blocosExtraAudio = new  ArrayList <CampoPdu > ();
+    blocosExtraAudio = campoBlocoMusica.adicionaFicheiro( perguntaEnviar.get_Musica());
+    this.adicionaCampoPdu(campoBlocoMusica);
+    for ( CampoPdu blocoAudio : blocosExtraAudio ){
+      CampoPdu campoNumeroBlocoMusicaExtra = new CampoPdu ( SERVIDOR_NUM_BLOCO );
+      campoNumeroBlocoMusicaExtra.adicionaInteiro1Byte( blocoAudio.getNumeroBloco());
+      this.adicionaCampoPdu(campoNumeroBlocoMusicaExtra);
+      this.adicionaCampoPdu(blocoAudio);
+    }
+  }
+
+  public void replyRespostaQuestao(String nomeDesafio, int numeroQuestao, int certaErrada , int pontosAmealhados ) {
+    CampoPdu campoNomeDesafio = new CampoPdu ( SERVIDOR_NOME_DESAFIO );
+    campoNomeDesafio.adicionaString( nomeDesafio );
+    this.adicionaCampoPdu(campoNomeDesafio);
+    CampoPdu campoNumeroQuestao = new CampoPdu ( SERVIDOR_NUM_QUESTAO );
+    campoNumeroQuestao.adicionaInteiro1Byte( numeroQuestao );
+    this.adicionaCampoPdu(campoNumeroQuestao);
+    CampoPdu campoCertaErrada = new CampoPdu ( SERVIDOR_RESPOSTA_CERTA );
+    campoCertaErrada.adicionaInteiro1Byte( certaErrada );
+    this.adicionaCampoPdu(campoCertaErrada);
+    CampoPdu campoPontos = new CampoPdu ( SERVIDOR_PONTOS );
+    campoPontos.adicionaInteiro1Byte( pontosAmealhados );
+    this.adicionaCampoPdu(campoPontos);
+  }
+
+  public ArrayList<BasePdu> split(int tamanhoMaxPdu) {
+    ArrayList<BasePdu> dividido = new ArrayList <BasePdu> ();
+    int campoNumero = 0;
+    CampoPdu continuaNoutroPdu = new CampoPdu ( SERVIDOR_CONTINUA );
+    continuaNoutroPdu.adicionaByteAZero();
+    while ( campoNumero < this.ArrayListCamposSeguintes.size() ){
+      BasePdu novoPdu = new BasePdu ( this.getVersao() , this.getSeguranca() , this.getLabel() , this.getTipo() ) ;
+      while ( ( novoPdu.tamanhoPdu + this.ArrayListCamposSeguintes.get(campoNumero).tamanhoTotal ) <= ( tamanhoMaxPdu - continuaNoutroPdu.tamanhoTotal )){
+        CampoPdu campoActual = this.ArrayListCamposSeguintes.get(campoNumero);
+        novoPdu.adicionaCampoPdu(campoActual);
+        campoNumero++;
+      }
+      if ( campoNumero < this.ArrayListCamposSeguintes.size() ){
+        novoPdu.adicionaCampoPdu(continuaNoutroPdu);
+        novoPdu.esperaDadosNovoPacote = true;
+      }
+      dividido.add(novoPdu);
+    }
+    return dividido;
   }
 
 }

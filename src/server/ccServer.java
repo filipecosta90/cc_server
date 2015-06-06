@@ -8,7 +8,7 @@ package server;
 
 public class ccServer 
 {
-  public static Server localServer = new Server ( 3030 , 7070 );
+  public static Server localServer = new Server ( 3030 , 7070 , "data/listaDesafios.txt" );
 
   public static void main( String[] args ) throws Exception 
   {

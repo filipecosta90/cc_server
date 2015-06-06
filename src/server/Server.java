@@ -6,21 +6,24 @@
 
 package server;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Scanner;
 import java.util.TreeMap;
-
-
+import java.util.TreeSet;
 
 public class Server implements Runnable {
 
-	public enum EstadoServidor { INICIANDO_SERVIDOR , SERVIDOR_ACTIVO , PARANDO_SERVIDOR , SERVIDOR_PARADO , ERRO_SERVIDOR }
+  public enum EstadoServidor { INICIANDO_SERVIDOR , SERVIDOR_ACTIVO , PARANDO_SERVIDOR , SERVIDOR_PARADO , ERRO_SERVIDOR }
 
   private int listeningUDPPort;
   private int listeningTCPPort;
@@ -32,12 +35,14 @@ public class Server implements Runnable {
   private HashMap< String , DesafioManager > desafiosEmJogo;
   private HashMap< String , DesafioManager > desafiosTerminados;
   private HashMap< String , DesafioManager > desafiosEliminados;
+  private String ficheiroMainDesafios;
+  private ArrayList < String > nomesFicheirosDesafios;
 
   public boolean mainServer;
 
   // Construtores
 
-  public Server ( int udpPort, int tcpPort ){
+  public Server ( int udpPort, int tcpPort , String ficheiroMainDesafiosPath ){
     this.listeningUDPPort = udpPort;
     this.listeningTCPPort = tcpPort;
     this.mapClientes = new HashMap< String,Cliente > ();
@@ -47,7 +52,21 @@ public class Server implements Runnable {
     this.desafiosEmJogo = new HashMap< String , DesafioManager > ();
     this.desafiosTerminados = new HashMap< String , DesafioManager > ();
     this.desafiosEliminados = new HashMap< String , DesafioManager > ();
-
+    this.ficheiroMainDesafios= ficheiroMainDesafiosPath;
+    this.nomesFicheirosDesafios = new ArrayList < String > ();
+    File file = new File(ficheiroMainDesafios);
+    Scanner input;
+    try {
+      input = new Scanner(file);
+      while(input.hasNext()) {
+        String nomeFicheiroActual = input.next();
+        this.nomesFicheirosDesafios.add( nomeFicheiroActual );
+      }
+      input.close();
+    } catch (FileNotFoundException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
     mainServer=true;
   }
 
@@ -73,26 +92,26 @@ public class Server implements Runnable {
     return boundTo;
   }
   public Coneccao getConeccaoCliente ( String nomeCliente ){
-	    
-	  Coneccao coneccaoRetornar = null;
-	  for ( Coneccao coneccaoPointer : this.coneccoesActivas.values() ){
-		 if ( coneccaoPointer.getAlcunhaClienteAssociado().equals(nomeCliente)){
-			 coneccaoRetornar = coneccaoPointer;
-		 }
-	  }
-	   return coneccaoRetornar; 
-	  }
-  
+
+    Coneccao coneccaoRetornar = null;
+    for ( Coneccao coneccaoPointer : this.coneccoesActivas.values() ){
+      if ( coneccaoPointer.getAlcunhaClienteAssociado().equals(nomeCliente)){
+        coneccaoRetornar = coneccaoPointer;
+      }
+    }
+    return coneccaoRetornar; 
+  }
+
   public void run() {
     byte[] udpReceber;
     DatagramSocket udpSocket;
     DatagramPacket udpDataPacket;
 
     try {
-      udpReceber = new byte[ 256 ];
+      udpReceber = new byte[ Coneccao.TAMANHO_MAX_PDU ];
       udpSocket = new DatagramSocket( listeningUDPPort );
       udpDataPacket = new DatagramPacket( udpReceber , udpReceber.length );
-      System.out.println( "\t UDP Listener started at port " + listeningUDPPort );
+      System.out.println( "\t Iniciado o listner UDP na porta: " + listeningUDPPort );
 
       while ( true ) {
         try {
@@ -146,11 +165,25 @@ public class Server implements Runnable {
     return resultado;
   }
 
+  public Coneccao getConeccaoAssociada ( String alcunha ){
+    Coneccao coneccaoAssociada = null;
+    for ( Coneccao coneccaoActual : this.coneccoesActivas.values() ){
+      if ( coneccaoActual.getAlcunhaClienteAssociado().equals(alcunha)){
+        coneccaoAssociada = coneccaoActual;
+      }
+    }
+    return coneccaoAssociada;
+  }
+
   public boolean logoutCliente ( String alcunha ) {
     boolean resultado = false;
     if ( this.mapClientes.containsKey( alcunha ) ){
       Cliente clientPointer = mapClientes.get(alcunha);
       if (clientPointer.checkAndSetLoggedOut()){
+        Coneccao coneccaoPointer = getConeccaoAssociada ( alcunha);
+        coneccaoPointer.terminaConeccao();
+        this.coneccoesActivas.remove(coneccaoPointer);
+        this.historicoConeccoes.put(coneccaoPointer.getKey() , coneccaoPointer);
         resultado = true;
       }
     }
@@ -177,8 +210,12 @@ public class Server implements Runnable {
     }
     else {
       Date dataCriacao = new Date();
-      Desafio novoDesafio = new Desafio ( nomeDesafio , alcunhaClienteAssociado , dataCriacao , dataHoraDesafio );
-      new Thread(new DesafioManager ( this , novoDesafio )).start(); 
+      Collections.shuffle(nomesFicheirosDesafios);
+      String nomeFicheiroPerguntasRandom = nomesFicheirosDesafios.get(0);
+      Desafio novoDesafio = new Desafio ( nomeDesafio , alcunhaClienteAssociado , dataCriacao , dataHoraDesafio , nomeFicheiroPerguntasRandom );
+      DesafioManager desafioM = new DesafioManager ( this , novoDesafio );
+      this.desafiosCriadosEspera.put(nomeDesafio, desafioM);
+      new Thread(desafioM).start(); 
       resultado = true;
     }
     return resultado;
@@ -204,80 +241,90 @@ public class Server implements Runnable {
     Desafio desafioRetornar = null;
     boolean alreadyFound = false;
     for( DesafioManager desafioManagerPointer : this.desafiosTerminados.values() ){
-    	if ( desafioManagerPointer.getDesafio().clienteParticipa( alcunhaClienteAssociado ) && alreadyFound == false){
-    		desafioRetornar = desafioManagerPointer.getDesafio();
-    		alreadyFound = true;
-    	}
+      if ( desafioManagerPointer.getDesafio().clienteParticipa( alcunhaClienteAssociado ) && alreadyFound == false){
+        desafioRetornar = desafioManagerPointer.getDesafio();
+        alreadyFound = true;
+      }
     }
     return desafioRetornar;
   }
 
   public TreeMap<String, Integer> getPontuacoesDesafioTerminado(String nomeDesafio) {
-	  TreeMap<String, Integer> scoreBoard = null;
-	  DesafioManager desafioManagerPointer = this.desafiosTerminados.get(nomeDesafio);
-	  if( desafioManagerPointer != null ){
-		  scoreBoard = desafioManagerPointer.getDesafio().getPontuacoesJogadores();
-	  }
-	  return scoreBoard;
+    TreeMap<String, Integer> scoreBoard = null;
+    DesafioManager desafioManagerPointer = this.desafiosTerminados.get(nomeDesafio);
+    if( desafioManagerPointer != null ){
+      scoreBoard = desafioManagerPointer.getDesafio().getPontuacoesJogadores();
+    }
+    return scoreBoard;
   }
 
   public boolean ExisteDesafioEsperaEPodeAceitar(String nomeDesafio , String alcunhaClienteAssociado) {
     boolean resultado = false;
     if ( this.desafiosCriadosEspera.containsKey(nomeDesafio)){
-    	DesafioManager desafioManagerPointer = this.desafiosCriadosEspera.get(nomeDesafio);
-    	if ( desafioManagerPointer.getDesafio().podeAdicionarJogador( alcunhaClienteAssociado )){
-    		resultado = true;
-    	}
+      DesafioManager desafioManagerPointer = this.desafiosCriadosEspera.get(nomeDesafio);
+      if ( desafioManagerPointer.getDesafio().podeAdicionarJogador( alcunhaClienteAssociado )){
+        resultado = true;
+      }
     }
     return resultado;
   }
 
   public boolean AceitaDesafio(String nomeDesafio, String alcunhaClienteAssociar ) {
-	  boolean resultado = false;
-	  DesafioManager desafioManagerPointer = this.desafiosCriadosEspera.get(nomeDesafio);
-	  if( desafioManagerPointer != null ){
-		  resultado = desafioManagerPointer.aceitaDesafio( alcunhaClienteAssociar );
-	  }
+    boolean resultado = false;
+    DesafioManager desafioManagerPointer = this.desafiosCriadosEspera.get(nomeDesafio);
+    if( desafioManagerPointer != null ){
+      resultado = desafioManagerPointer.aceitaDesafio( alcunhaClienteAssociar );
+    }
     return resultado;
   }
 
   public boolean DesafioPertenceCliente(String nomeDesafio, String alcunhaClienteAssociado) {
-boolean resultado = false;
-DesafioManager desafioManagerPointer = this.desafiosCriadosEspera.get(nomeDesafio);
-if( desafioManagerPointer != null ){
-	  if ( desafioManagerPointer.getDesafio().getCriadoPor().equals(alcunhaClienteAssociado)){
-		  resultado = true;
-	  }
-}
-return resultado;
+    boolean resultado = false;
+    DesafioManager desafioManagerPointer = this.desafiosCriadosEspera.get(nomeDesafio);
+    if( desafioManagerPointer != null ){
+      if ( desafioManagerPointer.getDesafio().getCriadoPor().equals(alcunhaClienteAssociado)){
+        resultado = true;
+      }
+    }
+    return resultado;
   }
 
   public boolean EliminaDesafio(String nomeDesafio, String alcunhaClienteAssociado) {
-	  boolean resultado = false;
-	  DesafioManager desafioManagerPointer = this.desafiosCriadosEspera.get(nomeDesafio);
-	  if( desafioManagerPointer != null ){
-	  	  if ( desafioManagerPointer.getDesafio().getCriadoPor().equals(alcunhaClienteAssociado)){
-	  		  desafioManagerPointer.getDesafio().elimina();
-	  		  this.desafiosCriadosEspera.remove(nomeDesafio);
-	  		  this.desafiosEliminados.put( nomeDesafio , desafioManagerPointer);
-	  		  resultado = true;
-	  	  }
-	  }
-	  return resultado;
-	    }
-
-  public Desafio getDesafioEliminado(String nomeDesafio) {
-	  DesafioManager desafioManagerPointer = this.desafiosCriadosEspera.get(nomeDesafio);
-	  Desafio desafioRetornar = null;
-	  if( desafioManagerPointer != null ){
-	  	   		desafioRetornar = desafioManagerPointer.getDesafio();
-	  	  }  
-	  return desafioRetornar;
+    boolean resultado = false;
+    DesafioManager desafioManagerPointer = this.desafiosCriadosEspera.get(nomeDesafio);
+    if( desafioManagerPointer != null ){
+      if ( desafioManagerPointer.getDesafio().getCriadoPor().equals(alcunhaClienteAssociado)){
+        desafioManagerPointer.getDesafio().elimina();
+        this.desafiosCriadosEspera.remove(nomeDesafio);
+        this.desafiosEliminados.put( nomeDesafio , desafioManagerPointer);
+        resultado = true;
+      }
+    }
+    return resultado;
   }
 
-public void TerminaDesafio(String nomeDesafio, String criadoPor) {
-	// TODO Auto-generated method stub
-	
-}
+  public Desafio getDesafioEliminado(String nomeDesafio) {
+    DesafioManager desafioManagerPointer = this.desafiosCriadosEspera.get(nomeDesafio);
+    Desafio desafioRetornar = null;
+    if( desafioManagerPointer != null ){
+      desafioRetornar = desafioManagerPointer.getDesafio();
+    }  
+    return desafioRetornar;
+  }
+
+  public void TerminaDesafio(String nomeDesafio, String criadoPor) {
+    // TODO Auto-generated method stub
+
+  }
+
+  public Desafio getDesafioDecorrerAssociadoCliente(String alcunhaClienteAssociado) {
+    Desafio desafioPointer = null;
+    for ( DesafioManager desafioMPointer : this.desafiosEmJogo.values() ){
+      if ( desafioMPointer.getDesafio().clienteParticipa(alcunhaClienteAssociado)){
+        desafioPointer = desafioMPointer.getDesafio();
+      }
+    }
+    return desafioPointer;
+  }
 
 }

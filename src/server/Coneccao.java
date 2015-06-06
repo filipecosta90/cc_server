@@ -33,7 +33,7 @@ public class Coneccao {
   public static final byte RETRANSMIT = 12;
   public static final byte LIST_RANKING = 13;
   public static final byte INFO = 14;
-  public static final int TAMANHO_MAX_PDU = 256;
+  public static final int TAMANHO_MAX_PDU = 49152;
 
   /* Campos dos tipos de pedidos que os clientes podem enviar aos servidores */
   public static final byte CLIENTE_NOME = (byte)1;
@@ -165,13 +165,22 @@ public class Coneccao {
   }
 
   private void enviaPacote( BasePdu replyPdu ) throws IOException {
-    DatagramPacket pacoteEnvio = new DatagramPacket ( replyPdu.getBytesEnvio() , replyPdu.getTamanhoTotalPdu () , this.enderecoLigacao , this.portaRemota );
-    boundedSocket.send( pacoteEnvio );
+    ArrayList < BasePdu > pdusEnviar = new ArrayList < BasePdu >();
+    if ( replyPdu.getTamanhoTotalPdu() > TAMANHO_MAX_PDU ){
+      pdusEnviar = replyPdu.split( TAMANHO_MAX_PDU );
+    }
+    else {
+      pdusEnviar.add(replyPdu);
+    }
+    for ( BasePdu pduActual : pdusEnviar ){
+      DatagramPacket pacoteEnvio = new DatagramPacket ( pduActual.getBytesEnvio() , pduActual.getTamanhoTotalPdu () , this.enderecoLigacao , this.portaRemota );
+      boundedSocket.send( pacoteEnvio );
+    }
   }
 
   private void resolvePacote(BasePdu pduAResolver) throws IOException {
     BasePdu replyPdu = new BasePdu ( REPLY , pduAResolver.label ); 
-    switch( pduAResolver.getTipo() ){
+    switch( (pduAResolver.getTipo())[0] ){
       case HELLO :
         {
           replyPdu.replyOK();
@@ -272,6 +281,21 @@ public class Coneccao {
         }
       case QUIT :
         {
+          boolean ok = false;
+          String descricaoErro = new String();
+          Desafio desafioPointer = this.localServerPointer.getDesafioDecorrerAssociadoCliente( this.alcunhaClienteAssociado );
+          if(desafioPointer != null){
+            desafioPointer.quitPergunta(this.alcunhaClienteAssociado);
+            replyPdu.replyOK();
+            ok = true;
+          }
+          else{
+            descricaoErro = "Nao existe um desafio activo para este cliente!";
+          }
+          if ( !ok ) {
+            replyPdu.replyErro( descricaoErro );
+          }
+          enviaPacote(replyPdu);
           break;
         }
       case END :
@@ -419,6 +443,38 @@ public class Coneccao {
         }
       case ANSWER :
         {
+          boolean ok = false;
+          String descricaoErro = new String();
+          if (  pduAResolver.contemCampo( CLIENTE_NOME_DESAFIO ) && pduAResolver.contemCampo( CLIENTE_NUM_QUESTAO )  && pduAResolver.contemCampo( CLIENTE_ESCOLHA )){
+            CampoPdu campoEscolha = pduAResolver.popCampo();
+            CampoPdu campoNomeDesafio = pduAResolver.popCampo();
+            CampoPdu campoQuestao = pduAResolver.popCampo();
+            int escolha = campoEscolha.getCampoInt1Byte();
+            String nomeDesafio = campoNomeDesafio.getCampoString();
+            int numeroQuestao = campoQuestao.getCampoInt1Byte();
+            Desafio desafioPointer = this.localServerPointer.getDesafioDecorrerAssociadoCliente( this.alcunhaClienteAssociado );
+            if(desafioPointer != null){
+              boolean resultadoResposta = false;
+              resultadoResposta = desafioPointer.respondePergunta( this.alcunhaClienteAssociado , numeroQuestao , escolha );
+              if ( resultadoResposta = true ){
+                replyPdu.replyRespostaQuestao ( nomeDesafio , numeroQuestao , 1 , 2 );
+              }
+              else {
+                replyPdu.replyRespostaQuestao ( nomeDesafio , numeroQuestao , 0 , -1 );
+              }
+              ok = true;
+            }
+            else{
+              descricaoErro = "Nao existe um desafio activo para este cliente!";
+            }
+          }
+          else {
+            descricaoErro = "O PDU não contém os dados necessários!";
+          }
+          if ( !ok ) {
+            replyPdu.replyErro( descricaoErro );
+          }
+          enviaPacote(replyPdu);
           break;
         }
       case RETRANSMIT :
@@ -447,7 +503,6 @@ public class Coneccao {
 
   private void UnboundAlcunhaCliente() {
     this.anonima = true;
-    this.alcunhaClienteAssociado = new String();
   }
 
   public boolean mesmoEnderecoPortaSocket(Coneccao coneccaoNoDesafio) {
@@ -481,9 +536,35 @@ public class Coneccao {
     this.enderecoLigacao = enderecoRemoto;
   }
 
-  public void enviaPergunta(Pergunta perguntaActual) {
-    // TODO Auto-generated method stub
+  public void enviaPergunta( String nomeDesafio , int numeroQuestao , Pergunta perguntaActual) {
+
+    byte[] labelNumero = new byte[2];
+    labelNumero[0] = (byte) (this.numeroPdu & 0xFF);
+    labelNumero[1] = (byte) ((this.numeroPdu >> 8) & 0xFF);
+
+    BasePdu replyPdu = new BasePdu ( REPLY , labelNumero  ); 
+    replyPdu.replyPergunta( nomeDesafio, numeroQuestao , perguntaActual );
+    try {
+      enviaPacote(replyPdu);
+    } catch (IOException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+
     this.numeroPdu++;
+  }
+
+  public void terminaConeccao() {
+    this.timeStampFim = new Date();
+    this.boundedSocket.close();
+  }
+
+  public String getKey() {
+    String chave = new String ();
+    chave += this.getEnderecoRemoto();
+    chave += ":";
+    chave += this.getPortaRemota();
+    return chave;
   }
 
 }

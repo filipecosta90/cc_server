@@ -1,3 +1,9 @@
+/*
+ * @author Filipe Oliveira, Ricardo Agra, Sérgio Caldas
+ * @author a57816(at)alunos.uminho.pt , a47069(at)alunos.uminho.pt , a57779(at)alunos.uminho.pt
+ * @version 0.1
+ */
+
 package server;
 
 import java.util.HashMap;
@@ -8,12 +14,14 @@ public class DesafioManager implements Runnable {
 
   private Server localServerPointer;
   private Desafio desafioAGerir;
+  int perguntaEnviar;
   HashMap < String , Coneccao > mapConeccoes;
 
   DesafioManager ( Server localServer , Desafio desafio ){
     this.localServerPointer = localServer;
     this.desafioAGerir = desafio;
     mapConeccoes = new HashMap < String , Coneccao >();
+    perguntaEnviar = 1;
   }
 
   public String getNomeDesafioGerir() {
@@ -47,14 +55,17 @@ public class DesafioManager implements Runnable {
       desafioAGerir.updateEstadoEsperaIniciaCancela();
     }
     while( desafioAGerir.estado == EstadoDesafio.EM_JOGO ){
-      for ( Pergunta perguntaActual : desafioAGerir.getPerguntas().values() ){
+      for ( Pergunta perguntaActual : desafioAGerir.getPerguntas() ){
         this.updateConeccoes();
-        this.enviaPergunta( perguntaActual);
-        try {
-          Thread.sleep( 60000 );
-        } catch (InterruptedException e) {
-          // TODO Auto-generated catch block
-          e.printStackTrace();
+        if ( perguntaEnviar <= 10 ){
+          this.enviaPergunta( this.getNomeDesafioGerir(), perguntaEnviar,  perguntaActual);
+          perguntaEnviar++;
+          try {
+            Thread.sleep( 60000 );
+          } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+          }
         }
       }
 
@@ -70,9 +81,9 @@ public class DesafioManager implements Runnable {
     }
   }
 
-  private void enviaPergunta(Pergunta perguntaActual) {
+  private void enviaPergunta(String nomeDesafio , int numeroPergunta , Pergunta perguntaActual) {
     for ( Coneccao coneccaoActual : mapConeccoes.values() ){
-      coneccaoActual.enviaPergunta(perguntaActual);
+      coneccaoActual.enviaPergunta( nomeDesafio , numeroPergunta , perguntaActual);
     }
   }
 
