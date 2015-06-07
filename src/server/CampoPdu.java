@@ -579,7 +579,7 @@ public class CampoPdu implements Serializable{
     return resultado;
   }
 
-public int getTamanhoTotal() {
-	return this.tamanhoTotal;
-}
+  public int getTamanhoTotal() {
+    return this.tamanhoTotal;
+  }
 }

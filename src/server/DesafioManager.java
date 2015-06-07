@@ -52,36 +52,36 @@ public class DesafioManager implements Runnable , Serializable {
   }
 
   @Override
-public void run() {
-    System.out.println("Criado um novo gestor para o desafio: " + desafioAGerir.getNomeDesafio() );
-    while ( desafioAGerir.estado == EstadoDesafio.EM_ESPERA ){
-      desafioAGerir.updateEstadoEsperaIniciaCancela();
-    }
-    while( desafioAGerir.estado == EstadoDesafio.EM_JOGO ){
-      for ( Pergunta perguntaActual : desafioAGerir.getPerguntas() ){
-        this.updateConeccoes();
-        if ( perguntaEnviar <= 10 ){
-        	 try {
-			this.enviaPergunta( this.getNomeDesafioGerir(), perguntaEnviar,  perguntaActual);
-          perguntaEnviar++;   
-            Thread.sleep( 60000 );
-          } catch (Exception e) {
-            e.printStackTrace();
+    public void run() {
+      System.out.println("Criado um novo gestor para o desafio: " + desafioAGerir.getNomeDesafio() );
+      while ( desafioAGerir.estado == EstadoDesafio.EM_ESPERA ){
+        desafioAGerir.updateEstadoEsperaIniciaCancela();
+      }
+      while( desafioAGerir.estado == EstadoDesafio.EM_JOGO ){
+        for ( Pergunta perguntaActual : desafioAGerir.getPerguntas() ){
+          this.updateConeccoes();
+          if ( perguntaEnviar <= 10 ){
+            try {
+              this.enviaPergunta( this.getNomeDesafioGerir(), perguntaEnviar,  perguntaActual);
+              perguntaEnviar++;   
+              Thread.sleep( 60000 );
+            } catch (Exception e) {
+              e.printStackTrace();
+            }
           }
         }
-      }
 
+      }
+      if (desafioAGerir.estado == EstadoDesafio.ELIMINADO ){
+        this.localServerPointer.EliminaDesafio( desafioAGerir.getNomeDesafio() , desafioAGerir.getCriadoPor());
+      }
+      else if ( desafioAGerir.estado == EstadoDesafio.PASSOU_PRAZO ){
+        this.localServerPointer.EliminaDesafio( desafioAGerir.getNomeDesafio() , desafioAGerir.getCriadoPor());
+      }
+      else if ( desafioAGerir.estado == EstadoDesafio.TERMINADO ){
+        this.localServerPointer.TerminaDesafio( desafioAGerir.getNomeDesafio() , desafioAGerir.getCriadoPor());
+      }
     }
-    if (desafioAGerir.estado == EstadoDesafio.ELIMINADO ){
-      this.localServerPointer.EliminaDesafio( desafioAGerir.getNomeDesafio() , desafioAGerir.getCriadoPor());
-    }
-    else if ( desafioAGerir.estado == EstadoDesafio.PASSOU_PRAZO ){
-      this.localServerPointer.EliminaDesafio( desafioAGerir.getNomeDesafio() , desafioAGerir.getCriadoPor());
-    }
-    else if ( desafioAGerir.estado == EstadoDesafio.TERMINADO ){
-      this.localServerPointer.TerminaDesafio( desafioAGerir.getNomeDesafio() , desafioAGerir.getCriadoPor());
-    }
-  }
 
   private void enviaPergunta(String nomeDesafio , int numeroPergunta , Pergunta perguntaActual) throws Exception {
     for ( Coneccao coneccaoActual : mapConeccoes.values() ){

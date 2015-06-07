@@ -19,7 +19,7 @@ public class ClientResponder implements Serializable{
   private transient DatagramSocket serverSocket;
   private transient DatagramPacket receivedPacket;
   private InetAddress remoteAddress;
- private int remotePort;
+  private int remotePort;
   private boolean logginValido;
   private boolean remoteDefinido;
   private int numeroLabel;

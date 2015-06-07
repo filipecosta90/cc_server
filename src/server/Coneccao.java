@@ -33,7 +33,7 @@ public class Coneccao implements Serializable {
   private int numeroPdu;
 
   public Coneccao( Server localServer , DatagramSocket inSocket , InetAddress remoteAddress , int remotePort ){
-	alcunhaClienteAssociado= new String();
+    alcunhaClienteAssociado= new String();
     stackEspera = new ArrayList < BasePdu > ();
     historialPdus = new ArrayList < BasePdu > ();
     this.localServerPointer = localServer;
@@ -103,7 +103,7 @@ public class Coneccao implements Serializable {
   }
 
   private void enviaPacote( BasePdu replyPdu ) throws Exception {
-	System.out.println("\t ENVIANDO PACOTE: \n" + replyPdu.toString());
+    System.out.println("\t ENVIANDO PACOTE: \n" + replyPdu.toString());
     ArrayList < BasePdu > pdusEnviar = new ArrayList < BasePdu >();
     if ( replyPdu.getTamanhoTotalPdu() > ServerCodes.TAMANHO_MAX_PDU ){
       pdusEnviar = replyPdu.split( ServerCodes.TAMANHO_MAX_PDU );
@@ -113,14 +113,14 @@ public class Coneccao implements Serializable {
     }
     for ( BasePdu pduActual : pdusEnviar ){
       DatagramPacket pacoteEnvio = new DatagramPacket ( pduActual.getBytesEnvio() , pduActual.getBytesEnvio().length , this.enderecoLigacao , this.portaRemota );
-     try{
-      boundedSocket.send( pacoteEnvio );
-     }
-     catch ( SocketException e){
-    	 boundedSocket.connect(this.enderecoLigacao, this.portaRemota);
-         boundedSocket.send( pacoteEnvio );
+      try{
+        boundedSocket.send( pacoteEnvio );
+      }
+      catch ( SocketException e){
+        boundedSocket.connect(this.enderecoLigacao, this.portaRemota);
+        boundedSocket.send( pacoteEnvio );
 
-     }
+      }
     }
   }
 
@@ -276,7 +276,7 @@ public class Coneccao implements Serializable {
             }
           }
           else{
-        	  replyPdu.preparaEnvio();
+            replyPdu.preparaEnvio();
           }
           enviaPacote(replyPdu);
           break;
@@ -492,7 +492,7 @@ public class Coneccao implements Serializable {
     labelNumero[1] = (byte) ((this.numeroPdu >> 8) & 0xFF);
     BasePdu replyPdu = new BasePdu ( ServerCodes.REPLY , labelNumero  ); 
     replyPdu.replyPergunta( nomeDesafio, numeroQuestao , perguntaActual );
-      enviaPacote(replyPdu);
+    enviaPacote(replyPdu);
     this.numeroPdu++;
   }
 
@@ -509,14 +509,14 @@ public class Coneccao implements Serializable {
     return chave;
   }
 
-public void verificaAlteraSeNecessarioSocket(DatagramSocket receivedSocket,
-		int remotePort) {
-	if (this.boundedSocket != receivedSocket){
-		this.boundedSocket = receivedSocket;
-	}
-	if (this.portaRemota != remotePort ){
-		this.portaRemota = remotePort;
-	}			
-}
+  public void verificaAlteraSeNecessarioSocket(DatagramSocket receivedSocket,
+      int remotePort) {
+    if (this.boundedSocket != receivedSocket){
+      this.boundedSocket = receivedSocket;
+    }
+    if (this.portaRemota != remotePort ){
+      this.portaRemota = remotePort;
+    }			
+  }
 
 }
