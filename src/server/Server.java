@@ -7,7 +7,13 @@
 package server;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -20,7 +26,7 @@ import java.util.HashMap;
 import java.util.Scanner;
 import java.util.TreeMap;
 
-public class Server implements Runnable {
+public class Server implements Runnable, Serializable {
 
   public enum EstadoServidor { INICIANDO_SERVIDOR , SERVIDOR_ACTIVO , PARANDO_SERVIDOR , SERVIDOR_PARADO , ERRO_SERVIDOR }
 
@@ -316,5 +322,47 @@ public class Server implements Runnable {
     }
     return desafioPointer;
   }
+  public void guardaServidor() throws Exception{
+		// Write to disk with FileOutputStream
+		  FileOutputStream f_out = new 	FileOutputStream("servidor.data");
+		// Write object with ObjectOutputStream
+		  ObjectOutputStream obj_out = new ObjectOutputStream (f_out);
+		  
+		  // Write object out to disk
+		  obj_out.writeObject ( this );
+		  obj_out.close();
+	  }
+	  
+	  public Server carregaServidor() throws Exception{
+		  FileInputStream f_in = new FileInputStream("servidor.data");
+		  // Read object using ObjectInputStream
+		  ObjectInputStream obj_in = new ObjectInputStream (f_in);
+		  // Read an object
+		  Server retornarServidor = (Server) obj_in.readObject();
+		  return retornarServidor;
+	  }
+
+	public String getStringUsers() {
+		StringBuilder s = new StringBuilder();
+		for (Cliente c1 : this.mapClientes.values()){
+			s.append(c1.toString());
+		}
+		return s.toString();
+	}
+
+	public void adicionarUser() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void alterarUser() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void eliminarUser() {
+		// TODO Auto-generated method stub
+		
+	}
 
 }
