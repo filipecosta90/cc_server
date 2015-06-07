@@ -1,6 +1,8 @@
 package server;
 
-public class ServerCodes {
+import java.io.Serializable;
+
+public class ServerCodes implements Serializable {
 	// Tipos de pedido servidor
 	  public static final byte REPLY = 0;
 	  public static final byte HELLO = 1;

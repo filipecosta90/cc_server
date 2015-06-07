@@ -6,31 +6,34 @@
 
 package server;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-public class Desafio {
+public class Desafio implements Serializable {
 
   public enum EstadoDesafio { EM_ESPERA , EM_JOGO , TERMINADO , ELIMINADO , PASSOU_PRAZO }
-
   private String nomeDesafio;
   private String criadoPor;
-  TreeSet < String > alcunhasJogadores;
-  TreeSet < String > alcunhasJogadoresActivos;
-  TreeMap < String, Integer > pontuacoesJogadores;
+  private TreeSet < String > alcunhasJogadores;
+  private TreeSet < String > alcunhasJogadoresActivos;
+  private TreeMap < String, Integer > pontuacoesJogadores;
   private Date dataCriacao;
   private Date dataHoraInicioDesafio;
   private boolean temMinimoJogadores;
   private FicheiroPerguntas perguntasDesafio;
-  EstadoDesafio estado;
+  public EstadoDesafio estado;
 
   // Construtores
   public Desafio( String game_name , String alcunhaJogadorCriador , Date dataCriacao , Date dataHoraDesafio , String nomeFicheiroPerguntas )
   {
     this.nomeDesafio=game_name;
     this.criadoPor = alcunhaJogadorCriador;
+    this.alcunhasJogadores = new TreeSet < String > ();
+    this.alcunhasJogadoresActivos = new TreeSet <String>();
+    this.pontuacoesJogadores = new TreeMap < String, Integer > ();
     this.alcunhasJogadores.add( alcunhaJogadorCriador );
     this.pontuacoesJogadores.put( alcunhaJogadorCriador, 0);
     this.dataCriacao = dataCriacao;
@@ -211,7 +214,7 @@ public class Desafio {
     else {
       pontuacaoAnterior -= 1;
     }
-    this.pontuacoesJogadores.replace( alcunhaClienteAssociado, pontuacaoAnterior );
+    this.pontuacoesJogadores.put( alcunhaClienteAssociado, pontuacaoAnterior );
     return resultado;
   }
 

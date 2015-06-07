@@ -11,29 +11,30 @@ import server.CampoPdu;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.DatagramPacket;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Date;
 
-public class BasePdu {
+public class BasePdu implements Serializable{
 
-  protected byte versao[];
-  protected byte seguranca[];
-  protected byte label[];
-  protected byte tipo[];
-  protected byte numeroCamposSeguintes[];
-  protected byte tamanhoBytesCamposSeguintes[];
+  private byte versao[];
+  private byte seguranca[];
+  private byte label[];
+  private byte tipo[];
+  private byte numeroCamposSeguintes[];
+  private byte tamanhoBytesCamposSeguintes[];
   private ArrayList<CampoPdu> ArrayListCamposSeguintes;
-  protected byte camposSeguintes[];
+  private byte camposSeguintes[];
 
-  protected DatagramPacket pacoteUdp;
+  private transient DatagramPacket pacoteUdp;
   private int  tamanhoPdu;
   private int tamanhoCamposSeguintes;
   private byte[] rawData;
   private boolean esperaDadosNovoPacote;
-  ByteArrayInputStream inputByteArray;
+  private transient ByteArrayInputStream inputByteArray;
   private int numeroCamposSeguintesInt;
   private int posPopCamposSeguintes;
 
@@ -108,15 +109,15 @@ public class BasePdu {
     this.ArrayListCamposSeguintes = new ArrayList <CampoPdu>();
   }
 
-  private byte[] getVersao() {
+  public byte[] getVersao() {
     return this.versao;
   }
 
-  private byte[] getSeguranca() {
+  public byte[] getSeguranca() {
     return this.seguranca;
   }
 
-  private byte[] getLabel() {
+  public byte[] getLabel() {
     return this.label;
   }
 
@@ -209,7 +210,7 @@ public class BasePdu {
   public void preparaEnvio() throws IOException {
     ByteArrayOutputStream novoOut = new ByteArrayOutputStream();
     for ( CampoPdu t : ArrayListCamposSeguintes ) {
-      novoOut.write(t.getBytes() , 0 , t.tamanhoTotal);
+      novoOut.write(t.getBytes() , 0 , t.getTamanhoTotal());
       novoOut.flush();
     }
     numeroCamposSeguintesInt = ArrayListCamposSeguintes.size();
@@ -251,7 +252,7 @@ public class BasePdu {
       posCamposSeguintes++;
       campo.parseTamanhoCampo( camposSeguintes , posCamposSeguintes) ;
       posCamposSeguintes+=2;
-      campo.parseDados ( camposSeguintes , posCamposSeguintes , campo.tamanhoDados );
+      campo.parseDados ( camposSeguintes , posCamposSeguintes , campo.getTamanhoDados() );
       tamanhoCampoLido = campo.getTamanhoDados();
       posCamposSeguintes += tamanhoCampoLido;
       this.ArrayListCamposSeguintes.add( campo );
@@ -285,7 +286,7 @@ public class BasePdu {
   }
 
   public void adicionaCampoPdu(CampoPdu campoInserir) {
-    this.tamanhoCamposSeguintes += campoInserir.tamanhoTotal;
+    this.tamanhoCamposSeguintes += campoInserir.getTamanhoTotal();
     this.ArrayListCamposSeguintes.add(campoInserir);
   }
 
@@ -416,7 +417,7 @@ public class BasePdu {
     continuaNoutroPdu.adicionaByteAZero();
     while ( campoNumero < this.ArrayListCamposSeguintes.size() ){
       BasePdu novoPdu = new BasePdu ( this.getVersao() , this.getSeguranca() , this.getLabel() , this.getTipo() ) ;
-      while ( ( novoPdu.tamanhoPdu + this.ArrayListCamposSeguintes.get(campoNumero).tamanhoTotal ) <= ( tamanhoMaxPdu - continuaNoutroPdu.tamanhoTotal )){
+      while ( ( novoPdu.tamanhoPdu + this.ArrayListCamposSeguintes.get(campoNumero).getTamanhoTotal() ) <= ( tamanhoMaxPdu - continuaNoutroPdu.getTamanhoTotal() )){
         CampoPdu campoActual = this.ArrayListCamposSeguintes.get(campoNumero);
         novoPdu.adicionaCampoPdu(campoActual);
         campoNumero++;

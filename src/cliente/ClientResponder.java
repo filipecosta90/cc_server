@@ -1,5 +1,6 @@
 package cliente;
 
+import java.io.Serializable;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -8,20 +9,22 @@ import java.util.Scanner;
 
 import server.BasePdu;
 import server.CampoPdu;
+
 import java.util.Date;
+
 import server.ServerCodes;
 
-public class ClientResponder {
+public class ClientResponder implements Serializable{
 
-  DatagramSocket serverSocket;
-  DatagramPacket receivedPacket;
-  InetAddress remoteAddress;
-  int remotePort;
-  boolean logginValido;
-  boolean remoteDefinido;
-  int numeroLabel;
-  BasePdu replyPdu;
-  Scanner sc;
+  private transient DatagramSocket serverSocket;
+  private transient DatagramPacket receivedPacket;
+  private InetAddress remoteAddress;
+ private int remotePort;
+  private boolean logginValido;
+  private boolean remoteDefinido;
+  private int numeroLabel;
+  private BasePdu replyPdu;
+  private transient Scanner sc;
 
   ClientResponder ( ){
     remoteDefinido = false;

@@ -6,16 +6,17 @@
 
 package server;
 
+import java.io.Serializable;
 import java.util.HashMap;
 
 import server.Desafio.EstadoDesafio;
 
-public class DesafioManager implements Runnable {
+public class DesafioManager implements Runnable , Serializable { 
 
   private Server localServerPointer;
   private Desafio desafioAGerir;
-  int perguntaEnviar;
-  HashMap < String , Coneccao > mapConeccoes;
+  private int perguntaEnviar;
+  private HashMap < String , Coneccao > mapConeccoes;
 
   DesafioManager ( Server localServer , Desafio desafio ){
     this.localServerPointer = localServer;
@@ -44,7 +45,8 @@ public class DesafioManager implements Runnable {
       Coneccao coneccaoNoDesafio = mapConeccoes.get( nomeJogador );
       if (  coneccaoRetornada.mesmoEnderecoPortaSocket ( coneccaoNoDesafio ) == false ){
         coneccaoNoDesafio.copiaEnderecoPortaSocket ( coneccaoRetornada );
-        mapConeccoes.replace( nomeJogador , coneccaoNoDesafio );
+        mapConeccoes.remove( nomeJogador);
+        mapConeccoes.put( nomeJogador , coneccaoNoDesafio );
       }
     }
   }

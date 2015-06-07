@@ -10,6 +10,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
@@ -19,16 +20,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 
-public class CampoPdu {
+public class CampoPdu implements Serializable{
 
-  protected byte tipoCampo;
-  protected byte[] dadosCampo;
-  protected int tamanhoTotal;
-  protected int tamanhoDados;
-  protected byte[] tamanhoDadosBytes;
-  protected int blocoNumero;
-  protected boolean dadosParcelados;
-
+  private byte tipoCampo;
+  private byte[] dadosCampo;
+  private int tamanhoTotal;
+  private int tamanhoDados;
+  private byte[] tamanhoDadosBytes;
+  private int blocoNumero;
+  private boolean dadosParcelados;
 
   public CampoPdu ( byte tipo ){
     tipoCampo = tipo;
@@ -578,4 +578,8 @@ public class CampoPdu {
     }
     return resultado;
   }
+
+public int getTamanhoTotal() {
+	return this.tamanhoTotal;
+}
 }

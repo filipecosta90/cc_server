@@ -6,7 +6,9 @@
 
 package server;
 
-public class Pergunta {
+import java.io.Serializable;
+
+public class Pergunta implements Serializable {
   private String musica;
   private String imagem;
   private String pergunta;
