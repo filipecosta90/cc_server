@@ -7,7 +7,10 @@
 package server;
 
 import java.io.File;
+import java.io.Serializable;
 import java.util.ArrayList;
+
+
 /* xml */
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.DocumentBuilder;
@@ -17,12 +20,12 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
 import org.w3c.dom.Element;
 
-public class FicheiroPerguntas {
-  ArrayList <Pergunta> tabelaPerguntas;
-  String pathFicheiro;
-  String musicDir;
-  String imagesDir;
-  int numeroQuestoes;
+public class FicheiroPerguntas implements Serializable {
+  private ArrayList <Pergunta> tabelaPerguntas;
+  private String pathFicheiro;
+  private String musicDir;
+  private String imagesDir;
+  private int numeroQuestoes;
 
   public FicheiroPerguntas ( String path ){
     this.pathFicheiro = path;

@@ -7,17 +7,18 @@
 package server;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 
-public class ServerResponder implements Runnable {
+public class ServerResponder implements Runnable , Serializable {
 
-  DatagramSocket receivedSocket = null;
-  DatagramPacket receivedPacket = null;
-  InetAddress remoteAddress;
-  int remotePort;
-  Server localServerPointer;
+  private transient DatagramSocket receivedSocket = null;
+  private transient DatagramPacket receivedPacket = null;
+  private InetAddress remoteAddress;
+  private int remotePort;
+  private Server localServerPointer;
 
   public ServerResponder( Server localServer , DatagramSocket receivedSocket, DatagramPacket receivedPacket) {
     this.localServerPointer = localServer;
@@ -34,6 +35,7 @@ public void run() {
     if( this.localServerPointer.isThisSocketBound( receivedSocket , remoteAddress, remotePort)){
     	System.out.println(">>>>>>coneccaoExistente: " + remoteAddress.toString());
       coneccaoEstabelecida = this.localServerPointer.getConeccao( receivedSocket , remoteAddress , remotePort );
+      System.out.println("alcunha associado: "+ coneccaoEstabelecida.getAlcunhaClienteAssociado());
       try {
     	coneccaoEstabelecida.verificaAlteraSeNecessarioSocket(this.receivedSocket , this.remotePort);
         coneccaoEstabelecida.adicionaPacote(this.receivedPacket);

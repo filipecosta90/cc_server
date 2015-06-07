@@ -6,22 +6,17 @@
 
 package server;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.net.InetAddress;
-import java.util.Scanner;
 
+import java.io.Serializable;
+import java.util.Scanner;
 import cliente.Input;
 
-public class ccServer 
-{
-	  private static Scanner sc;
+public class ccServer implements Serializable {
+	
+	  private transient static Scanner sc;
 	public static boolean desligar;
 	
-public static void navegaServidor( Server servidor ) throws Exception{
+public static void navegaServidor( Server servidor ) throws Exception {
 	  StringBuilder s = new StringBuilder();
 	  s.append("--- Gestao Servidor ---\n\n");
 	  s.append("\t1 - Gerir users locais ");
@@ -67,7 +62,7 @@ public static void resolveOpcao( int opcao , Server servidor ) throws Exception{
 		  }
 		  case 6:
 		  {
-			  servidor.carregaServidor();
+			  servidor = servidor.carregaServidor();
 			  break;
 		  }
 		  case 7:

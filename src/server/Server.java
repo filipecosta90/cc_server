@@ -29,7 +29,7 @@ import java.util.TreeMap;
 public class Server implements Runnable, Serializable {
 
   public enum EstadoServidor { INICIANDO_SERVIDOR , SERVIDOR_ACTIVO , PARANDO_SERVIDOR , SERVIDOR_PARADO , ERRO_SERVIDOR }
-  
+
   private int listeningUDPPort;
   private int listeningTCPPort;
 
@@ -91,7 +91,7 @@ public class Server implements Runnable, Serializable {
     }
     return boundTo;
   }
-  
+
   public Coneccao getConeccaoCliente ( String nomeCliente ){
     Coneccao coneccaoRetornar = null;
     for ( Coneccao coneccaoPointer : this.coneccoesActivas.values() ){
@@ -323,46 +323,46 @@ public class Server implements Runnable, Serializable {
     return desafioPointer;
   }
   public void guardaServidor() throws Exception{
-		// Write to disk with FileOutputStream
-		  FileOutputStream f_out = new 	FileOutputStream("servidor.data");
-		// Write object with ObjectOutputStream
-		  ObjectOutputStream obj_out = new ObjectOutputStream (f_out);
-		  
-		  // Write object out to disk
-		  obj_out.writeObject ( this );
-		  obj_out.close();
-	  }
-	  
-	  public Server carregaServidor() throws Exception{
-		  FileInputStream f_in = new FileInputStream("servidor.data");
-		  // Read object using ObjectInputStream
-		  ObjectInputStream obj_in = new ObjectInputStream (f_in);
-		  // Read an object
-		  Server retornarServidor = (Server) obj_in.readObject();
-		  return retornarServidor;
-	  }
+    // Write to disk with FileOutputStream
+    FileOutputStream f_out = new 	FileOutputStream("servidor.data");
+    // Write object with ObjectOutputStream
+    ObjectOutputStream obj_out = new ObjectOutputStream (f_out);
 
-	public String getStringUsers() {
-		StringBuilder s = new StringBuilder();
-		for (Cliente c1 : this.mapClientes.values()){
-			s.append(c1.toString());
-		}
-		return s.toString();
-	}
+    // Write object out to disk
+    obj_out.writeObject ( this );
+    obj_out.close();
+  }
 
-	public void adicionarUser() {
-		// TODO Auto-generated method stub
-		
-	}
+  public Server carregaServidor() throws Exception{
+    FileInputStream f_in = new FileInputStream("servidor.data");
+    // Read object using ObjectInputStream
+    ObjectInputStream obj_in = new ObjectInputStream (f_in);
+    // Read an object
+    Server retornarServidor = (Server) obj_in.readObject();
+    return retornarServidor;
+  }
 
-	public void alterarUser() {
-		// TODO Auto-generated method stub
-		
-	}
+  public String getStringUsers() {
+    StringBuilder s = new StringBuilder();
+    for (Cliente c1 : this.mapClientes.values()){
+      s.append(c1.toString());
+    }
+    return s.toString();
+  }
 
-	public void eliminarUser() {
-		// TODO Auto-generated method stub
-		
-	}
+  public void adicionarUser() {
+    // TODO Auto-generated method stub
+
+  }
+
+  public void alterarUser() {
+    // TODO Auto-generated method stub
+
+  }
+
+  public void eliminarUser() {
+    // TODO Auto-generated method stub
+
+  }
 
 }

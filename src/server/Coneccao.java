@@ -6,6 +6,7 @@
 
 package server;
 
+import java.io.Serializable;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -15,23 +16,24 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.TreeMap;
 
-public class Coneccao {
+public class Coneccao implements Serializable {
 
-  String alcunhaClienteAssociado;
+  private String alcunhaClienteAssociado;
   private ArrayList < BasePdu > stackEspera;
   private ArrayList < BasePdu > historialPdus;
   private Server localServerPointer;
-  Date timeStampInicio;
-  Date timeStampAlteracao;
-  Date timeStampFim;
+  private Date timeStampInicio;
+  private Date timeStampAlteracao;
+  private Date timeStampFim;
   private boolean anonima;
-  DatagramSocket boundedSocket;
-  InetAddress enderecoLigacao;
-  int portaRemota;
-  BasePdu replyPdu;
-  int numeroPdu;
+  private transient DatagramSocket boundedSocket;
+  private InetAddress enderecoLigacao;
+  private int portaRemota;
+  private BasePdu replyPdu;
+  private int numeroPdu;
 
   public Coneccao( Server localServer , DatagramSocket inSocket , InetAddress remoteAddress , int remotePort ){
+	alcunhaClienteAssociado= new String();
     stackEspera = new ArrayList < BasePdu > ();
     historialPdus = new ArrayList < BasePdu > ();
     this.localServerPointer = localServer;
@@ -96,6 +98,7 @@ public class Coneccao {
 
   private void boundAlcunhaCliente(String alcunha) {
     this.alcunhaClienteAssociado = alcunha;	
+    System.out.println(">>>>>>>>>>>>>>>>>>alcunha cliente associado : "+ this.alcunhaClienteAssociado);
     this.anonima = false;
   }
 
@@ -122,7 +125,7 @@ public class Coneccao {
   }
 
   private void resolvePacote(BasePdu pduAResolver) throws Exception {
-    BasePdu replyPdu = new BasePdu ( ServerCodes.REPLY , pduAResolver.label ); 
+    BasePdu replyPdu = new BasePdu ( ServerCodes.REPLY , pduAResolver.getLabel() ); 
     switch( (pduAResolver.getTipo())[0] ){
       case ServerCodes.HELLO :
         {
