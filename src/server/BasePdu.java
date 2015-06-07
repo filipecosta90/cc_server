@@ -39,18 +39,18 @@ public class BasePdu implements Serializable{
   private int posPopCamposSeguintes;
 
   public BasePdu ( DatagramPacket pacote ) { 
-    versao = new byte[1];
-    seguranca = new byte[1];
-    label = new byte[2];
-    tipo = new byte[1];
-    numeroCamposSeguintes =  new byte[1];
-    tamanhoBytesCamposSeguintes = new byte[2];
-    tamanhoCamposSeguintes = 0;
-    tamanhoPdu = pacote.getLength();
-    rawData = pacote.getData();
-    esperaDadosNovoPacote = false;
-    numeroCamposSeguintesInt = 0;
-    posPopCamposSeguintes = 0;
+    this.versao = new byte[1];
+    this.seguranca = new byte[1];
+    this.label = new byte[2];
+    this.tipo = new byte[1];
+    this.numeroCamposSeguintes =  new byte[1];
+    this.tamanhoBytesCamposSeguintes = new byte[2];
+    this.tamanhoCamposSeguintes = 0;
+    this.tamanhoPdu = pacote.getLength();
+    this.rawData = pacote.getData();
+    this.esperaDadosNovoPacote = false;
+    this.numeroCamposSeguintesInt = 0;
+    this.posPopCamposSeguintes = 0;
     this.ArrayListCamposSeguintes = new ArrayList <CampoPdu>();
   }
 
@@ -73,19 +73,19 @@ public class BasePdu implements Serializable{
   }
 
   public BasePdu ( byte tipo , int labelNumber ) { 
-    versao = new byte[1];
-    seguranca = new byte[1];
+    this.versao = new byte[1];
+    this.seguranca = new byte[1];
     this.label = new byte[2];
-    label = intPara2Bytes( labelNumber);
+    this.label = CampoPdu.intPara2Bytes( labelNumber);
     this.tipo = new byte[1];
     this.tipo[0] = tipo;
-    numeroCamposSeguintes =  new byte[1];
-    tamanhoBytesCamposSeguintes = new byte[2];
-    tamanhoCamposSeguintes = 0;
-    tamanhoPdu = 8;
-    esperaDadosNovoPacote = false;
-    numeroCamposSeguintesInt = 0;
-    posPopCamposSeguintes = 0;
+    this.numeroCamposSeguintes =  new byte[1];
+    this.tamanhoBytesCamposSeguintes = new byte[2];
+    this.tamanhoCamposSeguintes = 0;
+    this.tamanhoPdu = 8;
+    this.esperaDadosNovoPacote = false;
+    this.numeroCamposSeguintesInt = 0;
+    this.posPopCamposSeguintes = 0;
     this.ArrayListCamposSeguintes = new ArrayList <CampoPdu>();
   }
 
@@ -99,13 +99,13 @@ public class BasePdu implements Serializable{
     this.label[1] = labelC[1];
     this.tipo = new byte[1];
     this.tipo = tipoC;
-    numeroCamposSeguintes =  new byte[1];
-    tamanhoBytesCamposSeguintes = new byte[2];
-    tamanhoCamposSeguintes = 0;
-    tamanhoPdu = 8;
-    esperaDadosNovoPacote = false;
-    numeroCamposSeguintesInt = 0;
-    posPopCamposSeguintes = 0;
+    this.numeroCamposSeguintes =  new byte[1];
+    this.tamanhoBytesCamposSeguintes = new byte[2];
+    this.tamanhoCamposSeguintes = 0;
+    this.tamanhoPdu = 8;
+    this.esperaDadosNovoPacote = false;
+    this.numeroCamposSeguintesInt = 0;
+    this.posPopCamposSeguintes = 0;
     this.ArrayListCamposSeguintes = new ArrayList <CampoPdu>();
   }
 
@@ -167,9 +167,9 @@ public class BasePdu implements Serializable{
       inputByteArray.read( label, 0, 2 );
       inputByteArray.read( tipo , 0 , 1 );
       inputByteArray.read( numeroCamposSeguintes , 0 , 1 );
-      numeroCamposSeguintesInt = umByteParaInt( numeroCamposSeguintes );
+      numeroCamposSeguintesInt = CampoPdu.umByteParaInt( numeroCamposSeguintes );
       inputByteArray.read( tamanhoBytesCamposSeguintes , 0 , 2 );
-      tamanhoCamposSeguintes = doisBytesParaInt( tamanhoBytesCamposSeguintes );
+      tamanhoCamposSeguintes = CampoPdu.doisBytesParaInt( tamanhoBytesCamposSeguintes );
       if ( tamanhoCamposSeguintes > 0 ) {
         camposSeguintes = new byte[tamanhoCamposSeguintes];
         inputByteArray.read( camposSeguintes , 0 ,  tamanhoCamposSeguintes );
@@ -182,29 +182,29 @@ public class BasePdu implements Serializable{
   }
 
   @Override
-    public String toString()
-    {
-      StringBuilder s = new StringBuilder();
-      s.append( "************ PDU Base ************");
-      s.append( "\nversao: "+ versao[0] );
-      s.append( "\tsegurancao: "+ seguranca[0] );
-      s.append( "\nlabel: "+ label[1]+label[0] );
-      s.append( "\ttipo: "+ tipo[0] );
-      s.append( "\nNum Campos: "+ numeroCamposSeguintes[0] + "int("+ this.numeroCamposSeguintesInt +")" );
-      s.append( "\tTam: "+ this.tamanhoBytesCamposSeguintes[1]+tamanhoBytesCamposSeguintes[0] + "int("+ tamanhoCamposSeguintes +")" );
-      s.append( "\ntamanho total: " + tamanhoPdu );
-      if ( tamanhoCamposSeguintes > 0){
-        s.append( "\n\t----- INICIO CAMPOS -----");
-        for (CampoPdu t : ArrayListCamposSeguintes ) {
-          s.append("\n\t");
-          s.append(t.toString());
-          s.append("\n");
-        }
-        s.append( "\t-----  FIM  CAMPOS  -----");
+  public String toString()
+  {
+    StringBuilder s = new StringBuilder();
+    s.append( "************ PDU Base ************");
+    s.append( "\nversao: "+ versao[0] );
+    s.append( "\tsegurancao: "+ seguranca[0] );
+    s.append( "\nlabel: "+ label[1]+label[0] );
+    s.append( "\ttipo: "+ tipo[0] );
+    s.append( "\nNum Campos: "+ numeroCamposSeguintes[0] + "int("+ this.numeroCamposSeguintesInt +")" );
+    s.append( "\tTam: "+ this.tamanhoBytesCamposSeguintes[1]+tamanhoBytesCamposSeguintes[0] + "int("+ tamanhoCamposSeguintes +")" );
+    s.append( "\ntamanho total: " + tamanhoPdu );
+    if ( tamanhoCamposSeguintes > 0){
+      s.append( "\n\t----- INICIO CAMPOS -----");
+      for (CampoPdu t : ArrayListCamposSeguintes ) {
+        s.append("\n\t");
+        s.append(t.toString());
+        s.append("\n");
       }
-      s.append( "\n********** FIM PDU Base **********");
-      return s.toString();
+      s.append( "\t-----  FIM  CAMPOS  -----");
     }
+    s.append( "\n********** FIM PDU Base **********");
+    return s.toString();
+  }
 
   /* Métodos auxiliares */
   public void preparaEnvio() throws IOException {
@@ -214,9 +214,9 @@ public class BasePdu implements Serializable{
       novoOut.flush();
     }
     numeroCamposSeguintesInt = ArrayListCamposSeguintes.size();
-    this.numeroCamposSeguintes = intPara1Byte ( numeroCamposSeguintesInt );
+    this.numeroCamposSeguintes = CampoPdu.intPara1Byte ( numeroCamposSeguintesInt );
     tamanhoCamposSeguintes = novoOut.size();
-    this.tamanhoBytesCamposSeguintes = intPara2Bytes ( tamanhoCamposSeguintes );
+    this.tamanhoBytesCamposSeguintes = CampoPdu.intPara2Bytes ( tamanhoCamposSeguintes );
     camposSeguintes = novoOut.toByteArray();
     novoOut.flush();
     novoOut.close();
@@ -432,59 +432,14 @@ public class BasePdu implements Serializable{
     return dividido;
   }
 
-  public int doisBytesParaInt ( byte[] data){
-    ByteBuffer byteBuffer = ByteBuffer.allocateDirect(4);
-    // by choosing big endian, high order bytes must be put
-    // to the buffer before low order bytes
-    byteBuffer.order(ByteOrder.BIG_ENDIAN);
-    // since ints are 4 bytes (32 bit), you need to put all 4, so put 0
-    // for the high order bytes
-    byteBuffer.put((byte)0x00);
-    byteBuffer.put((byte)0x00);
-    byteBuffer.put((byte)data[1]);
-    byteBuffer.put((byte)data[0]);
-    byteBuffer.flip();
-    int valor = byteBuffer.getInt();
-    System.out.println("dois bytes "+ byteBuffer.get(3) + byteBuffer.get(2) + byteBuffer.get(1) + byteBuffer.get(0) +") para int" + valor);
-
-    return valor;
-  }
-
-  public int umByteParaInt ( byte[] data ){
-    ByteBuffer byteBuffer = ByteBuffer.allocateDirect(4);
-    // by choosing big endian, high order bytes must be put
-    // to the buffer before low order bytes
-    byteBuffer.order(ByteOrder.BIG_ENDIAN);
-    // since ints are 4 bytes (32 bit), you need to put all 4, so put 0
-    // for the high order bytes
-    byteBuffer.put((byte)0x00);
-    byteBuffer.put((byte)0x00);
-    byteBuffer.put((byte)0x00);
-    byteBuffer.put((byte) data[0]);
-    byteBuffer.flip();
-    int valor = byteBuffer.getInt();
-    System.out.println("um byte "+ byteBuffer.get(3) + byteBuffer.get(2) + byteBuffer.get(1) + byteBuffer.get(0) +") para int" + valor);
-    return valor;
-  }
-
-  public byte[] intPara2Bytes ( int aConverter ){ 
-    ByteBuffer bb = ByteBuffer.allocate(4); 
-    bb.putInt(aConverter); 
-    byte[] arrayR = new byte [2];
-    arrayR[0]=bb.get(3);
-    arrayR[1]=bb.get(2);
-    System.out.println("int ("+ aConverter +") para 2 bytes " + arrayR[1]+arrayR[0]);
-    return arrayR;
-  }
-
-  public byte[] intPara1Byte ( int aConverter ){ 
-    ByteBuffer bb = ByteBuffer.allocate(4); 
-    bb.putInt(aConverter); 
-    byte[] arrayR = new byte [1];
-    arrayR[0]=bb.get(3);
-    System.out.println(arrayR[0]);
-    System.out.println("int ("+ aConverter +") para 1 bytes " + arrayR[0]);
-    return arrayR;
+  @Override 
+  public boolean equals ( Object other ){
+    boolean resultado = false;
+    if (other instanceof BasePdu) {
+      BasePdu that = (BasePdu) other;
+      resultado = this.label.equals(that.label) && this.tipo.equals(that.tipo) && this.ArrayListCamposSeguintes.equals(that.ArrayListCamposSeguintes) ;
+    }
+    return resultado;
   }
 
 }

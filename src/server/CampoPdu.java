@@ -62,6 +62,14 @@ public class CampoPdu implements Serializable{
     return this.blocoNumero;
   }
 
+  public int getTamanhoDados() {
+    return this.tamanhoDados;
+  }
+
+  public int getTamanhoTotal() {
+    return this.tamanhoTotal;
+  }
+
   public void adicionaData( Date data ) {
     int ano =  data.getYear();
     int mes = data.getMonth();
@@ -82,21 +90,27 @@ public class CampoPdu implements Serializable{
   }
 
   public int getCampoDataAno() {
-    int temp0 = dadosCampo[0] & 0xFF;
-    int temp1 = dadosCampo[1] & 0xFF;
-    return ((temp0 << 8) + temp1);
+    byte[] buffer = new byte[2];
+    buffer[0] = dadosCampo[0];
+    buffer[1] = dadosCampo[1];
+    int ano = this.doisBytesParaInt(buffer);
+    return ano;
   }
 
   public int getCampoDataMes() {
-    int temp0 = dadosCampo[2] & 0xFF;
-    int temp1 = dadosCampo[3] & 0xFF;
-    return ((temp0 << 8) + temp1);
+    byte[] buffer = new byte[2];
+    buffer[0] = dadosCampo[2];
+    buffer[1] = dadosCampo[3];
+    int mes = this.doisBytesParaInt(buffer);
+    return mes;
   }
 
   public int getCampoDataDia() {
-    int temp0 = dadosCampo[4] & 0xFF;
-    int temp1 = dadosCampo[5] & 0xFF;
-    return ((temp0 << 8) + temp1);
+    byte[] buffer = new byte[2];
+    buffer[0] = dadosCampo[4];
+    buffer[1] = dadosCampo[5];
+    int dia = this.doisBytesParaInt(buffer);
+    return dia;
   }
 
   public void adicionaHora( Date data ) {
@@ -119,21 +133,27 @@ public class CampoPdu implements Serializable{
   }
 
   public int getCampoHoraHora() {
-    int temp0 = dadosCampo[0] & 0xFF;
-    int temp1 = dadosCampo[1] & 0xFF;
-    return ((temp0 << 8) + temp1);
+    byte[] buffer = new byte[2];
+    buffer[0] = dadosCampo[0];
+    buffer[1] = dadosCampo[1];
+    int hora = this.doisBytesParaInt(buffer);
+    return hora;
   }
 
   public int getCampoHoraMinutos() {
-    int temp0 = dadosCampo[2] & 0xFF;
-    int temp1 = dadosCampo[3] & 0xFF;
-    return ((temp0 << 8) + temp1);
+    byte[] buffer = new byte[2];
+    buffer[0] = dadosCampo[2];
+    buffer[1] = dadosCampo[3];
+    int minutos = this.doisBytesParaInt(buffer);
+    return minutos;
   }
 
   public int getCampoHoraSegundos() {
-    int temp0 = dadosCampo[4] & 0xFF;
-    int temp1 = dadosCampo[5] & 0xFF;
-    return ((temp0 << 8) + temp1);
+    byte[] buffer = new byte[2];
+    buffer[0] = dadosCampo[4];
+    buffer[1] = dadosCampo[5];
+    int segundos = this.doisBytesParaInt(buffer);
+    return segundos;
   }
 
   public void adicionaInteiro1Byte( int aConverter ) {
@@ -179,7 +199,7 @@ public class CampoPdu implements Serializable{
   }
 
 
-  public int doisBytesParaInt ( byte[] data){
+  public static int doisBytesParaInt ( byte[] data){
     ByteBuffer byteBuffer = ByteBuffer.allocateDirect(4);
     // by choosing big endian, high order bytes must be put
     // to the buffer before low order bytes
@@ -193,11 +213,10 @@ public class CampoPdu implements Serializable{
     byteBuffer.flip();
     int valor = byteBuffer.getInt();
     System.out.println("dois bytes "+ byteBuffer.get(3) + byteBuffer.get(2) + byteBuffer.get(1) + byteBuffer.get(0) +") para int" + valor);
-
     return valor;
   }
 
-  public int doisBytesParaIntStart ( byte[] data , int start ){
+  public static int doisBytesParaIntStart ( byte[] data , int start ){
     ByteBuffer byteBuffer = ByteBuffer.allocateDirect(4);
     // by choosing big endian, high order bytes must be put
     // to the buffer before low order bytes
@@ -211,11 +230,10 @@ public class CampoPdu implements Serializable{
     byteBuffer.flip();
     int valor = byteBuffer.getInt();
     System.out.println("dois bytes "+ byteBuffer.get(3) + byteBuffer.get(2) + byteBuffer.get(1) + byteBuffer.get(0) +") para int" + valor);
-
     return valor;
   }
 
-  public int umByteParaInt ( byte[] data ){
+  public static int umByteParaInt ( byte[] data ){
     ByteBuffer byteBuffer = ByteBuffer.allocateDirect(4);
     // by choosing big endian, high order bytes must be put
     // to the buffer before low order bytes
@@ -229,11 +247,10 @@ public class CampoPdu implements Serializable{
     byteBuffer.flip();
     int valor = byteBuffer.getInt();
     System.out.println("dois bytes "+ byteBuffer.get(3) + byteBuffer.get(2) + byteBuffer.get(1) + byteBuffer.get(0) +") para int" + valor);
-
     return valor;
   }
 
-  public byte[] intPara2Bytes ( int aConverter ){ 
+  public static byte[] intPara2Bytes ( int aConverter ){ 
     ByteBuffer bb = ByteBuffer.allocate(4); 
     bb.putInt(aConverter); 
     byte[] arrayR = new byte [2];
@@ -554,22 +571,16 @@ public class CampoPdu implements Serializable{
     }
   }
 
-
-
-  public int getTamanhoDados() {
-    return tamanhoDados;
-  }
-
   @Override
-    public String toString()
-    {
-      StringBuilder s = new StringBuilder();
-      s.append( "Campo: ");
-      s.append( tipoCampo );
-      s.append( " Tamanho Dados: ");
-      s.append( this.getTamanhoDados() );
-      return s.toString();
-    }
+  public String toString()
+  {
+    StringBuilder s = new StringBuilder();
+    s.append( "Campo: ");
+    s.append( tipoCampo );
+    s.append( " Tamanho Dados: ");
+    s.append( this.getTamanhoDados() );
+    return s.toString();
+  }
 
   public boolean mesmoTipo(byte tipoCampoTeste ) {
     boolean resultado = false; 
@@ -577,9 +588,5 @@ public class CampoPdu implements Serializable{
       resultado = true;
     }
     return resultado;
-  }
-
-  public int getTamanhoTotal() {
-    return this.tamanhoTotal;
   }
 }
