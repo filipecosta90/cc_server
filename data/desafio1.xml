@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<desafio musicDir="data/musica" imagesDir="data/imagens">
+  <pergunta audio="000001.mp3" imagem="000001.jpg" questao="Quem canta esta canção?" opcao1="Robert Smith" opcao2="Bono Vox" opcao3="Ninguém, é uma música instrumental" correcta="3"/>
+  <pergunta audio="000002.mp3" imagem="000002.jpg" questao="Relaccione esta canção com uma das seguintes palavras:" opcao1="Microsoft" opcao2="Adobe" opcao3="Linux" correcta="2"/>
+</desafio>
