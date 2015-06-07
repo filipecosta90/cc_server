@@ -49,7 +49,8 @@ public class DesafioManager implements Runnable {
     }
   }
 
-  public void run() {
+  @Override
+public void run() {
     System.out.println("Criado um novo gestor para o desafio: " + desafioAGerir.getNomeDesafio() );
     while ( desafioAGerir.estado == EstadoDesafio.EM_ESPERA ){
       desafioAGerir.updateEstadoEsperaIniciaCancela();
@@ -58,12 +59,11 @@ public class DesafioManager implements Runnable {
       for ( Pergunta perguntaActual : desafioAGerir.getPerguntas() ){
         this.updateConeccoes();
         if ( perguntaEnviar <= 10 ){
-          this.enviaPergunta( this.getNomeDesafioGerir(), perguntaEnviar,  perguntaActual);
-          perguntaEnviar++;
-          try {
+        	 try {
+			this.enviaPergunta( this.getNomeDesafioGerir(), perguntaEnviar,  perguntaActual);
+          perguntaEnviar++;   
             Thread.sleep( 60000 );
-          } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
+          } catch (Exception e) {
             e.printStackTrace();
           }
         }
@@ -81,7 +81,7 @@ public class DesafioManager implements Runnable {
     }
   }
 
-  private void enviaPergunta(String nomeDesafio , int numeroPergunta , Pergunta perguntaActual) {
+  private void enviaPergunta(String nomeDesafio , int numeroPergunta , Pergunta perguntaActual) throws Exception {
     for ( Coneccao coneccaoActual : mapConeccoes.values() ){
       coneccaoActual.enviaPergunta( nomeDesafio , numeroPergunta , perguntaActual);
     }

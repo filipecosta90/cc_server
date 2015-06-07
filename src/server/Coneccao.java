@@ -6,82 +6,16 @@
 
 package server;
 
-import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.TreeMap;
 
 public class Coneccao {
-
-  // Tipos de pedido servidor
-  public static final byte REPLY = 0;
-  public static final byte HELLO = 1;
-  public static final byte REGISTER = 2;
-  public static final byte LOGIN = 3;
-  public static final byte LOGOUT = 4;
-  public static final byte QUIT = 5;
-  public static final byte END = 6;
-  public static final byte LIST_CHALLENGES = 7;
-  public static final byte MAKE_CHALLENGE = 8;
-  public static final byte ACCEPT_CHALLENGE = 9;
-  public static final byte DELETE_CHALLENGE = 10;
-  public static final byte ANSWER = 11;
-  public static final byte RETRANSMIT = 12;
-  public static final byte LIST_RANKING = 13;
-  public static final byte INFO = 14;
-  public static final int TAMANHO_MAX_PDU = 49152;
-
-  /* Campos dos tipos de pedidos que os clientes podem enviar aos servidores */
-  public static final byte CLIENTE_NOME = (byte)1;
-  public static final byte CLIENTE_ALCUNHA = (byte)2;
-  public static final byte CLIENTE_SEC_INFO = (byte)3;
-  public static final byte CLIENTE_DATA = (byte)4;
-  public static final byte CLIENTE_HORA = (byte)5;
-  public static final byte CLIENTE_ESCOLHA = (byte)6;
-  public static final byte CLIENTE_NOME_DESAFIO = (byte)7;
-  public static final byte CLIENTE_NUM_QUESTAO = (byte)10;
-  public static final byte CLIENTE_NUM_BLOCO = (byte)17;
-
-  /* Campos dos tipos de respostas que os servidores podem enviar aos clientes */
-  public static final byte SERVIDOR_OK = (byte)0;
-  public static final byte SERVIDOR_ERRO = (byte) 255;
-  public static final byte SERVIDOR_CONTINUA = (byte) 254;
-  public static final byte SERVIDOR_NOME = (byte)1;
-  public static final byte SERVIDOR_ALCUNHA = (byte)2;
-  public static final byte SERVIDOR_DATA_DESAFIO = (byte)4;
-  public static final byte SERVIDOR_HORA_DESAFIO = (byte)5;
-  public static final byte SERVIDOR_NOME_DESAFIO = (byte)7;
-  public static final byte SERVIDOR_NUM_QUESTAO = (byte)10;	  
-  public static final byte SERVIDOR_TXT_QUESTAO = (byte)11;
-  public static final byte SERVIDOR_NUM_RESPOSTA = (byte)12;
-  public static final byte SERVIDOR_TXT_RESPOSTA = (byte)13;
-  public static final byte SERVIDOR_RESPOSTA_CERTA = (byte)14;
-  public static final byte SERVIDOR_PONTOS = (byte)15;
-  public static final byte SERVIDOR_IMAGEM = (byte)16;
-  public static final byte SERVIDOR_NUM_BLOCO = (byte)17;
-  public static final byte SERVIDOR_AUDIO = (byte)18;
-  public static final byte SERVIDOR_SCORE = (byte)20;
-
-  /* Campos dos tipos de informação que os servidores podem difundir entre si */
-  public static final byte INFO_NOME = (byte)1;
-  public static final byte INFO_ALCUNHA = (byte)2;
-  public static final byte INFO_NOME_DESAFIO = (byte)7;
-  public static final byte INFO_DATA = (byte)4;
-  public static final byte INFO_HORA = (byte)5;
-  public static final byte INFO_NUM_QUESTAO = (byte)10;	  
-  public static final byte INFO_TXT_QUESTAO = (byte)11;
-  public static final byte INFO_NUM_RESPOSTA = (byte)12;
-  public static final byte INFO_TXT_RESPOSTA = (byte)13;
-  public static final byte INFO_RESPOSTA_CERTA = (byte)14;
-  public static final byte INFO_IMAGEM = (byte)16;
-  public static final byte INFO_MUSICA = (byte)19;
-  public static final byte INFO_SCORE = (byte)20;
-  public static final byte INFO_IP_SERVIDOR = (byte)30;
-  public static final byte INFO_PORTA_SERVIDOR =(byte) 31;
 
   String alcunhaClienteAssociado;
   private ArrayList < BasePdu > stackEspera;
@@ -108,10 +42,11 @@ public class Coneccao {
     portaRemota = remotePort;
   }
 
-  public void adicionaPacote ( DatagramPacket novoPacote ) throws IOException{
+  public void adicionaPacote ( DatagramPacket novoPacote ) throws Exception{
     BasePdu novoPdu = new BasePdu ( novoPacote );
     novoPdu.parseCabecalho();
     novoPdu.parseCampos();
+    System.out.println(novoPdu.toString());
     if(novoPdu.dadosParciais()){
       boolean query = parteDePduEmEspera( novoPdu );
       if ( query == true ){
@@ -126,7 +61,7 @@ public class Coneccao {
     }
   }
 
-  public void mergePacotesEspera ( BasePdu pacoteAFundir ) throws IOException{
+  public void mergePacotesEspera ( BasePdu pacoteAFundir ) throws Exception{
     for ( BasePdu pduNaStack : this.stackEspera ){
       if ( pduNaStack.MesmaLabel(pacoteAFundir) ){
         pduNaStack.mergePDU(pacoteAFundir);
@@ -164,34 +99,42 @@ public class Coneccao {
     this.anonima = false;
   }
 
-  private void enviaPacote( BasePdu replyPdu ) throws IOException {
+  private void enviaPacote( BasePdu replyPdu ) throws Exception {
+	System.out.println("\t ENVIANDO PACOTE: \n" + replyPdu.toString());
     ArrayList < BasePdu > pdusEnviar = new ArrayList < BasePdu >();
-    if ( replyPdu.getTamanhoTotalPdu() > TAMANHO_MAX_PDU ){
-      pdusEnviar = replyPdu.split( TAMANHO_MAX_PDU );
+    if ( replyPdu.getTamanhoTotalPdu() > ServerCodes.TAMANHO_MAX_PDU ){
+      pdusEnviar = replyPdu.split( ServerCodes.TAMANHO_MAX_PDU );
     }
     else {
       pdusEnviar.add(replyPdu);
     }
     for ( BasePdu pduActual : pdusEnviar ){
-      DatagramPacket pacoteEnvio = new DatagramPacket ( pduActual.getBytesEnvio() , pduActual.getTamanhoTotalPdu () , this.enderecoLigacao , this.portaRemota );
+      DatagramPacket pacoteEnvio = new DatagramPacket ( pduActual.getBytesEnvio() , pduActual.getBytesEnvio().length , this.enderecoLigacao , this.portaRemota );
+     try{
       boundedSocket.send( pacoteEnvio );
+     }
+     catch ( SocketException e){
+    	 boundedSocket.connect(this.enderecoLigacao, this.portaRemota);
+         boundedSocket.send( pacoteEnvio );
+
+     }
     }
   }
 
-  private void resolvePacote(BasePdu pduAResolver) throws IOException {
-    BasePdu replyPdu = new BasePdu ( REPLY , pduAResolver.label ); 
+  private void resolvePacote(BasePdu pduAResolver) throws Exception {
+    BasePdu replyPdu = new BasePdu ( ServerCodes.REPLY , pduAResolver.label ); 
     switch( (pduAResolver.getTipo())[0] ){
-      case HELLO :
+      case ServerCodes.HELLO :
         {
           replyPdu.replyOK();
           enviaPacote(replyPdu);
           break;
         }
-      case REGISTER :
+      case ServerCodes.REGISTER :
         {
           boolean ok = false;
           String descricaoErro = new String();
-          if ( pduAResolver.contemCampo( CLIENTE_NOME ) &&  pduAResolver.contemCampo( CLIENTE_ALCUNHA ) && pduAResolver.contemCampo( CLIENTE_SEC_INFO )){
+          if ( pduAResolver.contemCampo( ServerCodes.CLIENTE_NOME ) &&  pduAResolver.contemCampo( ServerCodes.CLIENTE_ALCUNHA ) && pduAResolver.contemCampo( ServerCodes.CLIENTE_SEC_INFO )){
             CampoPdu campoNome = pduAResolver.popCampo();
             CampoPdu campoAlcunha = pduAResolver.popCampo();
             CampoPdu campoSecInfo = pduAResolver.popCampo();
@@ -221,11 +164,11 @@ public class Coneccao {
           enviaPacote(replyPdu);
           break;
         }
-      case LOGIN :
+      case ServerCodes.LOGIN :
         {
           boolean ok = false;
           String descricaoErro = new String();
-          if (  pduAResolver.contemCampo( CLIENTE_ALCUNHA ) && pduAResolver.contemCampo( CLIENTE_SEC_INFO )){
+          if (  pduAResolver.contemCampo( ServerCodes.CLIENTE_ALCUNHA ) && pduAResolver.contemCampo( ServerCodes.CLIENTE_SEC_INFO )){
             CampoPdu campoAlcunha = pduAResolver.popCampo();
             CampoPdu campoSecInfo = pduAResolver.popCampo();
             String alcunha = campoAlcunha.getCampoString();
@@ -253,7 +196,7 @@ public class Coneccao {
           enviaPacote(replyPdu);
           break;
         }
-      case LOGOUT :
+      case ServerCodes.LOGOUT :
         {
           boolean ok = false;
           String descricaoErro = new String();
@@ -279,7 +222,7 @@ public class Coneccao {
           enviaPacote(replyPdu);
           break;
         }
-      case QUIT :
+      case ServerCodes.QUIT :
         {
           boolean ok = false;
           String descricaoErro = new String();
@@ -298,7 +241,7 @@ public class Coneccao {
           enviaPacote(replyPdu);
           break;
         }
-      case END :
+      case ServerCodes.END :
         {
           boolean ok = false;
           String descricaoErro = new String();
@@ -312,7 +255,7 @@ public class Coneccao {
             ok = true;
           }
           else{
-            descricaoErro = "Nao existe uma sessão com login nesta ligação!";
+            descricaoErro = "Nao existe nenhum desafio terminado jogado por si!";
           }
           if ( !ok ) {
             replyPdu.replyErro( descricaoErro );
@@ -320,7 +263,7 @@ public class Coneccao {
           enviaPacote(replyPdu);
           break;
         }
-      case LIST_CHALLENGES :
+      case ServerCodes.LIST_CHALLENGES :
         {
           ArrayList < Desafio > desafiosEmEspera;
           desafiosEmEspera = this.localServerPointer.listaDesafiosEspera();
@@ -329,18 +272,21 @@ public class Coneccao {
               replyPdu.replyDesafioDataHora( desafioPointer.getNomeDesafio() , desafioPointer.getDataHoraInicioDesafio() );
             }
           }
+          else{
+        	  replyPdu.preparaEnvio();
+          }
           enviaPacote(replyPdu);
           break;
         }
-      case MAKE_CHALLENGE :
+      case ServerCodes.MAKE_CHALLENGE :
         {
           boolean ok = false;
           String descricaoErro = new String();
-          if (  pduAResolver.contemCampo( SERVIDOR_NOME_DESAFIO ) ){
+          if (  pduAResolver.contemCampo( ServerCodes.SERVIDOR_NOME_DESAFIO ) ){
             CampoPdu campoNomeDesafio = pduAResolver.popCampo();
             String nomeDesafio = campoNomeDesafio.getCampoString();
             Date dataHoraDesafio = new Date();
-            if ( pduAResolver.contemCampo( SERVIDOR_DATA_DESAFIO ) && pduAResolver.contemCampo( SERVIDOR_HORA_DESAFIO )){
+            if ( pduAResolver.contemCampo( ServerCodes.SERVIDOR_DATA_DESAFIO ) && pduAResolver.contemCampo( ServerCodes.SERVIDOR_HORA_DESAFIO )){
               CampoPdu campoDataDesafio = pduAResolver.popCampo();
               CampoPdu campoHoraDesafio = pduAResolver.popCampo();
               dataHoraDesafio.setYear(campoDataDesafio.getCampoDataAno());
@@ -377,11 +323,11 @@ public class Coneccao {
           enviaPacote(replyPdu);
           break;
         }
-      case ACCEPT_CHALLENGE :
+      case ServerCodes.ACCEPT_CHALLENGE :
         {
           boolean ok = false;
           String descricaoErro = new String();
-          if (  pduAResolver.contemCampo( SERVIDOR_NOME_DESAFIO ) ){
+          if (  pduAResolver.contemCampo( ServerCodes.SERVIDOR_NOME_DESAFIO ) ){
             CampoPdu campoNomeDesafio = pduAResolver.popCampo();
             String nomeDesafio = campoNomeDesafio.getCampoString();
             boolean podeAceitar = false;
@@ -408,11 +354,11 @@ public class Coneccao {
           enviaPacote(replyPdu);
           break;
         }
-      case DELETE_CHALLENGE :
+      case ServerCodes.DELETE_CHALLENGE :
         {
           boolean ok = false;
           String descricaoErro = new String();
-          if (  pduAResolver.contemCampo( SERVIDOR_NOME_DESAFIO ) ){
+          if (  pduAResolver.contemCampo( ServerCodes.SERVIDOR_NOME_DESAFIO ) ){
             CampoPdu campoNomeDesafio = pduAResolver.popCampo();
             String nomeDesafio = campoNomeDesafio.getCampoString();
             boolean desafioPertence = false;
@@ -441,11 +387,11 @@ public class Coneccao {
           enviaPacote(replyPdu);
           break;
         }
-      case ANSWER :
+      case ServerCodes.ANSWER :
         {
           boolean ok = false;
           String descricaoErro = new String();
-          if (  pduAResolver.contemCampo( CLIENTE_NOME_DESAFIO ) && pduAResolver.contemCampo( CLIENTE_NUM_QUESTAO )  && pduAResolver.contemCampo( CLIENTE_ESCOLHA )){
+          if (  pduAResolver.contemCampo( ServerCodes.CLIENTE_NOME_DESAFIO ) && pduAResolver.contemCampo( ServerCodes.CLIENTE_NUM_QUESTAO )  && pduAResolver.contemCampo( ServerCodes.CLIENTE_ESCOLHA )){
             CampoPdu campoEscolha = pduAResolver.popCampo();
             CampoPdu campoNomeDesafio = pduAResolver.popCampo();
             CampoPdu campoQuestao = pduAResolver.popCampo();
@@ -456,7 +402,7 @@ public class Coneccao {
             if(desafioPointer != null){
               boolean resultadoResposta = false;
               resultadoResposta = desafioPointer.respondePergunta( this.alcunhaClienteAssociado , numeroQuestao , escolha );
-              if ( resultadoResposta = true ){
+              if ( resultadoResposta == true ){
                 replyPdu.replyRespostaQuestao ( nomeDesafio , numeroQuestao , 1 , 2 );
               }
               else {
@@ -477,11 +423,11 @@ public class Coneccao {
           enviaPacote(replyPdu);
           break;
         }
-      case RETRANSMIT :
+      case ServerCodes.RETRANSMIT :
         {
           break;
         }
-      case LIST_RANKING :
+      case ServerCodes.LIST_RANKING :
         {
           HashMap < String , Cliente > mapClientes;
           mapClientes = this.localServerPointer.getMapClientes();
@@ -536,21 +482,14 @@ public class Coneccao {
     this.enderecoLigacao = enderecoRemoto;
   }
 
-  public void enviaPergunta( String nomeDesafio , int numeroQuestao , Pergunta perguntaActual) {
+  public void enviaPergunta( String nomeDesafio , int numeroQuestao , Pergunta perguntaActual) throws Exception {
 
     byte[] labelNumero = new byte[2];
     labelNumero[0] = (byte) (this.numeroPdu & 0xFF);
     labelNumero[1] = (byte) ((this.numeroPdu >> 8) & 0xFF);
-
-    BasePdu replyPdu = new BasePdu ( REPLY , labelNumero  ); 
+    BasePdu replyPdu = new BasePdu ( ServerCodes.REPLY , labelNumero  ); 
     replyPdu.replyPergunta( nomeDesafio, numeroQuestao , perguntaActual );
-    try {
       enviaPacote(replyPdu);
-    } catch (IOException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    }
-
     this.numeroPdu++;
   }
 
@@ -566,5 +505,15 @@ public class Coneccao {
     chave += this.getPortaRemota();
     return chave;
   }
+
+public void verificaAlteraSeNecessarioSocket(DatagramSocket receivedSocket,
+		int remotePort) {
+	if (this.boundedSocket != receivedSocket){
+		this.boundedSocket = receivedSocket;
+	}
+	if (this.portaRemota != remotePort ){
+		this.portaRemota = remotePort;
+	}			
+}
 
 }

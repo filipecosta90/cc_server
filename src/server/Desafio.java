@@ -39,7 +39,6 @@ public class Desafio {
     this.estado = EstadoDesafio.EM_ESPERA;
     this.perguntasDesafio = new FicheiroPerguntas ( nomeFicheiroPerguntas );
     this.perguntasDesafio.carregaPerguntas();
-
   }
 
   public Desafio ( Desafio makeCopy ){

@@ -11,15 +11,14 @@ import java.io.FileNotFoundException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Scanner;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
 public class Server implements Runnable {
 
@@ -70,29 +69,24 @@ public class Server implements Runnable {
     mainServer=true;
   }
 
-  public boolean  isThisSocketBound ( InetAddress remoteAddress, int remotePort ){
-    StringBuilder key = new StringBuilder();
-    key.append( remoteAddress.toString() );
-    key.append( remotePort);
+  public boolean  isThisSocketBound (  DatagramSocket socketCliente, InetAddress remoteAddress, int remotePort ){
     boolean isBound = false;
-    if ( this.coneccoesActivas.containsKey( key ) ){
+    if ( this.coneccoesActivas.containsKey( remoteAddress.toString() ) ){
       isBound = true;
     }
     return isBound;
   }
 
-  public String whoAmI ( InetAddress remoteAddress, int remotePort ){
-    StringBuilder key = new StringBuilder();
-    key.append( remoteAddress.toString() );
-    key.append( remotePort);
+  public String whoAmI ( DatagramSocket socketCliente,  InetAddress remoteAddress, int remotePort ){
     String boundTo = new String();
+    String key = remoteAddress.toString();
     if ( this.coneccoesActivas.containsKey( key ) ){
-      boundTo = this.coneccoesActivas.get(key).getAlcunhaClienteAssociado();
+      boundTo = this.coneccoesActivas.get( key ).getAlcunhaClienteAssociado();
     }
     return boundTo;
   }
+  
   public Coneccao getConeccaoCliente ( String nomeCliente ){
-
     Coneccao coneccaoRetornar = null;
     for ( Coneccao coneccaoPointer : this.coneccoesActivas.values() ){
       if ( coneccaoPointer.getAlcunhaClienteAssociado().equals(nomeCliente)){
@@ -102,42 +96,38 @@ public class Server implements Runnable {
     return coneccaoRetornar; 
   }
 
-  public void run() {
-    byte[] udpReceber;
-    DatagramSocket udpSocket;
-    DatagramPacket udpDataPacket;
+  @Override
+    public void run() {
+      byte[] udpReceber;
+      DatagramSocket udpSocket;
+      DatagramPacket udpDataPacket;
 
-    try {
-      udpReceber = new byte[ Coneccao.TAMANHO_MAX_PDU ];
-      udpSocket = new DatagramSocket( listeningUDPPort );
-      udpDataPacket = new DatagramPacket( udpReceber , udpReceber.length );
-      System.out.println( "\t Iniciado o listner UDP na porta: " + listeningUDPPort );
-
-      while ( true ) {
-        try {
-          udpSocket.receive( udpDataPacket );
-          new Thread(new ServerResponder( this, udpSocket, udpDataPacket)).start();
-        } catch ( Exception e ) {
+      try {
+        udpSocket = new DatagramSocket( listeningUDPPort );
+        System.out.println( "Iniciado o listner UDP na porta: " + listeningUDPPort +"\n");
+        while ( true ) {
+          try {
+            udpReceber = new byte[ ServerCodes.TAMANHO_MAX_PDU ];
+            udpDataPacket = new DatagramPacket( udpReceber , udpReceber.length );
+            udpSocket.receive( udpDataPacket );
+            new Thread(new ServerResponder( this, udpSocket, udpDataPacket)).start();
+          } catch ( Exception e ) {
+          }
         }
+      } catch ( SocketException e ) {
       }
-    } catch ( SocketException e ) {
     }
-  }
 
-  public Coneccao getConeccao(InetAddress remoteAddress, int remotePort) {
+  public Coneccao getConeccao(DatagramSocket socketCliente , InetAddress remoteAddress, int remotePort) {
     Coneccao coneccaoRetornar;
     StringBuilder key = new StringBuilder();
     key.append( remoteAddress.toString() );
-    key.append( remotePort);
-    coneccaoRetornar = this.coneccoesActivas.get(key);
+    coneccaoRetornar = this.coneccoesActivas.get(key.toString());
     return coneccaoRetornar;
   }
 
   public void adicionaConeccao(Coneccao coneccaoEstabelecida) {
-    StringBuilder key = new StringBuilder();
-    key.append( coneccaoEstabelecida.getEnderecoRemoto().toString() );
-    key.append( coneccaoEstabelecida.getPortaRemota());
-    this.coneccoesActivas.put( key.toString() , coneccaoEstabelecida );
+    this.coneccoesActivas.put( coneccaoEstabelecida.getEnderecoRemoto().toString() , coneccaoEstabelecida );
   }
 
   public boolean registarCliente(String nome, String alcunha, String sec_info) {

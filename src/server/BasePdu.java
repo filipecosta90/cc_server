@@ -12,58 +12,12 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.DatagramPacket;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Date;
 
 public class BasePdu {
-
-  /* Campos dos tipos de pedidos que os clientes podem enviar aos servidores */
-  public static final byte CLIENTE_NOME = (byte)1;
-  public static final byte CLIENTE_ALCUNHA = (byte)2;
-  public static final byte CLIENT_SEC_INFO = (byte)3;
-  public static final byte CLIENTE_DATA = (byte)4;
-  public static final byte CLIENTE_HORA = (byte)5;
-  public static final byte CLIENTE_ESCOLHA = (byte)6;
-  public static final byte CLIENTE_NOME_DESAFIO = (byte)7;
-  public static final byte CLIENTE_NUM_QUESTAO = (byte)10;
-  public static final byte CLIENTE_NUM_BLOCO = (byte)17;
-
-  /* Campos dos tipos de respostas que os servidores podem enviar aos clientes */
-  public static final byte SERVIDOR_OK = (byte)0;
-  public static final byte SERVIDOR_ERRO = (byte) 255;
-  public static final byte SERVIDOR_CONTINUA = (byte) 254;
-  public static final byte SERVIDOR_NOME = (byte)1;
-  public static final byte SERVIDOR_ALCUNHA = (byte)2;
-  public static final byte SERVIDOR_DATA_DESAFIO = (byte)4;
-  public static final byte SERVIDOR_HORA_DESAFIO = (byte)5;
-  public static final byte SERVIDOR_NOME_DESAFIO = (byte)7;
-  public static final byte SERVIDOR_NUM_QUESTAO = (byte)10;	  
-  public static final byte SERVIDOR_TXT_QUESTAO = (byte)11;
-  public static final byte SERVIDOR_NUM_RESPOSTA = (byte)12;
-  public static final byte SERVIDOR_TXT_RESPOSTA = (byte)13;
-  public static final byte SERVIDOR_RESPOSTA_CERTA = (byte)14;
-  public static final byte SERVIDOR_PONTOS = (byte)15;
-  public static final byte SERVIDOR_IMAGEM = (byte)16;
-  public static final byte SERVIDOR_NUM_BLOCO = (byte)17;
-  public static final byte SERVIDOR_AUDIO = (byte)18;
-  public static final byte SERVIDOR_SCORE = (byte)20;
-
-  /* Campos dos tipos de informação que os servidores podem difundir entre si */
-  public static final byte INFO_NOME = (byte)1;
-  public static final byte INFO_ALCUNHA = (byte)2;
-  public static final byte INFO_NOME_DESAFIO = (byte)7;
-  public static final byte INFO_DATA = (byte)4;
-  public static final byte INFO_HORA = (byte)5;
-  public static final byte INFO_NUM_QUESTAO = (byte)10;	  
-  public static final byte INFO_TXT_QUESTAO = (byte)11;
-  public static final byte INFO_NUM_RESPOSTA = (byte)12;
-  public static final byte INFO_TXT_RESPOSTA = (byte)13;
-  public static final byte INFO_RESPOSTA_CERTA = (byte)14;
-  public static final byte INFO_IMAGEM = (byte)16;
-  public static final byte INFO_MUSICA = (byte)19;
-  public static final byte INFO_SCORE = (byte)20;
-  public static final byte INFO_IP_SERVIDOR = (byte)30;
-  public static final byte INFO_PORTA_SERVIDOR =(byte) 31;
 
   protected byte versao[];
   protected byte seguranca[];
@@ -91,7 +45,7 @@ public class BasePdu {
     numeroCamposSeguintes =  new byte[1];
     tamanhoBytesCamposSeguintes = new byte[2];
     tamanhoCamposSeguintes = 0;
-    tamanhoPdu = 8;
+    tamanhoPdu = pacote.getLength();
     rawData = pacote.getData();
     esperaDadosNovoPacote = false;
     numeroCamposSeguintesInt = 0;
@@ -105,6 +59,23 @@ public class BasePdu {
     this.label = new byte[2];
     this.label[0] = label[0];
     this.label[1] = label[1];
+    this.tipo = new byte[1];
+    this.tipo[0] = tipo;
+    numeroCamposSeguintes =  new byte[1];
+    tamanhoBytesCamposSeguintes = new byte[2];
+    tamanhoCamposSeguintes = 0;
+    tamanhoPdu = 8;
+    esperaDadosNovoPacote = false;
+    numeroCamposSeguintesInt = 0;
+    posPopCamposSeguintes = 0;
+    this.ArrayListCamposSeguintes = new ArrayList <CampoPdu>();
+  }
+
+  public BasePdu ( byte tipo , int labelNumber ) { 
+    versao = new byte[1];
+    seguranca = new byte[1];
+    this.label = new byte[2];
+    label = intPara2Bytes( labelNumber);
     this.tipo = new byte[1];
     this.tipo[0] = tipo;
     numeroCamposSeguintes =  new byte[1];
@@ -188,21 +159,16 @@ public class BasePdu {
   }
 
   public boolean parseCabecalho( ) {
-    inputByteArray = new ByteArrayInputStream( rawData );
-    tamanhoPdu = inputByteArray.available();
+    inputByteArray = new ByteArrayInputStream( rawData , 0 , this.tamanhoPdu );
     if( tamanhoPdu >= 8 ){
-      inputByteArray.read(versao , 0 , 1 );
-      inputByteArray.read( seguranca , 0 , 1);
-      inputByteArray.read(label, 0, 2);
-      inputByteArray.read( tipo , 0 , 1);
-      inputByteArray.read( numeroCamposSeguintes , 0 , 1);
-      Byte UnitNumeroSeguintes = new Byte (numeroCamposSeguintes[0]);
-      numeroCamposSeguintesInt = UnitNumeroSeguintes.intValue();
-      inputByteArray.read( tamanhoBytesCamposSeguintes , 0 , 2);
-      Byte Decimal = new Byte (tamanhoBytesCamposSeguintes[0]);
-      Byte Unit = new Byte (tamanhoBytesCamposSeguintes[1]);
-      int tamanhoCamposSeguintes = Decimal.intValue() * 10 + Unit.intValue();
-      this.tamanhoPdu += tamanhoCamposSeguintes;
+      inputByteArray.read( versao , 0 , 1 );
+      inputByteArray.read( seguranca , 0 , 1 );
+      inputByteArray.read( label, 0, 2 );
+      inputByteArray.read( tipo , 0 , 1 );
+      inputByteArray.read( numeroCamposSeguintes , 0 , 1 );
+      numeroCamposSeguintesInt = umByteParaInt( numeroCamposSeguintes );
+      inputByteArray.read( tamanhoBytesCamposSeguintes , 0 , 2 );
+      tamanhoCamposSeguintes = doisBytesParaInt( tamanhoBytesCamposSeguintes );
       if ( tamanhoCamposSeguintes > 0 ) {
         camposSeguintes = new byte[tamanhoCamposSeguintes];
         inputByteArray.read( camposSeguintes , 0 ,  tamanhoCamposSeguintes );
@@ -218,48 +184,55 @@ public class BasePdu {
     public String toString()
     {
       StringBuilder s = new StringBuilder();
-      s.append( "********** PDU Base **********");
+      s.append( "************ PDU Base ************");
       s.append( "\nversao: "+ versao[0] );
       s.append( "\tsegurancao: "+ seguranca[0] );
-      s.append( "nlabel: "+ label[0]+label[1] );
+      s.append( "\nlabel: "+ label[1]+label[0] );
       s.append( "\ttipo: "+ tipo[0] );
-      s.append( "\nnum de campos seguintes: "+ numeroCamposSeguintes[0] );
-      s.append( "\ttam de campos seguintes: "+ tamanhoCamposSeguintes );
+      s.append( "\nNum Campos: "+ numeroCamposSeguintes[0] + "int("+ this.numeroCamposSeguintesInt +")" );
+      s.append( "\tTam: "+ this.tamanhoBytesCamposSeguintes[1]+tamanhoBytesCamposSeguintes[0] + "int("+ tamanhoCamposSeguintes +")" );
       s.append( "\ntamanho total: " + tamanhoPdu );
       if ( tamanhoCamposSeguintes > 0){
-        s.append( "\t----- INICIO CAMPOS -----");
+        s.append( "\n\t----- INICIO CAMPOS -----");
         for (CampoPdu t : ArrayListCamposSeguintes ) {
-          s.append("\t");
+          s.append("\n\t");
           s.append(t.toString());
           s.append("\n");
         }
         s.append( "\t-----  FIM  CAMPOS  -----");
       }
-      s.append( "********** FIM PDU Base **********");
-
+      s.append( "\n********** FIM PDU Base **********");
       return s.toString();
     }
 
   /* Métodos auxiliares */
   public void preparaEnvio() throws IOException {
     ByteArrayOutputStream novoOut = new ByteArrayOutputStream();
-    for (CampoPdu t : ArrayListCamposSeguintes ) {
-      novoOut.write(t.getBytes());
+    for ( CampoPdu t : ArrayListCamposSeguintes ) {
+      novoOut.write(t.getBytes() , 0 , t.tamanhoTotal);
+      novoOut.flush();
     }
     numeroCamposSeguintesInt = ArrayListCamposSeguintes.size();
-    this.numeroCamposSeguintes = CampoPdu.intPara2Bytes ( numeroCamposSeguintesInt );
+    this.numeroCamposSeguintes = intPara1Byte ( numeroCamposSeguintesInt );
     tamanhoCamposSeguintes = novoOut.size();
-    this.tamanhoBytesCamposSeguintes = CampoPdu.intPara2Bytes ( tamanhoCamposSeguintes );
+    this.tamanhoBytesCamposSeguintes = intPara2Bytes ( tamanhoCamposSeguintes );
     camposSeguintes = novoOut.toByteArray();
+    novoOut.flush();
+    novoOut.close();
     tamanhoPdu = 8 + tamanhoCamposSeguintes;
     ByteArrayOutputStream outBytes = new ByteArrayOutputStream();
     outBytes.write( this.versao );
     outBytes.write( this.seguranca );
-    outBytes.write( this.label );
+    outBytes.write( this.label , 0 ,2 );
     outBytes.write( this.tipo );
-    outBytes.write( this.tamanhoBytesCamposSeguintes );
-    outBytes.write( this.camposSeguintes );
+    outBytes.write( this.numeroCamposSeguintes );
+    outBytes.write( this.tamanhoBytesCamposSeguintes , 0 , 2);
+    outBytes.write( this.camposSeguintes , 0 , tamanhoCamposSeguintes);
+    outBytes.flush();
     rawData = outBytes.toByteArray();
+    System.out.println("tamanho bytes gerado: " + rawData.length);
+    outBytes.flush();
+    outBytes.close();
   }
 
   /* Métodos auxiliares */
@@ -278,7 +251,7 @@ public class BasePdu {
       posCamposSeguintes++;
       campo.parseTamanhoCampo( camposSeguintes , posCamposSeguintes) ;
       posCamposSeguintes+=2;
-      campo.parseDados ( camposSeguintes , posCamposSeguintes );
+      campo.parseDados ( camposSeguintes , posCamposSeguintes , campo.tamanhoDados );
       tamanhoCampoLido = campo.getTamanhoDados();
       posCamposSeguintes += tamanhoCampoLido;
       this.ArrayListCamposSeguintes.add( campo );
@@ -305,29 +278,29 @@ public class BasePdu {
   }
 
   public void replyOK() throws IOException {
-    CampoPdu campoOk = new CampoPdu ( SERVIDOR_OK );
+    CampoPdu campoOk = new CampoPdu ( ServerCodes.SERVIDOR_OK );
     campoOk.adicionaByteAZero();
     this.adicionaCampoPdu(campoOk);
     this.preparaEnvio();
   }
 
-  private void adicionaCampoPdu(CampoPdu campoInserir) {
+  public void adicionaCampoPdu(CampoPdu campoInserir) {
     this.tamanhoCamposSeguintes += campoInserir.tamanhoTotal;
     this.ArrayListCamposSeguintes.add(campoInserir);
   }
 
   public void replyErro( String descricaoErro ) throws IOException {
-    CampoPdu campoErro = new CampoPdu ( SERVIDOR_ERRO );
+    CampoPdu campoErro = new CampoPdu ( ServerCodes.SERVIDOR_ERRO );
     campoErro.adicionaString( descricaoErro );
     this.adicionaCampoPdu(campoErro);
     this.preparaEnvio();
   }
 
   public void replyAlcunhaScore( String alcunhaCliente , int scoreCliente ) throws IOException {
-    CampoPdu campoAlcunha = new CampoPdu ( SERVIDOR_ALCUNHA );
+    CampoPdu campoAlcunha = new CampoPdu ( ServerCodes.SERVIDOR_ALCUNHA );
     campoAlcunha.adicionaString( alcunhaCliente );
     this.adicionaCampoPdu(campoAlcunha);
-    CampoPdu campoPontos = new CampoPdu ( SERVIDOR_PONTOS );
+    CampoPdu campoPontos = new CampoPdu ( ServerCodes.SERVIDOR_PONTOS );
     campoPontos.adicionaInteiro1Byte ( scoreCliente );
     this.adicionaCampoPdu(campoPontos);
     this.preparaEnvio();
@@ -350,93 +323,96 @@ public class BasePdu {
     return popCampo;
   }
 
-  public void replyDesafioDataHora(String nomeDesafio, Date dataHoraInicioDesafio) {
-    CampoPdu campoNomeDesafio = new CampoPdu ( SERVIDOR_NOME_DESAFIO );
+  public void replyDesafioDataHora(String nomeDesafio, Date dataHoraInicioDesafio) throws Exception {
+    CampoPdu campoNomeDesafio = new CampoPdu ( ServerCodes.SERVIDOR_NOME_DESAFIO );
     campoNomeDesafio.adicionaString( nomeDesafio );
     this.adicionaCampoPdu(campoNomeDesafio);
-    CampoPdu campoDataDesafio = new CampoPdu ( SERVIDOR_DATA_DESAFIO );
+    CampoPdu campoDataDesafio = new CampoPdu ( ServerCodes.SERVIDOR_DATA_DESAFIO );
     campoDataDesafio.adicionaData( dataHoraInicioDesafio );
     this.adicionaCampoPdu(campoDataDesafio);
-    CampoPdu campoHoraDesafio = new CampoPdu ( SERVIDOR_HORA_DESAFIO );
+    CampoPdu campoHoraDesafio = new CampoPdu ( ServerCodes.SERVIDOR_HORA_DESAFIO );
     campoHoraDesafio.adicionaHora( dataHoraInicioDesafio );
     this.adicionaCampoPdu(campoHoraDesafio);
+    this.preparaEnvio();
   }
 
-  public void replyPergunta(String nomeDesafio, int numeroQuestao , Pergunta perguntaEnviar) {
-    CampoPdu campoNomeDesafio = new CampoPdu ( SERVIDOR_NOME_DESAFIO );
+  public void replyPergunta(String nomeDesafio, int numeroQuestao , Pergunta perguntaEnviar) throws Exception {
+    CampoPdu campoNomeDesafio = new CampoPdu ( ServerCodes.SERVIDOR_NOME_DESAFIO );
     campoNomeDesafio.adicionaString( nomeDesafio );
     this.adicionaCampoPdu(campoNomeDesafio);
-    CampoPdu campoNumeroQuestao = new CampoPdu ( SERVIDOR_NUM_QUESTAO );
+    CampoPdu campoNumeroQuestao = new CampoPdu ( ServerCodes.SERVIDOR_NUM_QUESTAO );
     campoNumeroQuestao.adicionaInteiro1Byte( numeroQuestao );
     this.adicionaCampoPdu(campoNumeroQuestao);
-    CampoPdu campoTextoQuestao = new CampoPdu ( SERVIDOR_TXT_QUESTAO );
+    CampoPdu campoTextoQuestao = new CampoPdu ( ServerCodes.SERVIDOR_TXT_QUESTAO );
     campoTextoQuestao.adicionaString( perguntaEnviar.get_pergunta() );
     this.adicionaCampoPdu(campoTextoQuestao);
-    CampoPdu campoOpcao1 = new CampoPdu ( SERVIDOR_NUM_RESPOSTA );
+    CampoPdu campoOpcao1 = new CampoPdu ( ServerCodes.SERVIDOR_NUM_RESPOSTA );
     campoOpcao1.adicionaInteiro1Byte(1);
     this.adicionaCampoPdu(campoOpcao1);
-    CampoPdu campoTextoOpcao1 = new CampoPdu ( SERVIDOR_TXT_RESPOSTA );
+    CampoPdu campoTextoOpcao1 = new CampoPdu ( ServerCodes.SERVIDOR_TXT_RESPOSTA );
     campoTextoOpcao1.adicionaString(perguntaEnviar.getTextoOpcao(0));
     this.adicionaCampoPdu(campoTextoOpcao1);
-    CampoPdu campoOpcao2 = new CampoPdu ( SERVIDOR_NUM_RESPOSTA );
+    CampoPdu campoOpcao2 = new CampoPdu ( ServerCodes.SERVIDOR_NUM_RESPOSTA );
     campoOpcao2.adicionaInteiro1Byte(2);
     this.adicionaCampoPdu(campoOpcao2);
-    CampoPdu campoTextoOpcao2 = new CampoPdu ( SERVIDOR_TXT_RESPOSTA );
+    CampoPdu campoTextoOpcao2 = new CampoPdu ( ServerCodes.SERVIDOR_TXT_RESPOSTA );
     campoTextoOpcao2.adicionaString(perguntaEnviar.getTextoOpcao(1));
     this.adicionaCampoPdu(campoTextoOpcao2);
-    CampoPdu campoOpcao3 = new CampoPdu ( SERVIDOR_NUM_RESPOSTA );
+    CampoPdu campoOpcao3 = new CampoPdu ( ServerCodes.SERVIDOR_NUM_RESPOSTA );
     campoOpcao3.adicionaInteiro1Byte(3);
     this.adicionaCampoPdu(campoOpcao3);
-    CampoPdu campoTextoOpcao3 = new CampoPdu ( SERVIDOR_TXT_RESPOSTA );
+    CampoPdu campoTextoOpcao3 = new CampoPdu ( ServerCodes.SERVIDOR_TXT_RESPOSTA );
     campoTextoOpcao3.adicionaString(perguntaEnviar.getTextoOpcao(2));
     this.adicionaCampoPdu(campoTextoOpcao3);
-    CampoPdu campoCerta = new CampoPdu ( SERVIDOR_RESPOSTA_CERTA );
+    CampoPdu campoCerta = new CampoPdu ( ServerCodes.SERVIDOR_RESPOSTA_CERTA );
     campoCerta.adicionaInteiro1Byte(perguntaEnviar.getCerta());
     this.adicionaCampoPdu(campoCerta);
-    CampoPdu campoImagem = new CampoPdu ( SERVIDOR_IMAGEM );
+    CampoPdu campoImagem = new CampoPdu ( ServerCodes.SERVIDOR_IMAGEM );
     ArrayList <CampoPdu > blocosExtraImagem = new  ArrayList <CampoPdu > ();
     blocosExtraImagem = campoImagem.adicionaFicheiro( perguntaEnviar.get_Imagem() );
     this.adicionaCampoPdu(campoImagem);
     for ( CampoPdu blocoImagem : blocosExtraImagem ){
-      CampoPdu campoNumeroBlocoImagemExtra = new CampoPdu ( SERVIDOR_NUM_BLOCO );
+      CampoPdu campoNumeroBlocoImagemExtra = new CampoPdu ( ServerCodes.SERVIDOR_NUM_BLOCO );
       campoNumeroBlocoImagemExtra.adicionaInteiro1Byte( blocoImagem.getNumeroBloco());
       this.adicionaCampoPdu(campoNumeroBlocoImagemExtra);
       this.adicionaCampoPdu(blocoImagem);
     }
-    CampoPdu campoNumeroBlocoMusica = new CampoPdu ( SERVIDOR_NUM_BLOCO );
+    CampoPdu campoNumeroBlocoMusica = new CampoPdu ( ServerCodes.SERVIDOR_NUM_BLOCO );
     campoNumeroBlocoMusica.adicionaInteiro1Byte(1);
     this.adicionaCampoPdu(campoNumeroBlocoMusica);
-    CampoPdu campoBlocoMusica = new CampoPdu ( SERVIDOR_AUDIO );
+    CampoPdu campoBlocoMusica = new CampoPdu ( ServerCodes.SERVIDOR_AUDIO );
     ArrayList <CampoPdu > blocosExtraAudio = new  ArrayList <CampoPdu > ();
     blocosExtraAudio = campoBlocoMusica.adicionaFicheiro( perguntaEnviar.get_Musica());
     this.adicionaCampoPdu(campoBlocoMusica);
     for ( CampoPdu blocoAudio : blocosExtraAudio ){
-      CampoPdu campoNumeroBlocoMusicaExtra = new CampoPdu ( SERVIDOR_NUM_BLOCO );
+      CampoPdu campoNumeroBlocoMusicaExtra = new CampoPdu ( ServerCodes.SERVIDOR_NUM_BLOCO );
       campoNumeroBlocoMusicaExtra.adicionaInteiro1Byte( blocoAudio.getNumeroBloco());
       this.adicionaCampoPdu(campoNumeroBlocoMusicaExtra);
       this.adicionaCampoPdu(blocoAudio);
     }
+    this.preparaEnvio();
   }
 
-  public void replyRespostaQuestao(String nomeDesafio, int numeroQuestao, int certaErrada , int pontosAmealhados ) {
-    CampoPdu campoNomeDesafio = new CampoPdu ( SERVIDOR_NOME_DESAFIO );
+  public void replyRespostaQuestao(String nomeDesafio, int numeroQuestao, int certaErrada , int pontosAmealhados ) throws Exception {
+    CampoPdu campoNomeDesafio = new CampoPdu ( ServerCodes.SERVIDOR_NOME_DESAFIO );
     campoNomeDesafio.adicionaString( nomeDesafio );
     this.adicionaCampoPdu(campoNomeDesafio);
-    CampoPdu campoNumeroQuestao = new CampoPdu ( SERVIDOR_NUM_QUESTAO );
+    CampoPdu campoNumeroQuestao = new CampoPdu ( ServerCodes.SERVIDOR_NUM_QUESTAO );
     campoNumeroQuestao.adicionaInteiro1Byte( numeroQuestao );
     this.adicionaCampoPdu(campoNumeroQuestao);
-    CampoPdu campoCertaErrada = new CampoPdu ( SERVIDOR_RESPOSTA_CERTA );
+    CampoPdu campoCertaErrada = new CampoPdu ( ServerCodes.SERVIDOR_RESPOSTA_CERTA );
     campoCertaErrada.adicionaInteiro1Byte( certaErrada );
     this.adicionaCampoPdu(campoCertaErrada);
-    CampoPdu campoPontos = new CampoPdu ( SERVIDOR_PONTOS );
+    CampoPdu campoPontos = new CampoPdu ( ServerCodes.SERVIDOR_PONTOS );
     campoPontos.adicionaInteiro1Byte( pontosAmealhados );
     this.adicionaCampoPdu(campoPontos);
+    this.preparaEnvio();
   }
 
-  public ArrayList<BasePdu> split(int tamanhoMaxPdu) {
+  public ArrayList<BasePdu> split(int tamanhoMaxPdu) throws Exception {
     ArrayList<BasePdu> dividido = new ArrayList <BasePdu> ();
     int campoNumero = 0;
-    CampoPdu continuaNoutroPdu = new CampoPdu ( SERVIDOR_CONTINUA );
+    CampoPdu continuaNoutroPdu = new CampoPdu ( ServerCodes.SERVIDOR_CONTINUA );
     continuaNoutroPdu.adicionaByteAZero();
     while ( campoNumero < this.ArrayListCamposSeguintes.size() ){
       BasePdu novoPdu = new BasePdu ( this.getVersao() , this.getSeguranca() , this.getLabel() , this.getTipo() ) ;
@@ -449,9 +425,65 @@ public class BasePdu {
         novoPdu.adicionaCampoPdu(continuaNoutroPdu);
         novoPdu.esperaDadosNovoPacote = true;
       }
+      novoPdu.preparaEnvio();
       dividido.add(novoPdu);
     }
     return dividido;
+  }
+
+  public int doisBytesParaInt ( byte[] data){
+    ByteBuffer byteBuffer = ByteBuffer.allocateDirect(4);
+    // by choosing big endian, high order bytes must be put
+    // to the buffer before low order bytes
+    byteBuffer.order(ByteOrder.BIG_ENDIAN);
+    // since ints are 4 bytes (32 bit), you need to put all 4, so put 0
+    // for the high order bytes
+    byteBuffer.put((byte)0x00);
+    byteBuffer.put((byte)0x00);
+    byteBuffer.put((byte)data[1]);
+    byteBuffer.put((byte)data[0]);
+    byteBuffer.flip();
+    int valor = byteBuffer.getInt();
+    System.out.println("dois bytes "+ byteBuffer.get(3) + byteBuffer.get(2) + byteBuffer.get(1) + byteBuffer.get(0) +") para int" + valor);
+
+    return valor;
+  }
+
+  public int umByteParaInt ( byte[] data ){
+    ByteBuffer byteBuffer = ByteBuffer.allocateDirect(4);
+    // by choosing big endian, high order bytes must be put
+    // to the buffer before low order bytes
+    byteBuffer.order(ByteOrder.BIG_ENDIAN);
+    // since ints are 4 bytes (32 bit), you need to put all 4, so put 0
+    // for the high order bytes
+    byteBuffer.put((byte)0x00);
+    byteBuffer.put((byte)0x00);
+    byteBuffer.put((byte)0x00);
+    byteBuffer.put((byte) data[0]);
+    byteBuffer.flip();
+    int valor = byteBuffer.getInt();
+    System.out.println("um byte "+ byteBuffer.get(3) + byteBuffer.get(2) + byteBuffer.get(1) + byteBuffer.get(0) +") para int" + valor);
+    return valor;
+  }
+
+  public byte[] intPara2Bytes ( int aConverter ){ 
+    ByteBuffer bb = ByteBuffer.allocate(4); 
+    bb.putInt(aConverter); 
+    byte[] arrayR = new byte [2];
+    arrayR[0]=bb.get(3);
+    arrayR[1]=bb.get(2);
+    System.out.println("int ("+ aConverter +") para 2 bytes " + arrayR[1]+arrayR[0]);
+    return arrayR;
+  }
+
+  public byte[] intPara1Byte ( int aConverter ){ 
+    ByteBuffer bb = ByteBuffer.allocate(4); 
+    bb.putInt(aConverter); 
+    byte[] arrayR = new byte [1];
+    arrayR[0]=bb.get(3);
+    System.out.println(arrayR[0]);
+    System.out.println("int ("+ aConverter +") para 1 bytes " + arrayR[0]);
+    return arrayR;
   }
 
 }

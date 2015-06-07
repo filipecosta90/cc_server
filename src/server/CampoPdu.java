@@ -12,63 +12,14 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 
 public class CampoPdu {
-
-  /* tamanho máximo do campo = 49152 - 256 */
-  public static final int  TAMANHO_MAX_CAMPO = 48896;
-
-  /* Campos dos tipos de pedidos que os clientes podem enviar aos servidores */
-  public static final byte CLIENTE_NOME = (byte)1;
-  public static final byte CLIENTE_ALCUNHA = (byte)2;
-  public static final byte CLIENT_SEC_INFO = (byte)3;
-  public static final byte CLIENTE_DATA = (byte)4;
-  public static final byte CLIENTE_HORA = (byte)5;
-  public static final byte CLIENTE_ESCOLHA = (byte)6;
-  public static final byte CLIENTE_NOME_DESAFIO = (byte)7;
-  public static final byte CLIENTE_NUM_QUESTAO = (byte)10;
-  public static final byte CLIENTE_NUM_BLOCO = (byte)17;
-
-  /* Campos dos tipos de respostas que os servidores podem enviar aos clientes */
-  public static final byte SERVIDOR_OK = (byte)0;
-  public static final byte SERVIDOR_ERRO = (byte) 255;
-  public static final byte SERVIDOR_CONTINUA = (byte) 254;
-  public static final byte SERVIDOR_NOME = (byte)1;
-  public static final byte SERVIDOR_ALCUNHA = (byte)2;
-  public static final byte SERVIDOR_DATA = (byte)4;
-  public static final byte SERVIDOR_HORA = (byte)5;
-  public static final byte SERVIDOR_NOME_DESAFIO = (byte)7;
-  public static final byte SERVIDOR_NUM_QUESTAO = (byte)10;	  
-  public static final byte SERVIDOR_TXT_QUESTAO = (byte)11;
-  public static final byte SERVIDOR_NUM_RESPOSTA = (byte)12;
-  public static final byte SERVIDOR_TXT_RESPOSTA = (byte)13;
-  public static final byte SERVIDOR_RESPOSTA_CERTA = (byte)14;
-  public static final byte SERVIDOR_PONTOS = (byte)15;
-  public static final byte SERVIDOR_IMAGEM = (byte)16;
-  public static final byte SERVIDOR_NUM_BLOCO = (byte)17;
-  public static final byte SERVIDOR_AUDIO = (byte)18;
-  public static final byte SERVIDOR_SCORE = (byte)20;
-
-  /* Campos dos tipos de informação que os servidores podem difundir entre si */
-  public static final byte INFO_NOME = (byte)1;
-  public static final byte INFO_ALCUNHA = (byte)2;
-  public static final byte INFO_NOME_DESAFIO = (byte)7;
-  public static final byte INFO_DATA = (byte)4;
-  public static final byte INFO_HORA = (byte)5;
-  public static final byte INFO_NUM_QUESTAO = (byte)10;	  
-  public static final byte INFO_TXT_QUESTAO = (byte)11;
-  public static final byte INFO_NUM_RESPOSTA = (byte)12;
-  public static final byte INFO_TXT_RESPOSTA = (byte)13;
-  public static final byte INFO_RESPOSTA_CERTA = (byte)14;
-  public static final byte INFO_IMAGEM = (byte)16;
-  public static final byte INFO_MUSICA = (byte)19;
-  public static final byte INFO_SCORE = (byte)20;
-  public static final byte INFO_IP_SERVIDOR = (byte)30;
-  public static final byte INFO_PORTA_SERVIDOR =(byte) 31;
 
   protected byte tipoCampo;
   protected byte[] dadosCampo;
@@ -93,13 +44,13 @@ public class CampoPdu {
     this.tamanhoTotal = 3+tamanhoDadosCopiar;
     this.tamanhoDados = tamanhoDadosCopiar;
     tamanhoDadosBytes = new byte [2];
-    this.tamanhoDadosBytes = this.intPara2Bytes(tamanhoDadosCopiar);
+    this.tamanhoDadosBytes = intPara2Bytes(tamanhoDadosCopiar);
     this.blocoNumero= numeroBloco;
     this.dadosParcelados = true;
   }
 
   public boolean campoDadosParciais(){
-    if ( this.tipoCampo == SERVIDOR_CONTINUA ){
+    if ( this.tipoCampo == ServerCodes.SERVIDOR_CONTINUA ){
       return true;
     }
     else {
@@ -187,7 +138,7 @@ public class CampoPdu {
 
   public void adicionaInteiro1Byte( int aConverter ) {
     dadosCampo = new byte[1];
-    dadosCampo[0] = (byte) (aConverter & 0xFF);
+    dadosCampo = intPara1Byte ( aConverter );
     tamanhoTotal+=1;
     tamanhoDados=1;
   }
@@ -201,16 +152,14 @@ public class CampoPdu {
 
   public void adicionaInteiro2Bytes( int aConverter ) {
     dadosCampo = new byte[2];
-    dadosCampo[0] = (byte) (aConverter & 0xFF);
-    dadosCampo[1] = (byte) ((aConverter >> 8) & 0xFF);
+    dadosCampo= intPara2Bytes ( aConverter);
     tamanhoTotal+=2;
     tamanhoDados=2;
   }
 
   public void adicionaPortaAplicacional( int aConverter ) {
     dadosCampo = new byte[2];
-    dadosCampo[0] = (byte) (aConverter & 0xFF);
-    dadosCampo[1] = (byte) ((aConverter >> 8) & 0xFF);
+    dadosCampo= intPara2Bytes ( aConverter);
     tamanhoTotal+=2;
     tamanhoDados=2;
   }
@@ -229,28 +178,93 @@ public class CampoPdu {
     tamanhoDados=tamanhoAuxiliar;
   }
 
-  public static byte[] intPara2Bytes ( int aConverter ){ 
-    byte[] data = new byte[2];
-    data[0] = (byte) (aConverter & 0xFF);
-    data[1] = (byte) ((aConverter >> 8) & 0xFF);
-    return data;
+
+  public int doisBytesParaInt ( byte[] data){
+    ByteBuffer byteBuffer = ByteBuffer.allocateDirect(4);
+    // by choosing big endian, high order bytes must be put
+    // to the buffer before low order bytes
+    byteBuffer.order(ByteOrder.BIG_ENDIAN);
+    // since ints are 4 bytes (32 bit), you need to put all 4, so put 0
+    // for the high order bytes
+    byteBuffer.put((byte)0x00);
+    byteBuffer.put((byte)0x00);
+    byteBuffer.put((byte)data[1]);
+    byteBuffer.put((byte)data[0]);
+    byteBuffer.flip();
+    int valor = byteBuffer.getInt();
+    System.out.println("dois bytes "+ byteBuffer.get(3) + byteBuffer.get(2) + byteBuffer.get(1) + byteBuffer.get(0) +") para int" + valor);
+
+    return valor;
+  }
+
+  public int doisBytesParaIntStart ( byte[] data , int start ){
+    ByteBuffer byteBuffer = ByteBuffer.allocateDirect(4);
+    // by choosing big endian, high order bytes must be put
+    // to the buffer before low order bytes
+    byteBuffer.order(ByteOrder.BIG_ENDIAN);
+    // since ints are 4 bytes (32 bit), you need to put all 4, so put 0
+    // for the high order bytes
+    byteBuffer.put((byte)0x00);
+    byteBuffer.put((byte)0x00);
+    byteBuffer.put((byte)data[1+start]);
+    byteBuffer.put((byte)data[0+start]);
+    byteBuffer.flip();
+    int valor = byteBuffer.getInt();
+    System.out.println("dois bytes "+ byteBuffer.get(3) + byteBuffer.get(2) + byteBuffer.get(1) + byteBuffer.get(0) +") para int" + valor);
+
+    return valor;
+  }
+
+  public int umByteParaInt ( byte[] data ){
+    ByteBuffer byteBuffer = ByteBuffer.allocateDirect(4);
+    // by choosing big endian, high order bytes must be put
+    // to the buffer before low order bytes
+    byteBuffer.order(ByteOrder.BIG_ENDIAN);
+    // since ints are 4 bytes (32 bit), you need to put all 4, so put 0
+    // for the high order bytes
+    byteBuffer.put((byte)0x00);
+    byteBuffer.put((byte)0x00);
+    byteBuffer.put((byte)0x00);
+    byteBuffer.put((byte) data[0]);
+    byteBuffer.flip();
+    int valor = byteBuffer.getInt();
+    System.out.println("dois bytes "+ byteBuffer.get(3) + byteBuffer.get(2) + byteBuffer.get(1) + byteBuffer.get(0) +") para int" + valor);
+
+    return valor;
+  }
+
+  public byte[] intPara2Bytes ( int aConverter ){ 
+    ByteBuffer bb = ByteBuffer.allocate(4); 
+    bb.putInt(aConverter); 
+    byte[] arrayR = new byte [2];
+    arrayR[0]=bb.get(3);
+    arrayR[1]=bb.get(2);
+    System.out.println("int ("+ aConverter +") para 2 bytes " + arrayR[1]+arrayR[0]);
+    return arrayR;
+  }
+
+  public static byte[] intPara1Byte ( int aConverter ){ 
+    ByteBuffer bb = ByteBuffer.allocate(4); 
+    bb.putInt(aConverter); 
+    byte[] arrayR = new byte [1];
+    arrayR[0]=bb.get(3);
+    System.out.println(arrayR[0]);
+    System.out.println("int ("+ aConverter +") para 1 bytes " + arrayR[0]);
+    return arrayR;
   }
 
   public int getCampoInt1Byte (){
-    return (int)dadosCampo[0] & 0xFF;
+    return umByteParaInt(dadosCampo);
   }
 
   public int getCampoInt2Bytes (){
-    int temp0 = dadosCampo[0] & 0xFF;
-    int temp1 = dadosCampo[1] & 0xFF;
-    return ((temp0 << 8) + temp1);
+    return doisBytesParaInt(dadosCampo);
   }
 
   public void adicionaString ( String aConverter ){
     dadosCampo = aConverter.getBytes(StandardCharsets.UTF_8);
-    int  tamanhoString = aConverter.length();
-    tamanhoTotal+=tamanhoString;
-    tamanhoDados=tamanhoString;
+    tamanhoTotal+= dadosCampo.length;
+    tamanhoDados = dadosCampo.length;
   }
 
   public ArrayList <CampoPdu> adicionaFicheiro ( String pathFicheiro ){
@@ -259,7 +273,7 @@ public class CampoPdu {
     FileInputStream fis;
     try {
       fis = new FileInputStream(file);
-      byte[] buf = new byte[TAMANHO_MAX_CAMPO];
+      byte[] buf = new byte[ServerCodes.TAMANHO_MAX_CAMPO];
       int readNum = 0;
       readNum = fis.read(buf);
       ByteArrayOutputStream bos_esteCampo = new ByteArrayOutputStream();
@@ -269,7 +283,7 @@ public class CampoPdu {
       tamanhoTotal+=tamanhoDados;
       int numeroBloco = 2;
       for (; readNum != -1 && numeroBloco <= 250; numeroBloco++ ) {
-        byte[] bufferNovosCampos = new byte[TAMANHO_MAX_CAMPO];
+        byte[] bufferNovosCampos = new byte[ServerCodes.TAMANHO_MAX_CAMPO];
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         readNum = fis.read(bufferNovosCampos);
         if( readNum > 0 ){
@@ -281,7 +295,6 @@ public class CampoPdu {
       }
       fis.close();
     } catch (IOException e) {
-      // TODO Auto-generated catch block
       e.printStackTrace();
     }
     if ( blocosFicheiroExtra.size() > 0 ){
@@ -295,10 +308,11 @@ public class CampoPdu {
     return campoConvertido;
   }
 
-  public void paraStringDoByteArray ( byte[] bytes, int posArray ){
+  public void paraStringDoByteArray ( byte[] bytes, int posArray , int tamanhoCampo ){
     ByteArrayOutputStream outByte = new ByteArrayOutputStream();
-    for( int pos=posArray; bytes[ pos ]!=0 ; pos++ ){
+    for( int pos=posArray; pos < (tamanhoCampo+posArray); pos++ ){
       outByte.write( bytes[ pos ] );
+      System.out.print( bytes[pos] + "("+ pos +")");
     }
     tamanhoTotal += outByte.size();
     dadosCampo = outByte.toByteArray();
@@ -308,36 +322,38 @@ public class CampoPdu {
   public byte[] getBytes (){
     byte aux[] = new byte[tamanhoTotal];
     aux[0]=tipoCampo;
-    aux[1]= (byte) (tamanhoDados & 0xFF);
-    aux[2]= (byte) ((tamanhoDados >> 8) & 0xFF);
-    int pos = 3;
-    for ( byte b : dadosCampo ){
-      aux[pos]= b;
+    byte[] tamanhoBytes = this.intPara2Bytes(tamanhoDados);
+    System.out.println( " tamanhoDados:" + dadosCampo.length + " tamanhoTotal: " +  tamanhoTotal + " comPFinal:" +  aux.length + " tamanhoDados:" + tamanhoDados );
+    aux[1]= tamanhoBytes[0];
+    aux[2]= tamanhoBytes[1];
+    int pos = 0;
+    while ( pos < tamanhoDados ){
+      aux[pos+3]= dadosCampo[pos];
       pos++;
     }
     return aux;
   }
 
   private void paraDataDoByteArray(byte[] camposSeguintes, int posCamposSeguintes) {
-    dadosCampo = Arrays.copyOfRange(camposSeguintes, posCamposSeguintes, 6);
+    dadosCampo = Arrays.copyOfRange(camposSeguintes, posCamposSeguintes, posCamposSeguintes+6);
     tamanhoTotal += 6;
     tamanhoDados= 6;
   }
 
   private void paraHoraDoByteArray(byte[] camposSeguintes, int posCamposSeguintes) {
-    dadosCampo = Arrays.copyOfRange(camposSeguintes, posCamposSeguintes, 6);
+    dadosCampo = Arrays.copyOfRange(camposSeguintes, posCamposSeguintes, posCamposSeguintes+6);
     tamanhoTotal += 6;
     tamanhoDados= 6;
   }
 
   private void umByteAZeroDoByteArray(byte[] camposSeguintes, int posCamposSeguintes) {
-    dadosCampo = Arrays.copyOfRange(camposSeguintes, posCamposSeguintes, 1);
+    dadosCampo = Arrays.copyOfRange(camposSeguintes, posCamposSeguintes, posCamposSeguintes+1);
     tamanhoTotal += 1;
     tamanhoDados= 1;
   }
 
   private void paraInteiro1ByteDoByteArray(byte[] camposSeguintes , int posCamposSeguintes) {
-    dadosCampo = Arrays.copyOfRange(camposSeguintes, posCamposSeguintes, 1);
+    dadosCampo = Arrays.copyOfRange(camposSeguintes, posCamposSeguintes, posCamposSeguintes+1);
     tamanhoTotal += 1;	
     tamanhoDados= 1;
   }
@@ -348,7 +364,7 @@ public class CampoPdu {
   }
 
   private void paraInteiro2BytesDoByteArray(byte[] camposSeguintes , int posCamposSeguintes) {
-    dadosCampo = Arrays.copyOfRange(camposSeguintes, posCamposSeguintes, 2);
+    dadosCampo = Arrays.copyOfRange(camposSeguintes, posCamposSeguintes, posCamposSeguintes+2);
     tamanhoTotal += 2;
     tamanhoDados= 2;
   }
@@ -359,75 +375,71 @@ public class CampoPdu {
   }
 
   private void paraIPv4DoByteArray(byte[] camposSeguintes , int posCamposSeguintes) {
-    dadosCampo = Arrays.copyOfRange(camposSeguintes, posCamposSeguintes, 4);
+    dadosCampo = Arrays.copyOfRange(camposSeguintes, posCamposSeguintes, posCamposSeguintes+4);
     tamanhoTotal += 4;
     tamanhoDados= 4;
   }
 
   private void paraPortaAplicacionalDoByteArray(byte[] camposSeguintes , int posCamposSeguintes) {
-    dadosCampo = Arrays.copyOfRange(camposSeguintes, posCamposSeguintes, 2);
+    dadosCampo = Arrays.copyOfRange(camposSeguintes, posCamposSeguintes, posCamposSeguintes+2);
     tamanhoTotal += 2;
     tamanhoDados= 2;
   }
 
   public void parseTamanhoCampo(byte[] b , int posCamposSeguintes) {
-    int temp0 = b[posCamposSeguintes] & 0xFF;
-    int temp1 = dadosCampo[posCamposSeguintes+1] & 0xFF;
-    this.tamanhoDados =  ((temp0 << 8) + temp1);
+    this.tamanhoDados = doisBytesParaIntStart(b , posCamposSeguintes); 
     this.tamanhoDadosBytes[0] = b[posCamposSeguintes];
     this.tamanhoDadosBytes[1] = b[posCamposSeguintes+1];
   }
 
-  public void parseDados(byte[] camposSeguintes, int posCamposSeguintes) {	
-    this.parseTamanhoCampo( camposSeguintes, posCamposSeguintes);
-    posCamposSeguintes+=2;
+  public void parseDados(byte[] camposSeguintes, int posCamposSeguintes , int tamanhoCampo ) {	
 
     switch( tipoCampo ){ 
 
       /* ************************************************************************ */
       /* Campos dos tipos de pedidos que os clientes podem enviar aos servidores  */
       /* ************************************************************************ */
-      case CLIENTE_NOME :
+      case ServerCodes.CLIENTE_NOME :
         {
-          paraStringDoByteArray( camposSeguintes , posCamposSeguintes );
+          paraStringDoByteArray( camposSeguintes , posCamposSeguintes , tamanhoCampo );
           break;
         }
-      case CLIENTE_ALCUNHA :
+      case ServerCodes.CLIENTE_ALCUNHA :
         {
-          paraStringDoByteArray( camposSeguintes , posCamposSeguintes );
+          paraStringDoByteArray( camposSeguintes , posCamposSeguintes , tamanhoCampo );
           break;
         }
-      case CLIENT_SEC_INFO :
+      case ServerCodes.CLIENTE_SEC_INFO :
         { 
-          paraStringDoByteArray( camposSeguintes , posCamposSeguintes );
+          paraStringDoByteArray( camposSeguintes , posCamposSeguintes , tamanhoCampo );
           break; 
         }
-      case CLIENTE_DATA :
+      case ServerCodes.CLIENTE_DATA :
         { 
           paraDataDoByteArray ( camposSeguintes , posCamposSeguintes);
           break; 
         }
-      case CLIENTE_HORA :
+      case ServerCodes.CLIENTE_HORA :
         { 
           paraHoraDoByteArray ( camposSeguintes , posCamposSeguintes);
           break; 
         }
-      case CLIENTE_ESCOLHA :
+      case ServerCodes.CLIENTE_ESCOLHA :
         { 
           paraInteiro1ByteDoByteArray ( camposSeguintes , posCamposSeguintes);
           break; 
         }
-      case CLIENTE_NOME_DESAFIO :
+      case ServerCodes.CLIENTE_NOME_DESAFIO :
         { 
-          paraStringDoByteArray( camposSeguintes , posCamposSeguintes );
+          paraStringDoByteArray( camposSeguintes , posCamposSeguintes , tamanhoCampo );
           break; 
         }
-      case CLIENTE_NUM_QUESTAO :
+      case ServerCodes.CLIENTE_NUM_QUESTAO :
         { 
           paraInteiro1ByteDoByteArray ( camposSeguintes , posCamposSeguintes);
           break; 
         }
-      case CLIENTE_NUM_BLOCO :
+      case ServerCodes.CLIENTE_NUM_BLOCO :
         { 
           paraInteiro1ByteDoByteArray ( camposSeguintes , posCamposSeguintes);
           break; 
@@ -437,17 +449,17 @@ public class CampoPdu {
         /* Campos dos tipos de respostas que os servidores podem enviar aos clientes */
         /* ************************************************************************* */
 
-      case SERVIDOR_OK :
+      case ServerCodes.SERVIDOR_OK :
         { 
           umByteAZeroDoByteArray ( camposSeguintes , posCamposSeguintes );
           break; 
         }
-      case SERVIDOR_ERRO :
+      case ServerCodes.SERVIDOR_ERRO :
         { 
-          paraStringDoByteArray( camposSeguintes , posCamposSeguintes );
+          paraStringDoByteArray( camposSeguintes , posCamposSeguintes , tamanhoCampo );
           break; 
         }
-      case SERVIDOR_CONTINUA :
+      case ServerCodes.SERVIDOR_CONTINUA :
         { 
           umByteAZeroDoByteArray ( camposSeguintes , posCamposSeguintes );
           break; 
@@ -460,32 +472,32 @@ public class CampoPdu {
            case SERVIDOR_NOME_DESAFIO : tem o mesmo codigo binario que CLIENTE_NOME_DESAFIO
            case SERVIDOR_NUM_QUESTAO : tem o mesmo codigo binario que CLIENTE_NUM_QUESTAO
            */
-      case SERVIDOR_TXT_QUESTAO :
+      case ServerCodes.SERVIDOR_TXT_QUESTAO :
         { 
-          paraStringDoByteArray( camposSeguintes , posCamposSeguintes );
+          paraStringDoByteArray( camposSeguintes , posCamposSeguintes , tamanhoCampo );
           break; 
         }
-      case SERVIDOR_NUM_RESPOSTA :
-        { 
-          paraInteiro1ByteDoByteArray ( camposSeguintes , posCamposSeguintes);
-          break; 
-        }
-      case SERVIDOR_TXT_RESPOSTA :
-        { 
-          paraStringDoByteArray( camposSeguintes , posCamposSeguintes );
-          break; 
-        }
-      case SERVIDOR_RESPOSTA_CERTA :
+      case ServerCodes.SERVIDOR_NUM_RESPOSTA :
         { 
           paraInteiro1ByteDoByteArray ( camposSeguintes , posCamposSeguintes);
           break; 
         }
-      case SERVIDOR_PONTOS :
+      case ServerCodes.SERVIDOR_TXT_RESPOSTA :
+        { 
+          paraStringDoByteArray( camposSeguintes , posCamposSeguintes , tamanhoCampo );
+          break; 
+        }
+      case ServerCodes.SERVIDOR_RESPOSTA_CERTA :
+        { 
+          paraInteiro1ByteDoByteArray ( camposSeguintes , posCamposSeguintes);
+          break; 
+        }
+      case ServerCodes.SERVIDOR_PONTOS :
         {   
           paraInteiro1ByteDoByteArray ( camposSeguintes , posCamposSeguintes);
           break; 
         }
-      case SERVIDOR_IMAGEM :
+      case ServerCodes.SERVIDOR_IMAGEM :
         { 
           paraJpgDoByteArray ( camposSeguintes , posCamposSeguintes);
           break; 
@@ -493,12 +505,12 @@ public class CampoPdu {
         /* 
            case SERVIDOR_NUM_BLOCO :tem o mesmo codigo binario que CLIENTE_NUM_BLOCO
            */
-      case SERVIDOR_AUDIO :
+      case ServerCodes.SERVIDOR_AUDIO :
         { 
           paraAudioDoByteArray ( camposSeguintes , posCamposSeguintes);
           break; 
         }
-      case SERVIDOR_SCORE :
+      case ServerCodes.SERVIDOR_SCORE :
         { 
           paraInteiro2BytesDoByteArray ( camposSeguintes , posCamposSeguintes);
           break; 
@@ -521,7 +533,7 @@ public class CampoPdu {
            case INFO_RESPOSTA_CERTA : tem o mesmo codigo binario que SERVIDOR_RESPOSTA_CERTA
            case INFO_IMAGEM : tem o mesmo codigo binario que SERVIDOR_IMAGEM
            */
-      case INFO_MUSICA :
+      case ServerCodes.INFO_MUSICA :
         { 
           paraAudioDoByteArray ( camposSeguintes , posCamposSeguintes);
           break; 
@@ -529,12 +541,12 @@ public class CampoPdu {
         /* 
            case INFO_SCORE : tem o mesmo codigo binario que CLIENTE_SCORE
            */
-      case INFO_IP_SERVIDOR :
+      case ServerCodes.INFO_IP_SERVIDOR :
         { 
           paraIPv4DoByteArray ( camposSeguintes , posCamposSeguintes);
           break; 
         }
-      case INFO_PORTA_SERVIDOR :
+      case ServerCodes.INFO_PORTA_SERVIDOR :
         {   
           paraPortaAplicacionalDoByteArray ( camposSeguintes , posCamposSeguintes);
           break; 
