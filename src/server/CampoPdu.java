@@ -77,18 +77,20 @@ public void adicionaData( Date data ) {
     int ano =  data.getYear();
     ano = ano - 100;
     int mes = data.getMonth();
-    int dia = data.getDay();
+    int dia = data.getDate();
     dadosCampo = new byte[6];
     byte[] buffer = new byte[2];
     buffer = intPara2Bytes( ano );
     dadosCampo[0] = buffer[0];
     dadosCampo[1] = buffer[1];
-    buffer = intPara2Bytes( mes );
-    dadosCampo[2] = buffer[0];
-    dadosCampo[3] = buffer[1];
-    buffer = intPara2Bytes( dia );
-    dadosCampo[4] = buffer[0];
-    dadosCampo[5] = buffer[1];
+    byte[] buffer1 = new byte[2];
+    buffer1 = intPara2Bytes( mes );
+    dadosCampo[2] = buffer1[0];
+    dadosCampo[3] = buffer1[1];
+    byte[] buffer2 = new byte[2];
+    buffer2 = intPara2Bytes( dia );
+    dadosCampo[4] = buffer2[0];
+    dadosCampo[5] = buffer2[1];
     tamanhoTotal+=6;
     tamanhoDados=6;
   }
