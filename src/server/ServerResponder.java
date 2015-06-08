@@ -31,12 +31,11 @@ private transient DatagramSocket receivedSocket = null;
 
   @Override
     public void run() {
-      System.out.println("packet received from " + remoteAddress + ":"+remotePort );
+      System.out.println("Pacote recebido de " + remoteAddress + ":"+remotePort );
       Coneccao coneccaoEstabelecida;
       if( this.localServerPointer.isThisSocketBound( receivedSocket , remoteAddress, remotePort)){
-        System.out.println(">>>>>>coneccaoExistente: " + remoteAddress.toString());
         coneccaoEstabelecida = this.localServerPointer.getConeccao( receivedSocket , remoteAddress , remotePort );
-        System.out.println("alcunha associado: "+ coneccaoEstabelecida.getAlcunhaClienteAssociado());
+        System.out.println("Alcunha associada: "+ coneccaoEstabelecida.getAlcunhaClienteAssociado());
         try {
           coneccaoEstabelecida.verificaAlteraSeNecessarioSocket(this.receivedSocket , this.remotePort);
           coneccaoEstabelecida.adicionaPacote(this.receivedPacket);
@@ -46,7 +45,6 @@ private transient DatagramSocket receivedSocket = null;
       }
       /* Nova coneccao */
       else {
-        System.out.println("nova coneccao de: " + remoteAddress.toString());
         coneccaoEstabelecida = new Coneccao ( this.localServerPointer , this.receivedSocket , this.remoteAddress, this.remotePort );
         try {
           coneccaoEstabelecida.adicionaPacote(this.receivedPacket);

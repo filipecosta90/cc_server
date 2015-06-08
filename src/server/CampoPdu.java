@@ -22,9 +22,9 @@ import java.util.Date;
 
 public class CampoPdu implements Serializable{
 
-	private static final long serialVersionUID = -3106250178718470851L;
-	
-private byte tipoCampo;
+  private static final long serialVersionUID = -3106250178718470851L;
+
+  private byte tipoCampo;
   private byte[] dadosCampo;
   private int tamanhoTotal;
   private int tamanhoDados;
@@ -73,27 +73,27 @@ private byte tipoCampo;
   }
 
   @SuppressWarnings("deprecation")
-public void adicionaData( Date data ) {
-    int ano =  data.getYear();
-    ano = ano - 100;
-    int mes = data.getMonth();
-    int dia = data.getDate();
-    dadosCampo = new byte[6];
-    byte[] buffer = new byte[2];
-    buffer = intPara2Bytes( ano );
-    dadosCampo[0] = buffer[0];
-    dadosCampo[1] = buffer[1];
-    byte[] buffer1 = new byte[2];
-    buffer1 = intPara2Bytes( mes );
-    dadosCampo[2] = buffer1[0];
-    dadosCampo[3] = buffer1[1];
-    byte[] buffer2 = new byte[2];
-    buffer2 = intPara2Bytes( dia );
-    dadosCampo[4] = buffer2[0];
-    dadosCampo[5] = buffer2[1];
-    tamanhoTotal+=6;
-    tamanhoDados=6;
-  }
+    public void adicionaData( Date data ) {
+      int ano =  data.getYear();
+      ano = ano - 100;
+      int mes = data.getMonth();
+      int dia = data.getDate();
+      dadosCampo = new byte[6];
+      byte[] buffer = new byte[2];
+      buffer = intPara2Bytes( ano );
+      dadosCampo[0] = buffer[0];
+      dadosCampo[1] = buffer[1];
+      byte[] buffer1 = new byte[2];
+      buffer1 = intPara2Bytes( mes );
+      dadosCampo[2] = buffer1[0];
+      dadosCampo[3] = buffer1[1];
+      byte[] buffer2 = new byte[2];
+      buffer2 = intPara2Bytes( dia );
+      dadosCampo[4] = buffer2[0];
+      dadosCampo[5] = buffer2[1];
+      tamanhoTotal+=6;
+      tamanhoDados=6;
+    }
 
   public int getCampoDataAno() {
     byte[] buffer = new byte[2];
@@ -121,24 +121,24 @@ public void adicionaData( Date data ) {
   }
 
   @SuppressWarnings("deprecation")
-public void adicionaHora( Date data ) {
-    int horas =  data.getHours();
-    int minutos = data.getMinutes();
-    int segundos = data.getSeconds();
-    dadosCampo = new byte[6];
-    byte[] buffer = new byte[2];
-    buffer = intPara2Bytes( horas );
-    dadosCampo[0] = buffer[0];
-    dadosCampo[1] = buffer[1];
-    buffer = intPara2Bytes( minutos );
-    dadosCampo[2] = buffer[0];
-    dadosCampo[3] = buffer[1];
-    buffer = intPara2Bytes( segundos );
-    dadosCampo[4] = buffer[0];
-    dadosCampo[5] = buffer[1];
-    tamanhoTotal+=6;
-    tamanhoDados=6;
-  }
+    public void adicionaHora( Date data ) {
+      int horas =  data.getHours();
+      int minutos = data.getMinutes();
+      int segundos = data.getSeconds();
+      dadosCampo = new byte[6];
+      byte[] buffer = new byte[2];
+      buffer = intPara2Bytes( horas );
+      dadosCampo[0] = buffer[0];
+      dadosCampo[1] = buffer[1];
+      buffer = intPara2Bytes( minutos );
+      dadosCampo[2] = buffer[0];
+      dadosCampo[3] = buffer[1];
+      buffer = intPara2Bytes( segundos );
+      dadosCampo[4] = buffer[0];
+      dadosCampo[5] = buffer[1];
+      tamanhoTotal+=6;
+      tamanhoDados=6;
+    }
 
   public int getCampoHoraHora() {
     byte[] buffer = new byte[2];
@@ -220,7 +220,6 @@ public void adicionaHora( Date data ) {
     byteBuffer.put((byte)data[0]);
     byteBuffer.flip();
     int valor = byteBuffer.getInt();
-    System.out.println("dois bytes "+ byteBuffer.get(3) + byteBuffer.get(2) + byteBuffer.get(1) + byteBuffer.get(0) +") para int" + valor);
     return valor;
   }
 
@@ -237,7 +236,6 @@ public void adicionaHora( Date data ) {
     byteBuffer.put((byte)data[0+start]);
     byteBuffer.flip();
     int valor = byteBuffer.getInt();
-    System.out.println("dois bytes "+ byteBuffer.get(3) + byteBuffer.get(2) + byteBuffer.get(1) + byteBuffer.get(0) +") para int" + valor);
     return valor;
   }
 
@@ -254,7 +252,6 @@ public void adicionaHora( Date data ) {
     byteBuffer.put((byte) data[0]);
     byteBuffer.flip();
     int valor = byteBuffer.getInt();
-    System.out.println("dois bytes "+ byteBuffer.get(3) + byteBuffer.get(2) + byteBuffer.get(1) + byteBuffer.get(0) +") para int" + valor);
     return valor;
   }
 
@@ -264,7 +261,6 @@ public void adicionaHora( Date data ) {
     byte[] arrayR = new byte [2];
     arrayR[0]=bb.get(3);
     arrayR[1]=bb.get(2);
-    System.out.println("int ("+ aConverter +") para 2 bytes " + arrayR[1]+arrayR[0]);
     return arrayR;
   }
 
@@ -273,8 +269,6 @@ public void adicionaHora( Date data ) {
     bb.putInt(aConverter); 
     byte[] arrayR = new byte [1];
     arrayR[0]=bb.get(3);
-    System.out.println(arrayR[0]);
-    System.out.println("int ("+ aConverter +") para 1 bytes " + arrayR[0]);
     return arrayR;
   }
 
@@ -337,7 +331,6 @@ public void adicionaHora( Date data ) {
     ByteArrayOutputStream outByte = new ByteArrayOutputStream();
     for( int pos=posArray; pos < (tamanhoCampo+posArray); pos++ ){
       outByte.write( bytes[ pos ] );
-      System.out.print( bytes[pos] + "("+ pos +")");
     }
     tamanhoTotal += outByte.size();
     dadosCampo = outByte.toByteArray();
@@ -348,7 +341,6 @@ public void adicionaHora( Date data ) {
     byte aux[] = new byte[tamanhoTotal];
     aux[0]=tipoCampo;
     byte[] tamanhoBytes = CampoPdu.intPara2Bytes(tamanhoDados);
-    System.out.println( " tamanhoDados:" + dadosCampo.length + " tamanhoTotal: " +  tamanhoTotal + " comPFinal:" +  aux.length + " tamanhoDados:" + tamanhoDados );
     aux[1]= tamanhoBytes[0];
     aux[2]= tamanhoBytes[1];
     int pos = 0;
@@ -580,15 +572,15 @@ public void adicionaHora( Date data ) {
   }
 
   @Override
-  public String toString()
-  {
-    StringBuilder s = new StringBuilder();
-    s.append( "Campo: ");
-    s.append( tipoCampo );
-    s.append( " Tamanho Dados: ");
-    s.append( this.getTamanhoDados() );
-    return s.toString();
-  }
+    public String toString()
+    {
+      StringBuilder s = new StringBuilder();
+      s.append( "Campo: ");
+      s.append( tipoCampo );
+      s.append( " Tamanho Dados: ");
+      s.append( this.getTamanhoDados() );
+      return s.toString();
+    }
 
   public boolean mesmoTipo(byte tipoCampoTeste ) {
     boolean resultado = false; 

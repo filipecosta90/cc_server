@@ -50,7 +50,6 @@ public class Coneccao implements Serializable {
     BasePdu novoPdu = new BasePdu ( novoPacote );
     novoPdu.parseCabecalho();
     novoPdu.parseCampos();
-    System.out.println(novoPdu.toString());
     if(novoPdu.dadosParciais()){
       boolean query = parteDePduEmEspera( novoPdu );
       if ( query == true ){
@@ -100,12 +99,10 @@ public class Coneccao implements Serializable {
 
   private void boundAlcunhaCliente(String alcunha) {
     this.alcunhaClienteAssociado = alcunha;	
-    System.out.println(">>>>>>>>>>>>>>>>>>alcunha cliente associado : "+ this.alcunhaClienteAssociado);
     this.anonima = false;
   }
 
   private void enviaPacote( BasePdu replyPdu ) throws Exception {
-    System.out.println("\t ENVIANDO PACOTE: \n" + replyPdu.toString());
     ArrayList < BasePdu > pdusEnviar = new ArrayList < BasePdu >();
     if ( replyPdu.getTamanhoTotalPdu() > ServerCodes.TAMANHO_MAX_PDU ){
       pdusEnviar = replyPdu.split( ServerCodes.TAMANHO_MAX_PDU );

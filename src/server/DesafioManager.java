@@ -63,6 +63,7 @@ private Server localServerPointer;
         desafioAGerir.updateEstadoEsperaIniciaCancela();
       }
       while( desafioAGerir.estado == EstadoDesafio.EM_JOGO ){
+          System.out.println("Desafio " + desafioAGerir.getNomeDesafio() + " iniciado: "+ desafioAGerir.getEstado() );
         for ( Pergunta perguntaActual : desafioAGerir.getPerguntas() ){
           this.updateConeccoes();
           if ( perguntaEnviar <= 10 ){

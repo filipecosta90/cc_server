@@ -16,10 +16,9 @@ import server.ServerCodes;
 
 public class ClientResponder implements Serializable{
 
+  private static final long serialVersionUID = 6652405631830146844L;
 
-	private static final long serialVersionUID = 6652405631830146844L;
-	
-private transient DatagramSocket serverSocket;
+  private transient DatagramSocket serverSocket;
   private transient DatagramPacket receivedPacket;
   private InetAddress remoteAddress;
   private int remotePort;
@@ -62,7 +61,7 @@ private transient DatagramSocket serverSocket;
           resolvePacote ( opcao );
         }
       }
-      while ( opcao != ServerCodes.LOGOUT ){
+      while ( logginValido == true ){
         System.out.println("Escolha uma das seguintes opções:" );
         System.out.println("4 - logout " );
         System.out.println("7 - listar desafios " );
@@ -86,144 +85,150 @@ private transient DatagramSocket serverSocket;
   }
 
   @SuppressWarnings("deprecation")
-private void preparaPacote( byte tipoPedido) throws Exception {
-    BasePdu sendPdu = null; 
-    switch( tipoPedido ){
-      case ServerCodes.HELLO :
-        {
-          serverSocket = new DatagramSocket ();
-          sendPdu = new BasePdu ( ServerCodes.HELLO , this.numeroLabel );
-          enviaPacote(sendPdu);
-          break;
-        }
-      case ServerCodes.REGISTER :
-        {
-          System.out.println("Nome de utilizador:");
-          String nomeUtilizador = Input.lerString(sc);
-          System.out.println("Alcunha:");
-          String alcunha = Input.lerString(sc);
-          System.out.println("Password:");
-          String password = Input.lerString(sc);
-          CampoPdu campoNome = new CampoPdu ( ServerCodes.CLIENTE_NOME );
-          CampoPdu campoAlcunha = new CampoPdu ( ServerCodes.CLIENTE_ALCUNHA );
-          CampoPdu campoSecInfo = new CampoPdu ( ServerCodes.CLIENTE_SEC_INFO ); 
-          campoNome.adicionaString(nomeUtilizador);
-          campoAlcunha.adicionaString(alcunha);
-          campoSecInfo.adicionaString(password);
-          sendPdu = new BasePdu ( ServerCodes.REGISTER , this.numeroLabel );
-          sendPdu.adicionaCampoPdu(campoNome);
-          sendPdu.adicionaCampoPdu(campoAlcunha);
-          sendPdu.adicionaCampoPdu(campoSecInfo);
-          enviaPacote(sendPdu);
-          break;
-        }
-      case ServerCodes.LOGIN :
-        {
-          System.out.println("Alcunha:");
-          String alcunha = Input.lerString(sc);
-          System.out.println("Password:");
-          String password = Input.lerString(sc);
-          CampoPdu campoAlcunha = new CampoPdu ( ServerCodes.CLIENTE_ALCUNHA );
-          CampoPdu campoSecInfo = new CampoPdu ( ServerCodes.CLIENTE_SEC_INFO ); 
-          campoAlcunha.adicionaString(alcunha);
-          campoSecInfo.adicionaString(password);
-          sendPdu = new BasePdu ( ServerCodes.LOGIN , this.numeroLabel );
-          sendPdu.adicionaCampoPdu(campoAlcunha);
-          sendPdu.adicionaCampoPdu(campoSecInfo);
-          enviaPacote(sendPdu);
-          break;
-        }
-      case ServerCodes.LOGOUT :
-        {
-          sendPdu = new BasePdu ( ServerCodes.LOGOUT , this.numeroLabel );
-          enviaPacote(sendPdu);
-          break;
-        }
-      case ServerCodes.QUIT :
-        {
-          sendPdu = new BasePdu ( ServerCodes.QUIT , this.numeroLabel );
-          enviaPacote(sendPdu);
-          break;
-        }
-      case ServerCodes.END :
-        {
-          sendPdu = new BasePdu ( ServerCodes.END , this.numeroLabel );
-          enviaPacote(sendPdu);
-          break;
-        }
-      case ServerCodes.LIST_CHALLENGES :
-        {
-          sendPdu = new BasePdu ( ServerCodes.LIST_CHALLENGES , this.numeroLabel );
-          enviaPacote(sendPdu);
-          break;
-        }
-      case ServerCodes.MAKE_CHALLENGE :
-        {
-          sendPdu = new BasePdu ( ServerCodes.MAKE_CHALLENGE , this.numeroLabel );
-          System.out.println("Nome do desafio:");
-          String nomeDesafio = Input.lerString(sc);
-          CampoPdu campoNomeDesafio = new CampoPdu ( ServerCodes.CLIENTE_NOME_DESAFIO );
-          campoNomeDesafio.adicionaString(nomeDesafio);
-          sendPdu.adicionaCampoPdu(campoNomeDesafio);
-          System.out.println("Pretende indicar data e hora (s/n)");
-          String resposta = Input.lerString(sc);
-          if ( resposta.equals("s")){
-            System.out.println("Ano:");
-            int ano = Input.lerInt(sc);
-            ano = ano +100;
-            System.out.println("Mes:");
-            int mes = Input.lerInt(sc);
-            mes = mes-1;
-            System.out.println("Dia:");
-            int dia = Input.lerInt(sc);
-            System.out.println("Hora:");
-            int hora = Input.lerInt(sc);
-            System.out.println("Minutos:");
-            int minutos = Input.lerInt(sc);
-            System.out.println("Segundos:");
-            int segundos = Input.lerInt(sc);
-            CampoPdu campoData = new CampoPdu ( ServerCodes.CLIENTE_DATA );
-            CampoPdu campoHora = new CampoPdu ( ServerCodes.CLIENTE_HORA ); 
-            Date dataHora = new Date(ano,mes,dia,hora,minutos,segundos);
-            campoData.adicionaData(dataHora);
-            campoHora.adicionaHora(dataHora);
-            sendPdu.adicionaCampoPdu(campoData);
-            sendPdu.adicionaCampoPdu(campoHora);
-            System.out.println("Enviou um pedido de criação do desafio: " + nomeDesafio+ "\n\t para a data e hora: " + dataHora);
+    private void preparaPacote( byte tipoPedido) throws Exception {
+      BasePdu sendPdu = null; 
+      switch( tipoPedido ){
+        case ServerCodes.HELLO :
+          {
+            serverSocket = new DatagramSocket ();
+            sendPdu = new BasePdu ( ServerCodes.HELLO , this.numeroLabel );
+            enviaPacote(sendPdu);
+            break;
           }
-          enviaPacote(sendPdu);
-          break;
-        }
-      case ServerCodes.ACCEPT_CHALLENGE :
-        {
-          sendPdu = new BasePdu ( ServerCodes.ACCEPT_CHALLENGE , this.numeroLabel );
-          System.out.println("Nome do desafio:");
-          String nomeDesafio = sc.nextLine();
-          CampoPdu campoNomeDesafio = new CampoPdu ( ServerCodes.CLIENTE_NOME_DESAFIO );
-          campoNomeDesafio.adicionaString(nomeDesafio);
-          sendPdu.adicionaCampoPdu(campoNomeDesafio);
-          enviaPacote(sendPdu);
-          break;
-        }
-      case ServerCodes.DELETE_CHALLENGE :
-        {
-          sendPdu = new BasePdu ( ServerCodes.DELETE_CHALLENGE , this.numeroLabel );
-          System.out.println("Nome do desafio:");
-          String nomeDesafio = sc.nextLine();
-          CampoPdu campoNomeDesafio = new CampoPdu ( ServerCodes.CLIENTE_NOME_DESAFIO );
-          campoNomeDesafio.adicionaString(nomeDesafio);
-          sendPdu.adicionaCampoPdu(campoNomeDesafio);
-          enviaPacote(sendPdu);
-          break;
-        }
-      case ServerCodes.LIST_RANKING :
-        {
-          sendPdu = new BasePdu ( ServerCodes.LIST_RANKING , this.numeroLabel );
-          enviaPacote(sendPdu);
-          break;
-        }
+        case ServerCodes.REGISTER :
+          {
+            System.out.println("Nome de utilizador:");
+            String nomeUtilizador = Input.lerString(sc);
+            System.out.println("Alcunha:");
+            String alcunha = Input.lerString(sc);
+            System.out.println("Password:");
+            String password = Input.lerString(sc);
+            CampoPdu campoNome = new CampoPdu ( ServerCodes.CLIENTE_NOME );
+            CampoPdu campoAlcunha = new CampoPdu ( ServerCodes.CLIENTE_ALCUNHA );
+            CampoPdu campoSecInfo = new CampoPdu ( ServerCodes.CLIENTE_SEC_INFO ); 
+            campoNome.adicionaString(nomeUtilizador);
+            campoAlcunha.adicionaString(alcunha);
+            campoSecInfo.adicionaString(password);
+            sendPdu = new BasePdu ( ServerCodes.REGISTER , this.numeroLabel );
+            sendPdu.adicionaCampoPdu(campoNome);
+            sendPdu.adicionaCampoPdu(campoAlcunha);
+            sendPdu.adicionaCampoPdu(campoSecInfo);
+            enviaPacote(sendPdu);
+            break;
+          }
+        case ServerCodes.LOGIN :
+          {
+            System.out.println("Alcunha:");
+            String alcunha = Input.lerString(sc);
+            System.out.println("Password:");
+            String password = Input.lerString(sc);
+            CampoPdu campoAlcunha = new CampoPdu ( ServerCodes.CLIENTE_ALCUNHA );
+            CampoPdu campoSecInfo = new CampoPdu ( ServerCodes.CLIENTE_SEC_INFO ); 
+            campoAlcunha.adicionaString(alcunha);
+            campoSecInfo.adicionaString(password);
+            sendPdu = new BasePdu ( ServerCodes.LOGIN , this.numeroLabel );
+            sendPdu.adicionaCampoPdu(campoAlcunha);
+            sendPdu.adicionaCampoPdu(campoSecInfo);
+            enviaPacote(sendPdu);
+            break;
+          }
+        case ServerCodes.LOGOUT :
+          {
+            sendPdu = new BasePdu ( ServerCodes.LOGOUT , this.numeroLabel );
+            enviaPacote(sendPdu);
+            break;
+          }
+        case ServerCodes.QUIT :
+          {
+            sendPdu = new BasePdu ( ServerCodes.QUIT , this.numeroLabel );
+            enviaPacote(sendPdu);
+            break;
+          }
+        case ServerCodes.END :
+          {
+            sendPdu = new BasePdu ( ServerCodes.END , this.numeroLabel );
+            enviaPacote(sendPdu);
+            break;
+          }
+        case ServerCodes.LIST_CHALLENGES :
+          {
+            sendPdu = new BasePdu ( ServerCodes.LIST_CHALLENGES , this.numeroLabel );
+            enviaPacote(sendPdu);
+            break;
+          }
+        case ServerCodes.MAKE_CHALLENGE :
+          {
+            sendPdu = new BasePdu ( ServerCodes.MAKE_CHALLENGE , this.numeroLabel );
+            System.out.println("Nome do desafio:");
+            String nomeDesafio = Input.lerString(sc);
+            CampoPdu campoNomeDesafio = new CampoPdu ( ServerCodes.CLIENTE_NOME_DESAFIO );
+            campoNomeDesafio.adicionaString(nomeDesafio);
+            sendPdu.adicionaCampoPdu(campoNomeDesafio);
+            System.out.println("Pretende indicar data e hora (s/n)");
+            String resposta = Input.lerString(sc);
+            if ( resposta.equals("s")){
+              System.out.println("Ano:");
+              int ano = Input.lerInt(sc);
+              ano = ano +100;
+              System.out.println("Mes:");
+              int mes = Input.lerInt(sc);
+              mes = mes-1;
+              System.out.println("Dia:");
+              int dia = Input.lerInt(sc);
+              System.out.println("Hora:");
+              int hora = Input.lerInt(sc);
+              System.out.println("Minutos:");
+              int minutos = Input.lerInt(sc);
+              System.out.println("Segundos:");
+              int segundos = Input.lerInt(sc);
+              CampoPdu campoData = new CampoPdu ( ServerCodes.CLIENTE_DATA );
+              CampoPdu campoHora = new CampoPdu ( ServerCodes.CLIENTE_HORA ); 
+              Date dataHora = new Date();
+              dataHora.setYear(ano);
+              dataHora.setMonth(mes);
+              dataHora.setDate(dia);
+              dataHora.setHours(hora);
+              dataHora.setMinutes(minutos);
+              dataHora.setSeconds(segundos);
+              campoData.adicionaData(dataHora);
+              campoHora.adicionaHora(dataHora);
+              sendPdu.adicionaCampoPdu(campoData);
+              sendPdu.adicionaCampoPdu(campoHora);
+              System.out.println("Enviou um pedido de criação do desafio: " + nomeDesafio+ "\n\t para a data e hora: " + dataHora);
+            }
+            enviaPacote(sendPdu);
+            break;
+          }
+        case ServerCodes.ACCEPT_CHALLENGE :
+          {
+            sendPdu = new BasePdu ( ServerCodes.ACCEPT_CHALLENGE , this.numeroLabel );
+            System.out.println("Nome do desafio:");
+            String nomeDesafio = sc.nextLine();
+            CampoPdu campoNomeDesafio = new CampoPdu ( ServerCodes.CLIENTE_NOME_DESAFIO );
+            campoNomeDesafio.adicionaString(nomeDesafio);
+            sendPdu.adicionaCampoPdu(campoNomeDesafio);
+            enviaPacote(sendPdu);
+            break;
+          }
+        case ServerCodes.DELETE_CHALLENGE :
+          {
+            sendPdu = new BasePdu ( ServerCodes.DELETE_CHALLENGE , this.numeroLabel );
+            System.out.println("Nome do desafio:");
+            String nomeDesafio = sc.nextLine();
+            CampoPdu campoNomeDesafio = new CampoPdu ( ServerCodes.CLIENTE_NOME_DESAFIO );
+            campoNomeDesafio.adicionaString(nomeDesafio);
+            sendPdu.adicionaCampoPdu(campoNomeDesafio);
+            enviaPacote(sendPdu);
+            break;
+          }
+        case ServerCodes.LIST_RANKING :
+          {
+            sendPdu = new BasePdu ( ServerCodes.LIST_RANKING , this.numeroLabel );
+            enviaPacote(sendPdu);
+            break;
+          }
+      }
     }
-  }
 
   private void resolvePacote(byte tipoPedido) throws Exception {
     numeroLabel++;
@@ -355,7 +360,8 @@ private void preparaPacote( byte tipoPedido) throws Exception {
               int horaHora = horaDesafio.getCampoHoraHora();
               int horaMinutos = horaDesafio.getCampoHoraMinutos();
               int horaSegundos = horaDesafio.getCampoHoraSegundos();
-              System.out.println( "Desafio: " + nome + "Data(AA/MM/DD): "+ dataAno + "/"+ dataMes + "/"+ dataDia + "/" + "Hora(HH:MM:SS): "+ horaHora + ":"+ horaMinutos + ":"+ horaSegundos);
+              Date dataDesafioCriado = new Date (dataAno, dataMes, dataDia , horaHora, horaMinutos, horaSegundos );
+              System.out.println( "Desafio: " + nome + "\n\tData: " + dataDesafioCriado);
               campoNumero+=3;
             }
           }
@@ -381,7 +387,8 @@ private void preparaPacote( byte tipoPedido) throws Exception {
             int horaHora = horaDesafio.getCampoHoraHora();
             int horaMinutos = horaDesafio.getCampoHoraMinutos();
             int horaSegundos = horaDesafio.getCampoHoraSegundos();
-            System.out.println( "Desafio Criado: " + nome + "Data(AA/MM/DD): "+ dataAno + "/"+ dataMes + "/"+ dataDia + "/" + "Hora(HH:MM:SS): "+ horaHora + ":"+ horaMinutos + ":"+ horaSegundos);
+            Date dataDesafioCriado = new Date (dataAno, dataMes, dataDia , horaHora, horaMinutos, horaSegundos );
+            System.out.println( "Desafio Criado: " + nome + "\n\tData: " + dataDesafioCriado);
           }
           else{
             if ( novoPdu.contemCampo( ServerCodes.SERVIDOR_ERRO ) ){
@@ -395,7 +402,7 @@ private void preparaPacote( byte tipoPedido) throws Exception {
       case ServerCodes.ACCEPT_CHALLENGE :
         {
           if ( novoPdu.contemCampo( ServerCodes.SERVIDOR_OK ) ){
-            System.out.println( "Logout realizado com sucesso:");
+            System.out.println( "Desafio aceite com sucesso!");
             this.logginValido = false;
           }
           else{
@@ -420,7 +427,8 @@ private void preparaPacote( byte tipoPedido) throws Exception {
             int horaHora = horaDesafio.getCampoHoraHora();
             int horaMinutos = horaDesafio.getCampoHoraMinutos();
             int horaSegundos = horaDesafio.getCampoHoraSegundos();
-            System.out.println( "Desafio Eliminado: " + nome + "Data(AA/MM/DD): "+ dataAno + "/"+ dataMes + "/"+ dataDia + "/" + "Hora(HH:MM:SS): "+ horaHora + ":"+ horaMinutos + ":"+ horaSegundos);
+            Date dataDesafioCriado = new Date (dataAno, dataMes, dataDia , horaHora, horaMinutos, horaSegundos );
+            System.out.println( "Desafio Eliminado: " + nome + "\n\tData: " + dataDesafioCriado);
           }
           else{
             if ( novoPdu.contemCampo( ServerCodes.SERVIDOR_ERRO ) ){

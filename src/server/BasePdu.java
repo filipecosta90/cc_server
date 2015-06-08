@@ -18,9 +18,9 @@ import java.util.Date;
 
 public class BasePdu implements Serializable{
 
-	private static final long serialVersionUID = -1380214578415728232L;
+  private static final long serialVersionUID = -1380214578415728232L;
 
-	private byte versao[];
+  private byte versao[];
   private byte seguranca[];
   private byte label[];
   private byte tipo[];
@@ -182,29 +182,29 @@ public class BasePdu implements Serializable{
   }
 
   @Override
-  public String toString()
-  {
-    StringBuilder s = new StringBuilder();
-    s.append( "************ PDU Base ************");
-    s.append( "\nversao: "+ versao[0] );
-    s.append( "\tsegurancao: "+ seguranca[0] );
-    s.append( "\nlabel: "+ label[1]+label[0] );
-    s.append( "\ttipo: "+ tipo[0] );
-    s.append( "\nNum Campos: "+ numeroCamposSeguintes[0] + "int("+ this.numeroCamposSeguintesInt +")" );
-    s.append( "\tTam: "+ this.tamanhoBytesCamposSeguintes[1]+tamanhoBytesCamposSeguintes[0] + "int("+ tamanhoCamposSeguintes +")" );
-    s.append( "\ntamanho total: " + tamanhoPdu );
-    if ( tamanhoCamposSeguintes > 0){
-      s.append( "\n\t----- INICIO CAMPOS -----");
-      for (CampoPdu t : ArrayListCamposSeguintes ) {
-        s.append("\n\t");
-        s.append(t.toString());
-        s.append("\n");
+    public String toString()
+    {
+      StringBuilder s = new StringBuilder();
+      s.append( "************ PDU Base ************");
+      s.append( "\nversao: "+ versao[0] );
+      s.append( "\tsegurancao: "+ seguranca[0] );
+      s.append( "\nlabel: "+ label[1]+label[0] );
+      s.append( "\ttipo: "+ tipo[0] );
+      s.append( "\nNum Campos: "+ numeroCamposSeguintes[0] + "int("+ this.numeroCamposSeguintesInt +")" );
+      s.append( "\tTam: "+ this.tamanhoBytesCamposSeguintes[1]+tamanhoBytesCamposSeguintes[0] + "int("+ tamanhoCamposSeguintes +")" );
+      s.append( "\ntamanho total: " + tamanhoPdu );
+      if ( tamanhoCamposSeguintes > 0){
+        s.append( "\n\t----- INICIO CAMPOS -----");
+        for (CampoPdu t : ArrayListCamposSeguintes ) {
+          s.append("\n\t");
+          s.append(t.toString());
+          s.append("\n");
+        }
+        s.append( "\t-----  FIM  CAMPOS  -----");
       }
-      s.append( "\t-----  FIM  CAMPOS  -----");
+      s.append( "\n********** FIM PDU Base **********");
+      return s.toString();
     }
-    s.append( "\n********** FIM PDU Base **********");
-    return s.toString();
-  }
 
   /* Métodos auxiliares */
   public void preparaEnvio() throws IOException {
@@ -231,7 +231,6 @@ public class BasePdu implements Serializable{
     outBytes.write( this.camposSeguintes , 0 , tamanhoCamposSeguintes);
     outBytes.flush();
     rawData = outBytes.toByteArray();
-    System.out.println("tamanho bytes gerado: " + rawData.length);
     outBytes.flush();
     outBytes.close();
   }
@@ -433,13 +432,13 @@ public class BasePdu implements Serializable{
   }
 
   @Override 
-  public boolean equals ( Object other ){
-    boolean resultado = false;
-    if (other instanceof BasePdu) {
-      BasePdu that = (BasePdu) other;
-      resultado = this.label.equals(that.label) && this.tipo.equals(that.tipo) && this.ArrayListCamposSeguintes.equals(that.ArrayListCamposSeguintes) ;
+    public boolean equals ( Object other ){
+      boolean resultado = false;
+      if (other instanceof BasePdu) {
+        BasePdu that = (BasePdu) other;
+        resultado = this.label.equals(that.label) && this.tipo.equals(that.tipo) && this.ArrayListCamposSeguintes.equals(that.ArrayListCamposSeguintes) ;
+      }
+      return resultado;
     }
-    return resultado;
-  }
 
 }
