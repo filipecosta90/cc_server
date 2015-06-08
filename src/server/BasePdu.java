@@ -296,15 +296,38 @@ public class BasePdu implements Serializable{
     this.preparaEnvio();
   }
 
-  public void replyAlcunhaScore( String alcunhaCliente , int scoreCliente ) throws IOException {
-    CampoPdu campoAlcunha = new CampoPdu ( ServerCodes.SERVIDOR_ALCUNHA );
-    campoAlcunha.adicionaString( alcunhaCliente );
-    this.adicionaCampoPdu(campoAlcunha);
+  public void replyNomeScore( String nomeCliente , int scoreCliente ) throws IOException {
+	  CampoPdu campoNome = new CampoPdu ( ServerCodes.SERVIDOR_NOME );
+	    campoNome.adicionaString( nomeCliente );
+	    this.adicionaCampoPdu(campoNome);
     CampoPdu campoPontos = new CampoPdu ( ServerCodes.SERVIDOR_PONTOS );
     campoPontos.adicionaInteiro1Byte ( scoreCliente );
     this.adicionaCampoPdu(campoPontos);
     this.preparaEnvio();
   }
+  
+  public void replyNomeAlcunhaScore( String nomeCliente , String alcunhaCliente ,  int scoreCliente ) throws IOException {
+	  CampoPdu campoNome = new CampoPdu ( ServerCodes.SERVIDOR_NOME );
+	    campoNome.adicionaString( nomeCliente );
+	    this.adicionaCampoPdu(campoNome);
+	    CampoPdu campoAlcunha = new CampoPdu ( ServerCodes.SERVIDOR_ALCUNHA );
+	    campoAlcunha.adicionaString( alcunhaCliente );
+	    this.adicionaCampoPdu(campoAlcunha);
+	    CampoPdu campoPontos = new CampoPdu ( ServerCodes.SERVIDOR_PONTOS );
+	    campoPontos.adicionaInteiro1Byte ( scoreCliente );
+	    this.adicionaCampoPdu(campoPontos);
+	    this.preparaEnvio();
+	  }
+  
+  public void replyAlcunhaScore(  String alcunhaCliente ,  int scoreCliente ) throws IOException {
+	    CampoPdu campoAlcunha = new CampoPdu ( ServerCodes.SERVIDOR_ALCUNHA );
+	    campoAlcunha.adicionaString( alcunhaCliente );
+	    this.adicionaCampoPdu(campoAlcunha);
+	    CampoPdu campoPontos = new CampoPdu ( ServerCodes.SERVIDOR_PONTOS );
+	    campoPontos.adicionaInteiro1Byte ( scoreCliente );
+	    this.adicionaCampoPdu(campoPontos);
+	    this.preparaEnvio();
+	  }
 
 
   public boolean contemCampo(byte tipoCampo ) {

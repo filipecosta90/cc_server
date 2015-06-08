@@ -182,7 +182,7 @@ private void resolvePacote(BasePdu pduAResolver) throws Exception {
               this.boundAlcunhaCliente ( alcunha );
               Cliente clientPointer;
               clientPointer = this.localServerPointer.getCliente( alcunha );
-              replyPdu.replyAlcunhaScore( clientPointer.getAlcunhaCliente() , clientPointer.getScoreCliente() );
+              replyPdu.replyNomeScore( clientPointer.getNomeCliente() , clientPointer.getScoreCliente() );
               ok = true;
             }
             else {
@@ -438,7 +438,7 @@ private void resolvePacote(BasePdu pduAResolver) throws Exception {
           mapClientes = this.localServerPointer.getMapClientes();
           if ( mapClientes != null){
             for ( Cliente clientPointer : mapClientes.values() ){
-              replyPdu.replyAlcunhaScore( clientPointer.getAlcunhaCliente() , clientPointer.getScoreCliente() );
+              replyPdu.replyNomeAlcunhaScore( clientPointer.getNomeCliente()  , clientPointer.getAlcunhaCliente() , clientPointer.getScoreCliente() );
             }
           }
           enviaPacote(replyPdu);

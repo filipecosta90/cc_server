@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.util.ArrayList;
 import java.util.Scanner;
 
 import server.BasePdu;
@@ -230,7 +229,8 @@ public class ClientResponder implements Serializable{
       }
     }
 
-  private void resolvePacote(byte tipoPedido) throws Exception {
+  @SuppressWarnings("deprecation")
+private void resolvePacote(byte tipoPedido) throws Exception {
     numeroLabel++;
     byte[] udpReceber;
     DatagramPacket udpDataPacket;
@@ -272,11 +272,11 @@ public class ClientResponder implements Serializable{
         }
       case ServerCodes.LOGIN :
         {
-          if ( novoPdu.contemCampo( ServerCodes.SERVIDOR_NOME ) && novoPdu.contemCampo( ServerCodes.SERVIDOR_SCORE)){
+          if ( novoPdu.contemCampo( ServerCodes.SERVIDOR_NOME ) && novoPdu.contemCampo( ServerCodes.SERVIDOR_PONTOS)){
             CampoPdu campoNome = novoPdu.popCampo();
             CampoPdu campoScore = novoPdu.popCampo();
             String nomeCliente = campoNome.getCampoString();
-            int score = campoScore.getCampoInt2Bytes();
+            int score = campoScore.getCampoInt1Byte();
             System.out.println( "Login efectuado com sucesso:\n\tNome: " + nomeCliente +"\n\tPontos: "+ score);
             this.logginValido = true;
           }
@@ -321,8 +321,7 @@ public class ClientResponder implements Serializable{
       case ServerCodes.END :
         {
           if ( novoPdu.contemCampo( ServerCodes.SERVIDOR_ALCUNHA ) && novoPdu.contemCampo( ServerCodes.SERVIDOR_SCORE )  ){
-            ArrayList <CampoPdu> alcunhasScores= novoPdu.getArrayListCamposSeguintes();
-            int numeroCampos = alcunhasScores.size();
+            int numeroCampos = novoPdu.getNumeroCamposSeguintesInt();
             int campoNumero = 1;
             System.out.println( "Pontuações do Jogo");
             while ( campoNumero < numeroCampos ){
@@ -346,8 +345,7 @@ public class ClientResponder implements Serializable{
       case ServerCodes.LIST_CHALLENGES :
         {
           if ( novoPdu.contemCampo( ServerCodes.SERVIDOR_NOME_DESAFIO ) && novoPdu.contemCampo( ServerCodes.SERVIDOR_DATA_DESAFIO ) && novoPdu.contemCampo( ServerCodes.SERVIDOR_HORA_DESAFIO )  ){
-            ArrayList <CampoPdu> desafiosDataHora= novoPdu.getArrayListCamposSeguintes();
-            int numeroCampos = desafiosDataHora.size();
+            int numeroCampos = novoPdu.getNumeroCamposSeguintesInt();
             int campoNumero = 1;
             while ( campoNumero < numeroCampos ){
               CampoPdu nomeDesafio = novoPdu.popCampo();
@@ -441,17 +439,19 @@ public class ClientResponder implements Serializable{
         }
       case ServerCodes.LIST_RANKING :
         {
-          if ( novoPdu.contemCampo( ServerCodes.SERVIDOR_ALCUNHA ) && novoPdu.contemCampo( ServerCodes.SERVIDOR_SCORE )  ){
-            ArrayList <CampoPdu> alcunhasScores= novoPdu.getArrayListCamposSeguintes();
-            int numeroCampos = alcunhasScores.size();
+          if ( novoPdu.contemCampo( ServerCodes.SERVIDOR_NOME )  && novoPdu.contemCampo( ServerCodes.SERVIDOR_ALCUNHA ) && novoPdu.contemCampo( ServerCodes.SERVIDOR_PONTOS )  ){
+            int numeroCampos = novoPdu.getNumeroCamposSeguintesInt();
+            System.out.println("Ranking local de clientes:");
             int campoNumero = 1;
             while ( campoNumero < numeroCampos ){
+                CampoPdu nomeJogador = novoPdu.popCampo();
               CampoPdu alcunhaJogador = novoPdu.popCampo();
               CampoPdu scoreJogador = novoPdu.popCampo();
-              String nome = alcunhaJogador.getCampoString();
-              int score = scoreJogador.getCampoInt2Bytes();
-              System.out.println( "Alcunha: " + nome + "\tScore: "+ score);
-              campoNumero+=2;
+              String nome = nomeJogador.getCampoString();
+              String alcunha = alcunhaJogador.getCampoString();
+              int score = scoreJogador.getCampoInt1Byte();
+              System.out.println( "Nome: " + nome + "Alcunha: " + alcunha + "\tScore: "+ score);
+              campoNumero+=3;
             }
           }
           else{
