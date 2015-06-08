@@ -276,7 +276,7 @@ private void resolvePacote(BasePdu pduAResolver) throws Exception {
             }
           }
           else{
-            replyPdu.preparaEnvio();
+              replyPdu.replyErro( "Não Existem desafios em espera!" );
           }
           enviaPacote(replyPdu);
           break;
@@ -456,6 +456,7 @@ private void resolvePacote(BasePdu pduAResolver) throws Exception {
 
   private void UnboundAlcunhaCliente() {
     this.anonima = true;
+    this.alcunhaClienteAssociado="";
   }
 
   public boolean mesmoEnderecoPortaSocket(Coneccao coneccaoNoDesafio) {

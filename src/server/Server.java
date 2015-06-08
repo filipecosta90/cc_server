@@ -177,7 +177,6 @@ public enum EstadoServidor { INICIANDO_SERVIDOR , SERVIDOR_ACTIVO , PARANDO_SERV
       Cliente clientPointer = mapClientes.get(alcunha);
       if (clientPointer.checkAndSetLoggedOut()){
         Coneccao coneccaoPointer = getConeccaoAssociada ( alcunha);
-        coneccaoPointer.terminaConeccao();
         this.coneccoesActivas.remove(coneccaoPointer);
         this.historicoConeccoes.put(coneccaoPointer.getKey() , coneccaoPointer);
         resultado = true;

@@ -65,7 +65,7 @@ private String nome;
   public boolean checkAndSetLoggedIn( String sec_info )
   {
     boolean result = false;
-    if( this.sec_info.equals(  sec_info ) && isLogged == false){
+    if( this.sec_info.equals(  sec_info )){
       isLogged=true;
       result = true;
     }
