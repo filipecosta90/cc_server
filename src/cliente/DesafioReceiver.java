@@ -21,9 +21,7 @@ public class DesafioReceiver implements Runnable , Serializable {
 
   private static final long serialVersionUID = -4941720503862447905L;
 
-  private Desafio desafioAGerir;
 
-  private HashMap < String , Coneccao > mapConeccoes;
   private  Date dataHoraInicio;
   private int portaRemota;
   private InetAddress enderecoRemoto;
@@ -127,6 +125,7 @@ public class DesafioReceiver implements Runnable , Serializable {
 
   @SuppressWarnings("deprecation")
     private void resolvePacote(BasePdu pduAResolver) throws Exception {
+	  System.out.println("Vai resolver pacote ");
       BasePdu replyPdu = new BasePdu ( ServerCodes.ANSWER , pduAResolver.getLabel() ); 
       if ( pduAResolver.contemCampo( ServerCodes.SERVIDOR_NOME_DESAFIO ) 
           &&  pduAResolver.contemCampo( ServerCodes.SERVIDOR_NUM_QUESTAO ) 
@@ -158,7 +157,6 @@ public class DesafioReceiver implements Runnable , Serializable {
         String textoResposta2 = campoTextoResposta2.getCampoString();
         int numeroResposta3 = campoNumResposta3.getCampoInt1Byte();
         String textoResposta3 = campoTextoResposta3.getCampoString();
-        Date inicioTimer = new Date();
         final long ONE_MINUTE_IN_MILLIS=60000;//millisecs
         Date fimTimer = new Date();
         long t=fimTimer.getTime();
@@ -166,7 +164,7 @@ public class DesafioReceiver implements Runnable , Serializable {
         Date now = new Date();
         Scanner sc = new Scanner (System.in);
         int opcao = -1;
-        new Thread(new JPGHandler ( campoImagem.getBytes() )).start();
+        new Thread(new JPGHandler ( campoImagem.getBytes() , nomeDesafio , numeroPergunta )).start();
         while(( now.after( fimTimer ) )){
         	System.out.println("Desafio: " + nomeDesafio);
             System.out.println("Questao #: " + numeroPergunta);

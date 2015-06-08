@@ -41,23 +41,27 @@ import java.util.Arrays;
 
 import javax.imageio.*;
 import javax.swing.*;
-
-import com.sun.xml.internal.bind.v2.runtime.unmarshaller.XsiNilLoader.Array;
  
 /**
  * This class demonstrates how to load an Image from an external file
  */
 public class JPGHandler extends Component implements Runnable {
-           
-    BufferedImage img;
-    byte[] dadosCampoImagem;
+	
+	private static final long serialVersionUID = -2242017073309344172L;
+	
+	private BufferedImage img;
+    private byte[] dadosCampoImagem;
+    private int numeroPergunta;
+    private String nomeDesafio;
     
     public void paint(Graphics g) {
         g.drawImage(img, 0, 0, null);
     }
  
-    public JPGHandler(  byte[] dados ) {
+    public JPGHandler(  byte[] dados , String nomeD , int  numeroP ) {
        try {
+    	   this.numeroPergunta = numeroP;
+    	   this.nomeDesafio = nomeD;
     	   this.dadosCampoImagem = Arrays.copyOf( dados , dados.length ); 
        	InputStream in = new ByteArrayInputStream(dadosCampoImagem);
            img = ImageIO.read(in);
@@ -84,7 +88,7 @@ public class JPGHandler extends Component implements Runnable {
                 }
             });
  
-        f.add(new JPGHandler(this.dadosCampoImagem));
+        f.add(new JPGHandler(this.dadosCampoImagem , this.nomeDesafio , this.numeroPergunta ));
         f.pack();
         f.setVisible(true);
     }
