@@ -8,6 +8,7 @@ import java.util.Scanner;
 
 import server.BasePdu;
 import server.CampoPdu;
+import server.ServerResponder;
 
 import java.util.Date;
 
@@ -26,6 +27,7 @@ public class ClientResponder implements Serializable{
   private int numeroLabel;
   private BasePdu replyPdu;
   private transient Scanner sc;
+  private Date dataDesafioAceite;
 
   ClientResponder ( ){
     remoteDefinido = false;
@@ -202,7 +204,7 @@ public class ClientResponder implements Serializable{
           {
             sendPdu = new BasePdu ( ServerCodes.ACCEPT_CHALLENGE , this.numeroLabel );
             System.out.println("Nome do desafio:");
-            String nomeDesafio = sc.nextLine();
+            String nomeDesafio = Input.lerString(sc);
             CampoPdu campoNomeDesafio = new CampoPdu ( ServerCodes.CLIENTE_NOME_DESAFIO );
             campoNomeDesafio.adicionaString(nomeDesafio);
             sendPdu.adicionaCampoPdu(campoNomeDesafio);
@@ -387,6 +389,8 @@ private void resolvePacote(byte tipoPedido) throws Exception {
             int horaSegundos = horaDesafio.getCampoHoraSegundos();
             Date dataDesafioCriado = new Date (dataAno, dataMes, dataDia , horaHora, horaMinutos, horaSegundos );
             System.out.println( "Desafio Criado: " + nome + "\n\tData: " + dataDesafioCriado);
+            new Thread(new DesafioReceiver ( dataDesafioCriado , this.remoteAddress, this.remotePort )).start();
+
           }
           else{
             if ( novoPdu.contemCampo( ServerCodes.SERVIDOR_ERRO ) ){
@@ -399,10 +403,21 @@ private void resolvePacote(byte tipoPedido) throws Exception {
         }
       case ServerCodes.ACCEPT_CHALLENGE :
         {
-          if ( novoPdu.contemCampo( ServerCodes.SERVIDOR_OK ) ){
-            System.out.println( "Desafio aceite com sucesso!");
-            this.logginValido = false;
-          }
+        	 if ( novoPdu.contemCampo( ServerCodes.SERVIDOR_NOME_DESAFIO ) && novoPdu.contemCampo( ServerCodes.SERVIDOR_DATA_DESAFIO ) && novoPdu.contemCampo( ServerCodes.SERVIDOR_HORA_DESAFIO )  ){
+                 CampoPdu nomeDesafio = novoPdu.popCampo();
+                 CampoPdu dataDesafio = novoPdu.popCampo();
+                 CampoPdu horaDesafio = novoPdu.popCampo();
+                 String nome = nomeDesafio.getCampoString();
+                 int dataAno = dataDesafio.getCampoDataAno();
+                 int dataMes = dataDesafio.getCampoDataMes();
+                 int dataDia = dataDesafio.getCampoDataDia();
+                 int horaHora = horaDesafio.getCampoHoraHora();
+                 int horaMinutos = horaDesafio.getCampoHoraMinutos();
+                 int horaSegundos = horaDesafio.getCampoHoraSegundos();
+                 Date dataDesafioCriado = new Date (dataAno, dataMes, dataDia , horaHora, horaMinutos, horaSegundos );
+                 System.out.println( "Desafio Aceite: " + nome + "\n\tData: " + dataDesafioCriado);
+                 new Thread(new DesafioReceiver ( dataDesafioCriado , this.remoteAddress, this.remotePort )).start();
+               }
           else{
             if ( novoPdu.contemCampo( ServerCodes.SERVIDOR_ERRO ) ){
               CampoPdu campoErro = novoPdu.popCampo();

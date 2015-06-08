@@ -341,7 +341,9 @@ private void resolvePacote(BasePdu pduAResolver) throws Exception {
               boolean resultadoAceitacao = false;
               resultadoAceitacao = this.localServerPointer.AceitaDesafio( nomeDesafio , this.alcunhaClienteAssociado );
               if ( resultadoAceitacao == true){
-                replyPdu.replyOK();
+            	  Desafio desafioPointer;
+                  desafioPointer = this.localServerPointer.getDesafiosCriadosEmEspera( nomeDesafio );
+                  replyPdu.replyDesafioDataHora( desafioPointer.getNomeDesafio() , desafioPointer.getDataHoraInicioDesafio() );
                 ok = true;
               }
             }

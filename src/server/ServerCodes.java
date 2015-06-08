@@ -54,6 +54,8 @@ public class ServerCodes implements Serializable {
   public static final byte SERVIDOR_NUM_BLOCO = (byte)17;
   public static final byte SERVIDOR_AUDIO = (byte)18;
   public static final byte SERVIDOR_SCORE = (byte)20;
+  public static final byte SERVIDOR_NUM_BLOCO_IMAGEM = (byte)21;
+
 
   /* Campos dos tipos de informação que os servidores podem difundir entre si */
   public static final byte INFO_NOME = (byte)1;

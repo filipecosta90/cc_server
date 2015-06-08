@@ -63,6 +63,10 @@ public class CampoPdu implements Serializable{
   public int getNumeroBloco(){
     return this.blocoNumero;
   }
+  
+  public byte getTipo(){
+	  return this.tipoCampo;
+  }
 
   public int getTamanhoDados() {
     return this.tamanhoDados;
@@ -72,6 +76,15 @@ public class CampoPdu implements Serializable{
     return this.tamanhoTotal;
   }
 
+  public void merge(CampoPdu campoCopiar ){
+	  ByteArrayOutputStream bos_esteCampo = new ByteArrayOutputStream();
+      bos_esteCampo.write(this.dadosCampo, 0, this.tamanhoDados); 
+      bos_esteCampo.write(campoCopiar.dadosCampo, 0, campoCopiar.tamanhoDados);
+      dadosCampo = bos_esteCampo.toByteArray();
+      tamanhoDados=bos_esteCampo.size();
+      tamanhoTotal+=tamanhoDados;
+  }
+  
   @SuppressWarnings("deprecation")
     public void adicionaData( Date data ) {
       int ano =  data.getYear();

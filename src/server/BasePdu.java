@@ -127,10 +127,26 @@ public class BasePdu implements Serializable{
 
   public synchronized void mergePDU ( BasePdu toMerge ){
     this.tamanhoPdu += toMerge.getTamanhoCamposSeguintesPdu();
+    int numeroCamposMerge = 0;
     for ( CampoPdu toMergeCampo : toMerge.getArrayListCamposSeguintes() ){
+    	if (toMergeCampo.getTipo() == ServerCodes.SERVIDOR_CONTINUA 
+    		||	toMergeCampo.getTipo() == ServerCodes.SERVIDOR_NUM_BLOCO_IMAGEM
+    		||	toMergeCampo.getTipo() == ServerCodes.SERVIDOR_NUM_BLOCO){
+    	}
+    	else{
+    		if (toMergeCampo.getTipo() == ServerCodes.SERVIDOR_AUDIO && this.contemCampo( ServerCodes.SERVIDOR_AUDIO )){
+    			this.getCampo(ServerCodes.SERVIDOR_AUDIO ).merge(toMergeCampo);
+    		}
+    		else if (toMergeCampo.getTipo() == ServerCodes.SERVIDOR_IMAGEM && this.contemCampo( ServerCodes.SERVIDOR_IMAGEM )){
+    			this.getCampo(ServerCodes.SERVIDOR_IMAGEM ).merge(toMergeCampo);
+    		}
+else{
       this.ArrayListCamposSeguintes.add( toMergeCampo);
+      numeroCamposMerge++;
+}
+    	}
     }
-    this.numeroCamposSeguintesInt += toMerge.getNumeroCamposSeguintesInt();
+    this.numeroCamposSeguintesInt += numeroCamposMerge;
     if( toMerge.dadosParciais() ){
       this.esperaDadosNovoPacote = true;
     }
@@ -139,7 +155,18 @@ public class BasePdu implements Serializable{
     }
   }
 
-  public int getNumeroCamposSeguintesInt() {
+  public CampoPdu getCampo( byte tipoCampo ) {
+	CampoPdu retornar = null;
+	for ( CampoPdu t : this.ArrayListCamposSeguintes ){
+		if ( t.mesmoTipo( tipoCampo ) )
+		{
+			retornar = t;
+		}
+	}
+	return retornar;
+}
+
+public int getNumeroCamposSeguintesInt() {
     return this.numeroCamposSeguintesInt;
   }
 
@@ -387,15 +414,12 @@ public class BasePdu implements Serializable{
     CampoPdu campoTextoOpcao3 = new CampoPdu ( ServerCodes.SERVIDOR_TXT_RESPOSTA );
     campoTextoOpcao3.adicionaString(perguntaEnviar.getTextoOpcao(2));
     this.adicionaCampoPdu(campoTextoOpcao3);
-    CampoPdu campoCerta = new CampoPdu ( ServerCodes.SERVIDOR_RESPOSTA_CERTA );
-    campoCerta.adicionaInteiro1Byte(perguntaEnviar.getCerta());
-    this.adicionaCampoPdu(campoCerta);
     CampoPdu campoImagem = new CampoPdu ( ServerCodes.SERVIDOR_IMAGEM );
     ArrayList <CampoPdu > blocosExtraImagem = new  ArrayList <CampoPdu > ();
     blocosExtraImagem = campoImagem.adicionaFicheiro( perguntaEnviar.get_Imagem() );
     this.adicionaCampoPdu(campoImagem);
     for ( CampoPdu blocoImagem : blocosExtraImagem ){
-      CampoPdu campoNumeroBlocoImagemExtra = new CampoPdu ( ServerCodes.SERVIDOR_NUM_BLOCO );
+      CampoPdu campoNumeroBlocoImagemExtra = new CampoPdu ( ServerCodes.SERVIDOR_NUM_BLOCO_IMAGEM );
       campoNumeroBlocoImagemExtra.adicionaInteiro1Byte( blocoImagem.getNumeroBloco());
       this.adicionaCampoPdu(campoNumeroBlocoImagemExtra);
       this.adicionaCampoPdu(blocoImagem);
@@ -463,5 +487,9 @@ public class BasePdu implements Serializable{
       }
       return resultado;
     }
+
+public void setTipo(byte tipo) {
+	this.tipo[0] = tipo;
+}
 
 }
