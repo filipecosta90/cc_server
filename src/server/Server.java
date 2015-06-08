@@ -10,14 +10,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,7 +26,9 @@ import java.util.TreeMap;
 
 public class Server implements Runnable, Serializable {
 
-  public enum EstadoServidor { INICIANDO_SERVIDOR , SERVIDOR_ACTIVO , PARANDO_SERVIDOR , SERVIDOR_PARADO , ERRO_SERVIDOR }
+	private static final long serialVersionUID = -1135032786424499068L;
+
+public enum EstadoServidor { INICIANDO_SERVIDOR , SERVIDOR_ACTIVO , PARANDO_SERVIDOR , SERVIDOR_PARADO , ERRO_SERVIDOR }
 
   private int listeningUDPPort;
   private int listeningTCPPort;
@@ -339,6 +339,7 @@ public class Server implements Runnable, Serializable {
     ObjectInputStream obj_in = new ObjectInputStream (f_in);
     // Read an object
     Server retornarServidor = (Server) obj_in.readObject();
+    obj_in.close();
     return retornarServidor;
   }
 

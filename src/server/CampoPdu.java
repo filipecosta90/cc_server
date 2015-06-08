@@ -22,7 +22,9 @@ import java.util.Date;
 
 public class CampoPdu implements Serializable{
 
-  private byte tipoCampo;
+	private static final long serialVersionUID = -3106250178718470851L;
+	
+private byte tipoCampo;
   private byte[] dadosCampo;
   private int tamanhoTotal;
   private int tamanhoDados;
@@ -70,8 +72,10 @@ public class CampoPdu implements Serializable{
     return this.tamanhoTotal;
   }
 
-  public void adicionaData( Date data ) {
+  @SuppressWarnings("deprecation")
+public void adicionaData( Date data ) {
     int ano =  data.getYear();
+    ano = ano - 100;
     int mes = data.getMonth();
     int dia = data.getDay();
     dadosCampo = new byte[6];
@@ -93,7 +97,8 @@ public class CampoPdu implements Serializable{
     byte[] buffer = new byte[2];
     buffer[0] = dadosCampo[0];
     buffer[1] = dadosCampo[1];
-    int ano = this.doisBytesParaInt(buffer);
+    int ano = CampoPdu.doisBytesParaInt(buffer);
+    ano = ano+100;
     return ano;
   }
 
@@ -101,7 +106,7 @@ public class CampoPdu implements Serializable{
     byte[] buffer = new byte[2];
     buffer[0] = dadosCampo[2];
     buffer[1] = dadosCampo[3];
-    int mes = this.doisBytesParaInt(buffer);
+    int mes = CampoPdu.doisBytesParaInt(buffer);
     return mes;
   }
 
@@ -109,11 +114,12 @@ public class CampoPdu implements Serializable{
     byte[] buffer = new byte[2];
     buffer[0] = dadosCampo[4];
     buffer[1] = dadosCampo[5];
-    int dia = this.doisBytesParaInt(buffer);
+    int dia = CampoPdu.doisBytesParaInt(buffer);
     return dia;
   }
 
-  public void adicionaHora( Date data ) {
+  @SuppressWarnings("deprecation")
+public void adicionaHora( Date data ) {
     int horas =  data.getHours();
     int minutos = data.getMinutes();
     int segundos = data.getSeconds();
@@ -136,7 +142,7 @@ public class CampoPdu implements Serializable{
     byte[] buffer = new byte[2];
     buffer[0] = dadosCampo[0];
     buffer[1] = dadosCampo[1];
-    int hora = this.doisBytesParaInt(buffer);
+    int hora = CampoPdu.doisBytesParaInt(buffer);
     return hora;
   }
 
@@ -144,7 +150,7 @@ public class CampoPdu implements Serializable{
     byte[] buffer = new byte[2];
     buffer[0] = dadosCampo[2];
     buffer[1] = dadosCampo[3];
-    int minutos = this.doisBytesParaInt(buffer);
+    int minutos = CampoPdu.doisBytesParaInt(buffer);
     return minutos;
   }
 
@@ -152,7 +158,7 @@ public class CampoPdu implements Serializable{
     byte[] buffer = new byte[2];
     buffer[0] = dadosCampo[4];
     buffer[1] = dadosCampo[5];
-    int segundos = this.doisBytesParaInt(buffer);
+    int segundos = CampoPdu.doisBytesParaInt(buffer);
     return segundos;
   }
 
@@ -339,7 +345,7 @@ public class CampoPdu implements Serializable{
   public byte[] getBytes (){
     byte aux[] = new byte[tamanhoTotal];
     aux[0]=tipoCampo;
-    byte[] tamanhoBytes = this.intPara2Bytes(tamanhoDados);
+    byte[] tamanhoBytes = CampoPdu.intPara2Bytes(tamanhoDados);
     System.out.println( " tamanhoDados:" + dadosCampo.length + " tamanhoTotal: " +  tamanhoTotal + " comPFinal:" +  aux.length + " tamanhoDados:" + tamanhoDados );
     aux[1]= tamanhoBytes[0];
     aux[2]= tamanhoBytes[1];

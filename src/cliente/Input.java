@@ -17,15 +17,15 @@ package cliente;
  */
 import static java.lang.System.out;
 
-import java.io.Serializable;
 import java.util.Scanner;
 import java.util.InputMismatchException;
 
 import server.CampoPdu;
 
-public class Input implements Serializable{
+public class Input {
 
-  /**
+
+/**
    * Métodos de Classe
    */
 

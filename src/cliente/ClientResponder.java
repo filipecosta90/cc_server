@@ -16,7 +16,10 @@ import server.ServerCodes;
 
 public class ClientResponder implements Serializable{
 
-  private transient DatagramSocket serverSocket;
+
+	private static final long serialVersionUID = 6652405631830146844L;
+	
+private transient DatagramSocket serverSocket;
   private transient DatagramPacket receivedPacket;
   private InetAddress remoteAddress;
   private int remotePort;
@@ -82,7 +85,8 @@ public class ClientResponder implements Serializable{
     serverSocket.send( pacoteEnvio );
   }
 
-  private void preparaPacote( byte tipoPedido) throws Exception {
+  @SuppressWarnings("deprecation")
+private void preparaPacote( byte tipoPedido) throws Exception {
     BasePdu sendPdu = null; 
     switch( tipoPedido ){
       case ServerCodes.HELLO :
@@ -166,6 +170,7 @@ public class ClientResponder implements Serializable{
           if ( resposta.equals("s")){
             System.out.println("Ano:");
             int ano = Input.lerInt(sc);
+            ano = ano +100;
             System.out.println("Mes:");
             int mes = Input.lerInt(sc);
             System.out.println("Dia:");
