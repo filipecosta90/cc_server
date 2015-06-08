@@ -13,7 +13,9 @@ import server.Desafio.EstadoDesafio;
 
 public class DesafioManager implements Runnable , Serializable { 
 
-  private Server localServerPointer;
+	private static final long serialVersionUID = -4861608614717777756L;
+	
+private Server localServerPointer;
   private Desafio desafioAGerir;
   private int perguntaEnviar;
   private HashMap < String , Coneccao > mapConeccoes;
@@ -54,6 +56,9 @@ public class DesafioManager implements Runnable , Serializable {
   @Override
     public void run() {
       System.out.println("Criado um novo gestor para o desafio: " + desafioAGerir.getNomeDesafio() );
+      System.out.println("Date e hora da Criação: " + desafioAGerir.getDataCriacao() );
+      System.out.println("Date e hora do desafio: " + desafioAGerir.getDataHoraInicioDesafio() );
+      System.out.println("Estado actual " + desafioAGerir.getEstado() );
       while ( desafioAGerir.estado == EstadoDesafio.EM_ESPERA ){
         desafioAGerir.updateEstadoEsperaIniciaCancela();
       }

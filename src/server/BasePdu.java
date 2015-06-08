@@ -13,14 +13,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.DatagramPacket;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Date;
 
 public class BasePdu implements Serializable{
 
-  private byte versao[];
+	private static final long serialVersionUID = -1380214578415728232L;
+
+	private byte versao[];
   private byte seguranca[];
   private byte label[];
   private byte tipo[];

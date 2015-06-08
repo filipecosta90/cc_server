@@ -6,7 +6,6 @@
 
 package server;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -14,7 +13,9 @@ import java.net.InetAddress;
 
 public class ServerResponder implements Runnable , Serializable {
 
-  private transient DatagramSocket receivedSocket = null;
+	private static final long serialVersionUID = -5039522701708707380L;
+	
+private transient DatagramSocket receivedSocket = null;
   private transient DatagramPacket receivedPacket = null;
   private InetAddress remoteAddress;
   private int remotePort;

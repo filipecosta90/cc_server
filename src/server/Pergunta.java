@@ -9,7 +9,10 @@ package server;
 import java.io.Serializable;
 
 public class Pergunta implements Serializable {
-  private String musica;
+
+	private static final long serialVersionUID = -6467491037165992618L;
+	
+private String musica;
   private String imagem;
   private String pergunta;
   private String[] ops=new String[ 3 ];

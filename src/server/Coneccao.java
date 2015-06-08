@@ -18,7 +18,9 @@ import java.util.TreeMap;
 
 public class Coneccao implements Serializable {
 
-  private String alcunhaClienteAssociado;
+	private static final long serialVersionUID = 774628494621909111L;
+
+	private String alcunhaClienteAssociado;
   private ArrayList < BasePdu > stackEspera;
   private ArrayList < BasePdu > historialPdus;
   private Server localServerPointer;
@@ -124,7 +126,8 @@ public class Coneccao implements Serializable {
     }
   }
 
-  private void resolvePacote(BasePdu pduAResolver) throws Exception {
+  @SuppressWarnings("deprecation")
+private void resolvePacote(BasePdu pduAResolver) throws Exception {
     BasePdu replyPdu = new BasePdu ( ServerCodes.REPLY , pduAResolver.getLabel() ); 
     switch( (pduAResolver.getTipo())[0] ){
       case ServerCodes.HELLO :

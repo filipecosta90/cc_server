@@ -3,7 +3,10 @@ package server;
 import java.io.Serializable;
 
 public class ServerCodes implements Serializable {
-  // Tipos de pedido servidor
+
+	private static final long serialVersionUID = 3908543515095672456L;
+
+	// Tipos de pedido servidor
   public static final byte REPLY = 0;
   public static final byte HELLO = 1;
   public static final byte REGISTER = 2;
