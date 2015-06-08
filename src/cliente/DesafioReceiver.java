@@ -42,6 +42,7 @@ public class DesafioReceiver implements Runnable , Serializable {
   }
 
   public void adicionaPacote ( DatagramPacket novoPacote ) throws Exception{
+	  System.out.println("Recebeu pacote do servidor!");
     BasePdu novoPdu = new BasePdu ( novoPacote );
     novoPdu.parseCabecalho();
     novoPdu.parseCampos();
