@@ -182,13 +182,14 @@ public class ClientResponder implements Serializable{
             dataHora.setYear(ano);
             dataHora.setMonth(mes);
             dataHora.setDate(dia);
-            dataHora.setSeconds(hora);
-            dataHora.setSeconds(minutos);
+            dataHora.setHours(hora);
+            dataHora.setMinutes(minutos);
             dataHora.setSeconds(segundos);
             campoData.adicionaData(dataHora);
             campoHora.adicionaHora(dataHora);
             sendPdu.adicionaCampoPdu(campoData);
             sendPdu.adicionaCampoPdu(campoHora);
+            System.out.println("Enviou um pedido de criação do desafio: " + nomeDesafio+ "\n\t para a data e hora: " + dataHora);
           }
           enviaPacote(sendPdu);
           break;
