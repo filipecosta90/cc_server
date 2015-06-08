@@ -26,7 +26,7 @@ private String musica;
     this.pergunta=pergunta;
     ops[ 0 ]=opcoes[ 0 ];
     ops[ 1 ]=opcoes[ 1 ];
-    ops[ 2 ]=opcoes[ 1 ];
+    ops[ 2 ]=opcoes[ 2 ];
     this.certa=certa;
   }
 

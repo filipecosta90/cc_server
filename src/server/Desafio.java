@@ -125,6 +125,7 @@ public enum EstadoDesafio { EM_ESPERA , EM_JOGO , TERMINADO , ELIMINADO , PASSOU
     }
     else{
       this.alcunhasJogadores.add( alcunha );
+      this.alcunhasJogadoresActivos.add( alcunha );
       this.pontuacoesJogadores.put( alcunha , 0 );
       this.temMinimoJogadores = true;
       resultado = true;
