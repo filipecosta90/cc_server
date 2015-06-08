@@ -58,5 +58,20 @@ private String musica;
   public boolean acertou( int resposta ){ 
     return( resposta==certa ); 
   }
+  
+  @Override
+  public String toString()
+  {
+    StringBuilder s = new StringBuilder();
+    s.append(this.pergunta);
+    s.append("\n opcao1: "+ this.ops[0]);
+    s.append("\t opcao2: "+ this.ops[1]);
+    s.append("\t opcao3: "+ this.ops[2]);
+    s.append("\n Opcao Correcta: "+ this.certa);
+    return s.toString();
+  }
+  
+
+  
 
 }

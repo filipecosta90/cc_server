@@ -498,6 +498,7 @@ private void resolvePacote(BasePdu pduAResolver) throws Exception {
     BasePdu replyPdu = new BasePdu ( ServerCodes.REPLY , labelNumero  ); 
     replyPdu.replyPergunta( nomeDesafio, numeroQuestao , perguntaActual );
     enviaPacote(replyPdu);
+    System.out.println("Enviando Pdu: " + replyPdu.toString());
     this.numeroPdu++;
   }
 

@@ -75,6 +75,10 @@ private Server localServerPointer;
             } catch (Exception e) {
               e.printStackTrace();
             }
+          	System.out.println("Pergunta enviada: " + perguntaActual.toString());
+          }
+          else {
+        	  desafioAGerir.estado = EstadoDesafio.TERMINADO;
           }
         }
 
