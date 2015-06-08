@@ -291,19 +291,21 @@ private void resolvePacote(BasePdu pduAResolver) throws Exception {
           if (  pduAResolver.contemCampo( ServerCodes.SERVIDOR_NOME_DESAFIO ) ){
             CampoPdu campoNomeDesafio = pduAResolver.popCampo();
             String nomeDesafio = campoNomeDesafio.getCampoString();
-            Date dataHoraDesafio = new Date();
+            Date dataHoraDesafio = null;
             if ( pduAResolver.contemCampo( ServerCodes.SERVIDOR_DATA_DESAFIO ) && pduAResolver.contemCampo( ServerCodes.SERVIDOR_HORA_DESAFIO )){
               CampoPdu campoDataDesafio = pduAResolver.popCampo();
               CampoPdu campoHoraDesafio = pduAResolver.popCampo();
-              dataHoraDesafio.setYear(campoDataDesafio.getCampoDataAno());
-              dataHoraDesafio.setMonth(campoDataDesafio.getCampoDataMes());
-              dataHoraDesafio.setDate(campoDataDesafio.getCampoDataDia());
-              dataHoraDesafio.setHours( campoHoraDesafio.getCampoHoraHora());
-              dataHoraDesafio.setMinutes( campoHoraDesafio.getCampoHoraMinutos());
-              dataHoraDesafio.setSeconds( campoHoraDesafio.getCampoHoraSegundos());
+              int ano = campoDataDesafio.getCampoDataAno();
+              int mes = campoDataDesafio.getCampoDataMes();
+              int dia = campoDataDesafio.getCampoDataDia();
+              int hora =  campoHoraDesafio.getCampoHoraHora();
+            int minutos =  campoHoraDesafio.getCampoHoraMinutos();
+             int segundos =   campoHoraDesafio.getCampoHoraSegundos();
+               dataHoraDesafio = new Date ( ano , mes, dia , hora , minutos , segundos );
             }
             else {
               final long ONE_MINUTE_IN_MILLIS=60000;//millisecs
+              dataHoraDesafio = new Date();
               long t=dataHoraDesafio.getTime();
               dataHoraDesafio=new Date(t + (5 * ONE_MINUTE_IN_MILLIS));
             }

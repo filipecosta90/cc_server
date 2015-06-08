@@ -173,6 +173,7 @@ private void preparaPacote( byte tipoPedido) throws Exception {
             ano = ano +100;
             System.out.println("Mes:");
             int mes = Input.lerInt(sc);
+            mes = mes-1;
             System.out.println("Dia:");
             int dia = Input.lerInt(sc);
             System.out.println("Hora:");
@@ -183,13 +184,7 @@ private void preparaPacote( byte tipoPedido) throws Exception {
             int segundos = Input.lerInt(sc);
             CampoPdu campoData = new CampoPdu ( ServerCodes.CLIENTE_DATA );
             CampoPdu campoHora = new CampoPdu ( ServerCodes.CLIENTE_HORA ); 
-            Date dataHora = new Date();
-            dataHora.setYear(ano);
-            dataHora.setMonth(mes);
-            dataHora.setDate(dia);
-            dataHora.setHours(hora);
-            dataHora.setMinutes(minutos);
-            dataHora.setSeconds(segundos);
+            Date dataHora = new Date(ano,mes,dia,hora,minutos,segundos);
             campoData.adicionaData(dataHora);
             campoHora.adicionaHora(dataHora);
             sendPdu.adicionaCampoPdu(campoData);
