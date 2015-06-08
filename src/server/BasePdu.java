@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.Date;
 
 public class BasePdu implements Serializable{
-
+	
   private static final long serialVersionUID = -1380214578415728232L;
 
   private byte versao[];

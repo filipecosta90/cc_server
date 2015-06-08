@@ -92,10 +92,10 @@ private transient static Scanner sc;
   private static  void gereUsers( Server server ) {
     StringBuilder s = new StringBuilder();
     s.append("--- Gestao Users ---\n\n");
-    s.append("\t1 - Listar ");
-    s.append("\t2 - Eliminar ");
-    s.append("\t3 - Adicionar ");
-    s.append("\t4 - Alterar ");
+    s.append("\n\t1 - Listar ");
+    s.append("\n\t2 - Eliminar ");
+    s.append("\n\t3 - Adicionar ");
+    s.append("\n\t4 - Alterar ");
     s.append("\n--------------------\n");
     s.append("\nopção:");
     System.out.println(s.toString());
@@ -137,5 +137,4 @@ private transient static Scanner sc;
     }
     System.out.println("Desligando Servidor!");
   }
-
 }

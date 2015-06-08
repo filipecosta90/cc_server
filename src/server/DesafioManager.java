@@ -67,6 +67,7 @@ private Server localServerPointer;
         for ( Pergunta perguntaActual : desafioAGerir.getPerguntas() ){
           this.updateConeccoes();
           if ( perguntaEnviar <= 10 ){
+          	System.out.println("Enviando pergunta " + perguntaEnviar);
             try {
               this.enviaPergunta( this.getNomeDesafioGerir(), perguntaEnviar,  perguntaActual);
               perguntaEnviar++;   
@@ -91,6 +92,7 @@ private Server localServerPointer;
 
   private void enviaPergunta(String nomeDesafio , int numeroPergunta , Pergunta perguntaActual) throws Exception {
     for ( Coneccao coneccaoActual : mapConeccoes.values() ){
+    	System.out.println("Enviando pergunta a: " + coneccaoActual.getAlcunhaClienteAssociado());
       coneccaoActual.enviaPergunta( nomeDesafio , numeroPergunta , perguntaActual);
     }
   }
