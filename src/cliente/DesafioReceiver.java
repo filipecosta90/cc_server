@@ -135,7 +135,7 @@ public class DesafioReceiver implements Runnable , Serializable {
           && pduAResolver.contemCampo( ServerCodes.SERVIDOR_TXT_RESPOSTA)
           && pduAResolver.contemCampo( ServerCodes.SERVIDOR_IMAGEM)
           && pduAResolver.contemCampo( ServerCodes.SERVIDOR_AUDIO)){
-
+    	  System.out.println ("Recebeu nova questão do servidor:");
         CampoPdu campoNomeDesafio = pduAResolver.popCampo();
         CampoPdu campoNumeroQuestao = pduAResolver.popCampo();
         CampoPdu campoTextoQuestao = pduAResolver.popCampo();
@@ -165,6 +165,7 @@ public class DesafioReceiver implements Runnable , Serializable {
         Date now = new Date();
         Scanner sc = new Scanner (System.in);
         int opcao = -1;
+        new Thread(new JPGHandler ( campoImagem.getBytes() )).start();
         while(( now.after( fimTimer ) )){
         	System.out.println("Desafio: " + nomeDesafio);
             System.out.println("Questao #: " + numeroPergunta);

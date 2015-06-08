@@ -339,7 +339,7 @@ public class CampoPdu implements Serializable{
     String campoConvertido = new String( dadosCampo, StandardCharsets.UTF_8);  // example for one encoding type
     return campoConvertido;
   }
-
+  
   public void paraStringDoByteArray ( byte[] bytes, int posArray , int tamanhoCampo ){
     ByteArrayOutputStream outByte = new ByteArrayOutputStream();
     for( int pos=posArray; pos < (tamanhoCampo+posArray); pos++ ){
