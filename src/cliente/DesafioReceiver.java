@@ -32,9 +32,10 @@ public class DesafioReceiver implements Runnable , Serializable {
   private Scanner scannerPergunta;
   private ClientResponder cliente;
 
-  DesafioReceiver ( ClientResponder c1 , Date Inicio , Scanner s , DatagramSocket server , InetAddress enderecoRemoto ,  int porta ){
+  DesafioReceiver ( ClientResponder c1 , Date Inicio , Scanner s , DatagramSocket server , InetAddress endereco ,  int porta ){
     this.dataHoraInicio = Inicio;
     this.portaRemota = porta;
+    this.enderecoRemoto = endereco;
     this.serverSocket = server;
     this.estado = EstadoDesafio.EM_ESPERA;
     this.stackEspera = new ArrayList < BasePdu > ();
