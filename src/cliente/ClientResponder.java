@@ -215,7 +215,7 @@ public class ClientResponder implements Serializable{
           {
             sendPdu = new BasePdu ( ServerCodes.DELETE_CHALLENGE , this.numeroLabel );
             System.out.println("Nome do desafio:");
-            String nomeDesafio = sc.nextLine();
+            String nomeDesafio = Input.lerString(sc);
             CampoPdu campoNomeDesafio = new CampoPdu ( ServerCodes.CLIENTE_NOME_DESAFIO );
             campoNomeDesafio.adicionaString(nomeDesafio);
             sendPdu.adicionaCampoPdu(campoNomeDesafio);
