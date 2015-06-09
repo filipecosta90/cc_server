@@ -14,9 +14,9 @@ import java.util.TreeSet;
 
 public class Desafio implements Serializable {
 
-	private static final long serialVersionUID = -460290336218378857L;
+  private static final long serialVersionUID = -460290336218378857L;
 
-public enum EstadoDesafio { EM_ESPERA , EM_JOGO , TERMINADO , ELIMINADO , PASSOU_PRAZO }
+  public enum EstadoDesafio { EM_ESPERA , EM_JOGO , TERMINADO , ELIMINADO , PASSOU_PRAZO }
   private String nomeDesafio;
   private String criadoPor;
   private TreeSet < String > alcunhasJogadores;

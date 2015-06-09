@@ -13,9 +13,9 @@ import cliente.Input;
 
 public class ccServer implements Serializable {
 
-	private static final long serialVersionUID = -774157080972569322L;
-	
-private transient static Scanner sc;
+  private static final long serialVersionUID = -774157080972569322L;
+
+  private transient static Scanner sc;
   public static boolean desligar;
 
   public static void navegaServidor( Server servidor ) throws Exception {

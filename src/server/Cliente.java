@@ -10,9 +10,9 @@ import java.io.Serializable;
 
 public class Cliente implements Serializable {
 
-	private static final long serialVersionUID = -4270364543664604780L;
-	
-private String nome;
+  private static final long serialVersionUID = -4270364543664604780L;
+
+  private String nome;
   private String alcunha;
   private String sec_info;
   private boolean isLogged;

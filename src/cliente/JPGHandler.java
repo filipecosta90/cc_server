@@ -31,8 +31,8 @@ package cliente;
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
- 
- 
+
+
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.*;
@@ -41,55 +41,55 @@ import java.util.Arrays;
 
 import javax.imageio.*;
 import javax.swing.*;
- 
+
 /**
  * This class demonstrates how to load an Image from an external file
  */
 public class JPGHandler extends Component implements Runnable {
-	
-	private static final long serialVersionUID = -2242017073309344172L;
-	
-	private BufferedImage img;
-    private byte[] dadosCampoImagem;
-    private int numeroPergunta;
-    private String nomeDesafio;
-    
-    public void paint(Graphics g) {
-        g.drawImage(img, 0, 0, null);
+
+  private static final long serialVersionUID = -2242017073309344172L;
+
+  private BufferedImage img;
+  private byte[] dadosCampoImagem;
+  private int numeroPergunta;
+  private String nomeDesafio;
+
+  public void paint(Graphics g) {
+    g.drawImage(img, 0, 0, null);
+  }
+
+  public JPGHandler(  byte[] dados , String nomeD , int  numeroP ) {
+    try {
+      this.numeroPergunta = numeroP;
+      this.nomeDesafio = nomeD;
+      this.dadosCampoImagem = Arrays.copyOf( dados , dados.length ); 
+      InputStream in = new ByteArrayInputStream(dadosCampoImagem);
+      img = ImageIO.read(in);
+    } catch (IOException e) {
     }
- 
-    public JPGHandler(  byte[] dados , String nomeD , int  numeroP ) {
-       try {
-    	   this.numeroPergunta = numeroP;
-    	   this.nomeDesafio = nomeD;
-    	   this.dadosCampoImagem = Arrays.copyOf( dados , dados.length ); 
-       	InputStream in = new ByteArrayInputStream(dadosCampoImagem);
-           img = ImageIO.read(in);
-       } catch (IOException e) {
-       }
- 
+
+  }
+
+  public Dimension getPreferredSize() {
+    if (img == null) {
+      return new Dimension(100,100);
+    } else {
+      return new Dimension(img.getWidth(null), img.getHeight(null));
     }
- 
-    public Dimension getPreferredSize() {
-        if (img == null) {
-             return new Dimension(100,100);
-        } else {
-           return new Dimension(img.getWidth(null), img.getHeight(null));
-       }
-    }
- 
-    public void run() {
- 
-        JFrame f = new JFrame("Load Image Sample");
-             
-        f.addWindowListener(new WindowAdapter(){
-                public void windowClosing(WindowEvent e) {
-                    System.exit(0);
-                }
-            });
- 
-        f.add(new JPGHandler(this.dadosCampoImagem , this.nomeDesafio , this.numeroPergunta ));
-        f.pack();
-        f.setVisible(true);
-    }
+  }
+
+  public void run() {
+
+    JFrame f = new JFrame("Load Image Sample");
+
+    f.addWindowListener(new WindowAdapter(){
+      public void windowClosing(WindowEvent e) {
+        System.exit(0);
+      }
+    });
+
+    f.add(new JPGHandler(this.dadosCampoImagem , this.nomeDesafio , this.numeroPergunta ));
+    f.pack();
+    f.setVisible(true);
+  }
 }

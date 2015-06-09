@@ -10,9 +10,9 @@ import java.io.Serializable;
 
 public class Pergunta implements Serializable {
 
-	private static final long serialVersionUID = -6467491037165992618L;
-	
-private String musica;
+  private static final long serialVersionUID = -6467491037165992618L;
+
+  private String musica;
   private String imagem;
   private String pergunta;
   private String[] ops=new String[ 3 ];
@@ -58,20 +58,20 @@ private String musica;
   public boolean acertou( int resposta ){ 
     return( resposta==certa ); 
   }
-  
-  @Override
-  public String toString()
-  {
-    StringBuilder s = new StringBuilder();
-    s.append(this.pergunta);
-    s.append("\n opcao1: "+ this.ops[0]);
-    s.append("\t opcao2: "+ this.ops[1]);
-    s.append("\t opcao3: "+ this.ops[2]);
-    s.append("\n Opcao Correcta: "+ this.certa);
-    return s.toString();
-  }
-  
 
-  
+  @Override
+    public String toString()
+    {
+      StringBuilder s = new StringBuilder();
+      s.append(this.pergunta);
+      s.append("\n opcao1: "+ this.ops[0]);
+      s.append("\t opcao2: "+ this.ops[1]);
+      s.append("\t opcao3: "+ this.ops[2]);
+      s.append("\n Opcao Correcta: "+ this.certa);
+      return s.toString();
+    }
+
+
+
 
 }

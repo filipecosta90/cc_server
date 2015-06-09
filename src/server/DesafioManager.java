@@ -13,9 +13,9 @@ import server.Desafio.EstadoDesafio;
 
 public class DesafioManager implements Runnable , Serializable { 
 
-	private static final long serialVersionUID = -4861608614717777756L;
-	
-private Server localServerPointer;
+  private static final long serialVersionUID = -4861608614717777756L;
+
+  private Server localServerPointer;
   private Desafio desafioAGerir;
   private int perguntaEnviar;
   private HashMap < String , Coneccao > mapConeccoes;
@@ -39,20 +39,20 @@ private Server localServerPointer;
 
   public void updateConeccoes(){
     for ( String alcunhaJogador : desafioAGerir.getAlcunhasJogadoresActivos() ){
-    	System.out.println("Testando se o jogador: " + alcunhaJogador + "está activo!" );
+      System.out.println("Testando se o jogador: " + alcunhaJogador + "está activo!" );
       Coneccao coneccaoRetornada = this.localServerPointer.getConeccaoCliente(alcunhaJogador);
       if ( coneccaoRetornada == null ){
-    	  System.out.println("\tO jogador:" + alcunhaJogador + " nao tem uma coneccao activa!");
+        System.out.println("\tO jogador:" + alcunhaJogador + " nao tem uma coneccao activa!");
         this.desafioAGerir.rageQuit( alcunhaJogador );
         this.mapConeccoes.remove( alcunhaJogador );
       }
       else{
-    	  System.out.println("\tO jogador:" + alcunhaJogador + " tem coneccao activa!");
-    	  if (this.mapConeccoes.containsKey(coneccaoRetornada.getKey()) == false ){
-        	  System.out.println("\tA coneccao actual do jogador ainda nao tinha sido inserida no mapa!");
-    		  this.mapConeccoes.put( coneccaoRetornada.getKey() , coneccaoRetornada);
-    		  
-    	  }
+        System.out.println("\tO jogador:" + alcunhaJogador + " tem coneccao activa!");
+        if (this.mapConeccoes.containsKey(coneccaoRetornada.getKey()) == false ){
+          System.out.println("\tA coneccao actual do jogador ainda nao tinha sido inserida no mapa!");
+          this.mapConeccoes.put( coneccaoRetornada.getKey() , coneccaoRetornada);
+
+        }
       }
     }
   }
@@ -67,11 +67,11 @@ private Server localServerPointer;
         desafioAGerir.updateEstadoEsperaIniciaCancela();
       }
       while( desafioAGerir.estado == EstadoDesafio.EM_JOGO ){
-          System.out.println("Desafio " + desafioAGerir.getNomeDesafio() + " iniciado: "+ desafioAGerir.getEstado() );
+        System.out.println("Desafio " + desafioAGerir.getNomeDesafio() + " iniciado: "+ desafioAGerir.getEstado() );
         for ( Pergunta perguntaActual : desafioAGerir.getPerguntas() ){
           this.updateConeccoes();
           if ( perguntaEnviar <= 10 ){
-          	System.out.println("Enviando pergunta " + perguntaEnviar);
+            System.out.println("Enviando pergunta " + perguntaEnviar);
             try {
               this.enviaPergunta( this.getNomeDesafioGerir(), perguntaEnviar,  perguntaActual);
               perguntaEnviar++;   
@@ -79,11 +79,11 @@ private Server localServerPointer;
             } catch (Exception e) {
               e.printStackTrace();
             }
-          	System.out.println("Pergunta enviada: " + perguntaActual.toString());
+            System.out.println("Pergunta enviada: " + perguntaActual.toString());
           }
           else {
-            	System.out.println("Dando o desafio por terminado!");
-        	  desafioAGerir.estado = EstadoDesafio.TERMINADO;
+            System.out.println("Dando o desafio por terminado!");
+            desafioAGerir.estado = EstadoDesafio.TERMINADO;
           }
         }
 
@@ -100,9 +100,9 @@ private Server localServerPointer;
     }
 
   private void enviaPergunta(String nomeDesafio , int numeroPergunta , Pergunta perguntaActual) throws Exception {
-  	System.out.println("Vai tentar enviar pergunta " + numeroPergunta );
+    System.out.println("Vai tentar enviar pergunta " + numeroPergunta );
     for ( Coneccao coneccaoActual : mapConeccoes.values() ){
-    	System.out.println("Enviando pergunta a: " + coneccaoActual.getAlcunhaClienteAssociado());
+      System.out.println("Enviando pergunta a: " + coneccaoActual.getAlcunhaClienteAssociado());
       coneccaoActual.enviaPergunta( nomeDesafio , numeroPergunta , perguntaActual);
     }
   }

@@ -64,9 +64,9 @@ public class CampoPdu implements Serializable{
   public int getNumeroBloco(){
     return this.blocoNumero;
   }
-  
+
   public byte getTipo(){
-	  return this.tipoCampo;
+    return this.tipoCampo;
   }
 
   public int getTamanhoDados() {
@@ -78,14 +78,14 @@ public class CampoPdu implements Serializable{
   }
 
   public void merge(CampoPdu campoCopiar ){
-	  ByteArrayOutputStream bos_esteCampo = new ByteArrayOutputStream();
-      bos_esteCampo.write(this.dadosCampo, 0, this.tamanhoDados); 
-      bos_esteCampo.write(campoCopiar.dadosCampo, 0, campoCopiar.tamanhoDados);
-      dadosCampo = bos_esteCampo.toByteArray();
-      tamanhoDados=bos_esteCampo.size();
-      tamanhoTotal+=tamanhoDados;
+    ByteArrayOutputStream bos_esteCampo = new ByteArrayOutputStream();
+    bos_esteCampo.write(this.dadosCampo, 0, this.tamanhoDados); 
+    bos_esteCampo.write(campoCopiar.dadosCampo, 0, campoCopiar.tamanhoDados);
+    dadosCampo = bos_esteCampo.toByteArray();
+    tamanhoDados=bos_esteCampo.size();
+    tamanhoTotal+=tamanhoDados;
   }
-  
+
   @SuppressWarnings("deprecation")
     public void adicionaData( Date data ) {
       int ano =  data.getYear();
@@ -222,12 +222,12 @@ public class CampoPdu implements Serializable{
 
 
   public static int doisBytesParaInt ( byte[] data){
-	    ByteBuffer byteBuffer = ByteBuffer.allocate(2);
-	    byteBuffer.order(ByteOrder.BIG_ENDIAN);
-	    byteBuffer.put((byte) (data[0]));
-	    byteBuffer.put((byte) (data[1]));
-	    byteBuffer.flip();
-	    return ( (int) (byteBuffer.getShort() & 0xffff));
+    ByteBuffer byteBuffer = ByteBuffer.allocate(2);
+    byteBuffer.order(ByteOrder.BIG_ENDIAN);
+    byteBuffer.put((byte) (data[0]));
+    byteBuffer.put((byte) (data[1]));
+    byteBuffer.flip();
+    return ( (int) (byteBuffer.getShort() & 0xffff));
   }
 
   public static int doisBytesParaIntStart ( byte[] data , int start ){
@@ -238,7 +238,7 @@ public class CampoPdu implements Serializable{
     byteBuffer.flip();
     return ( (int) (byteBuffer.getShort() & 0xffff));
   }
-  
+
 
 
   public static int umByteParaInt ( byte[] data ){
@@ -253,14 +253,14 @@ public class CampoPdu implements Serializable{
     ByteBuffer bb = ByteBuffer.allocate(2); 
     bb.order(ByteOrder.BIG_ENDIAN);
     bb.putShort ( (short) ( aConverter & 0xffff )) ; 
-   return bb.array();
+    return bb.array();
   }
 
   public static byte[] intPara1Byte ( int aConverter ){ 
     ByteBuffer bb = ByteBuffer.allocate(1); 
     bb.order(ByteOrder.BIG_ENDIAN);
     bb.put ( (byte) ( aConverter & 0xff )) ; 
-	return bb.array();
+    return bb.array();
   }
 
   public int getCampoInt1Byte (){
@@ -317,7 +317,7 @@ public class CampoPdu implements Serializable{
     String campoConvertido = new String( dadosCampo, StandardCharsets.UTF_8);  // example for one encoding type
     return campoConvertido;
   }
-  
+
   public void paraStringDoByteArray ( byte[] bytes, int posArray , int tamanhoCampo ){
     ByteArrayOutputStream outByte = new ByteArrayOutputStream();
     for( int pos=posArray; pos < (tamanhoCampo+posArray); pos++ ){

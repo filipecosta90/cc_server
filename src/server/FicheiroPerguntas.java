@@ -21,10 +21,10 @@ import org.w3c.dom.Node;
 import org.w3c.dom.Element;
 
 public class FicheiroPerguntas implements Serializable {
- 
-	private static final long serialVersionUID = 5365520557990456604L;
-	
-private ArrayList <Pergunta> tabelaPerguntas;
+
+  private static final long serialVersionUID = 5365520557990456604L;
+
+  private ArrayList <Pergunta> tabelaPerguntas;
   private String pathFicheiro;
   private String musicDir;
   private String imagesDir;

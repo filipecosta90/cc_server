@@ -26,9 +26,9 @@ import java.util.TreeMap;
 
 public class Server implements Runnable, Serializable {
 
-	private static final long serialVersionUID = -1135032786424499068L;
+  private static final long serialVersionUID = -1135032786424499068L;
 
-public enum EstadoServidor { INICIANDO_SERVIDOR , SERVIDOR_ACTIVO , PARANDO_SERVIDOR , SERVIDOR_PARADO , ERRO_SERVIDOR }
+  public enum EstadoServidor { INICIANDO_SERVIDOR , SERVIDOR_ACTIVO , PARANDO_SERVIDOR , SERVIDOR_PARADO , ERRO_SERVIDOR }
 
   private int listeningUDPPort;
   private int listeningTCPPort;
@@ -118,11 +118,11 @@ public enum EstadoServidor { INICIANDO_SERVIDOR , SERVIDOR_ACTIVO , PARANDO_SERV
             udpSocket.receive( udpDataPacket );
             new Thread(new ServerResponder( this, udpSocket, udpDataPacket)).start();
           } catch ( Exception e ) {
-              e.printStackTrace();
+            e.printStackTrace();
           }
         }
       } catch ( SocketException e ) {
-          e.printStackTrace();
+        e.printStackTrace();
       }
     }
 

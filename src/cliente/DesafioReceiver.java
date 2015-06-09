@@ -40,7 +40,7 @@ public class DesafioReceiver implements Runnable , Serializable {
   }
 
   public void adicionaPacote ( DatagramPacket novoPacote ) throws Exception{
-	  System.out.println("Recebeu pacote do servidor!");
+    System.out.println("Recebeu pacote do servidor!");
     BasePdu novoPdu = new BasePdu ( novoPacote );
     novoPdu.parseCabecalho();
     novoPdu.parseCampos();
@@ -97,7 +97,7 @@ public class DesafioReceiver implements Runnable , Serializable {
 
   @Override
     public void run() {
-	  System.out.println("Iniciado o gestor de perguntas do desafio no cliente:");
+      System.out.println("Iniciado o gestor de perguntas do desafio no cliente:");
       while (this.estado == EstadoDesafio.EM_ESPERA){
         updateEstadoEsperaInicia();
       }
@@ -125,7 +125,7 @@ public class DesafioReceiver implements Runnable , Serializable {
 
   @SuppressWarnings("deprecation")
     private void resolvePacote(BasePdu pduAResolver) throws Exception {
-	  System.out.println("Vai resolver pacote ");
+      System.out.println("Vai resolver pacote ");
       BasePdu replyPdu = new BasePdu ( ServerCodes.ANSWER , pduAResolver.getLabel() ); 
       if ( pduAResolver.contemCampo( ServerCodes.SERVIDOR_NOME_DESAFIO ) 
           &&  pduAResolver.contemCampo( ServerCodes.SERVIDOR_NUM_QUESTAO ) 
@@ -135,7 +135,7 @@ public class DesafioReceiver implements Runnable , Serializable {
           && pduAResolver.contemCampo( ServerCodes.SERVIDOR_TXT_RESPOSTA)
           && pduAResolver.contemCampo( ServerCodes.SERVIDOR_IMAGEM)
           && pduAResolver.contemCampo( ServerCodes.SERVIDOR_AUDIO)){
-    	  System.out.println ("Recebeu nova questão do servidor:");
+        System.out.println ("Recebeu nova questão do servidor:");
         CampoPdu campoNomeDesafio = pduAResolver.popCampo();
         CampoPdu campoNumeroQuestao = pduAResolver.popCampo();
         CampoPdu campoTextoQuestao = pduAResolver.popCampo();
@@ -147,7 +147,7 @@ public class DesafioReceiver implements Runnable , Serializable {
         CampoPdu campoTextoResposta3 = pduAResolver.popCampo();
         CampoPdu campoImagem = pduAResolver.popCampo();
         CampoPdu campoAudio = pduAResolver.popCampo();
-        
+
         String nomeDesafio = campoNomeDesafio.getCampoString();
         int numeroPergunta = campoNumeroQuestao.getCampoInt1Byte();
         String textoQuestao = campoTextoQuestao.getCampoString();
@@ -166,24 +166,24 @@ public class DesafioReceiver implements Runnable , Serializable {
         int opcao = -1;
         new Thread(new JPGHandler ( campoImagem.getBytes() , nomeDesafio , numeroPergunta )).start();
         while(( now.after( fimTimer ) )){
-        	System.out.println("Desafio: " + nomeDesafio);
-            System.out.println("Questao #: " + numeroPergunta);
-            System.out.println(textoQuestao);
-            System.out.println(numeroResposta1 + " - " + textoResposta1);
-            System.out.println(numeroResposta2 + " - " + textoResposta2);
-            System.out.println(numeroResposta3 + " - " + textoResposta3);
-            System.out.println("4 - passar pergunta");
-            opcao = Input.lerInt(sc);
-        	}
+          System.out.println("Desafio: " + nomeDesafio);
+          System.out.println("Questao #: " + numeroPergunta);
+          System.out.println(textoQuestao);
+          System.out.println(numeroResposta1 + " - " + textoResposta1);
+          System.out.println(numeroResposta2 + " - " + textoResposta2);
+          System.out.println(numeroResposta3 + " - " + textoResposta3);
+          System.out.println("4 - passar pergunta");
+          opcao = Input.lerInt(sc);
+        }
         if(opcao >0 && opcao != 4){
-        	replyPdu.adicionaCampoPdu(campoNomeDesafio);
-        	replyPdu.adicionaCampoPdu(campoNumeroQuestao);
-        	CampoPdu campoEscolha = new CampoPdu ( ServerCodes.CLIENTE_ESCOLHA);
-        	campoEscolha.adicionaInteiro1Byte(opcao);
-        	replyPdu.adicionaCampoPdu(campoEscolha);
+          replyPdu.adicionaCampoPdu(campoNomeDesafio);
+          replyPdu.adicionaCampoPdu(campoNumeroQuestao);
+          CampoPdu campoEscolha = new CampoPdu ( ServerCodes.CLIENTE_ESCOLHA);
+          campoEscolha.adicionaInteiro1Byte(opcao);
+          replyPdu.adicionaCampoPdu(campoEscolha);
         }
         if ( opcao == 4){
-        	replyPdu.setTipo(ServerCodes.QUIT);
+          replyPdu.setTipo(ServerCodes.QUIT);
         }
         this.enviaPacote(replyPdu);
 

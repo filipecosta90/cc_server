@@ -232,124 +232,151 @@ public class ClientResponder implements Serializable{
     }
 
   @SuppressWarnings("deprecation")
-private void resolvePacote(byte tipoPedido) throws Exception {
-    numeroLabel++;
-    byte[] udpReceber;
-    DatagramPacket udpDataPacket;
-    System.out.println( "Aguardando resposta de servidor na porta: " + remotePort);
-    udpReceber = new byte[ ServerCodes.TAMANHO_MAX_PDU ];
-    udpDataPacket = new DatagramPacket( udpReceber , udpReceber.length );
-    serverSocket.receive( udpDataPacket );
-    BasePdu novoPdu = new BasePdu ( udpDataPacket );
-    novoPdu.parseCabecalho();
-    novoPdu.parseCampos();
-    System.out.println(novoPdu.toString());
+    private void resolvePacote(byte tipoPedido) throws Exception {
+      numeroLabel++;
+      byte[] udpReceber;
+      DatagramPacket udpDataPacket;
+      System.out.println( "Aguardando resposta de servidor na porta: " + remotePort);
+      udpReceber = new byte[ ServerCodes.TAMANHO_MAX_PDU ];
+      udpDataPacket = new DatagramPacket( udpReceber , udpReceber.length );
+      serverSocket.receive( udpDataPacket );
+      BasePdu novoPdu = new BasePdu ( udpDataPacket );
+      novoPdu.parseCabecalho();
+      novoPdu.parseCampos();
+      System.out.println(novoPdu.toString());
 
-    switch( tipoPedido ){
-      case ServerCodes.HELLO :
-        {
-          if ( novoPdu.contemCampo( ServerCodes.SERVIDOR_OK ) ){
-            System.out.println( "Conecção estabelecida UDP -> UDP");
-            remoteDefinido = true;
-          }
-          else{
-            System.out.println("falha na comunicação ponto a ponto!");
-          }
-          break;
-        }
-      case ServerCodes.REGISTER :
-        {
-          if ( novoPdu.contemCampo( ServerCodes.SERVIDOR_OK ) ){
-            System.out.println( "Utilizador registado com sucesso:");
-            this.logginValido = true;
-          }
-          else{
-            if ( novoPdu.contemCampo( ServerCodes.SERVIDOR_ERRO ) ){
-              CampoPdu campoErro = novoPdu.popCampo();
-              String descricaoErro = campoErro.getCampoString();
-              System.out.println("Erro: " + descricaoErro);
+      switch( tipoPedido ){
+        case ServerCodes.HELLO :
+          {
+            if ( novoPdu.contemCampo( ServerCodes.SERVIDOR_OK ) ){
+              System.out.println( "Conecção estabelecida UDP -> UDP");
+              remoteDefinido = true;
             }
-          }
-          break;
-        }
-      case ServerCodes.LOGIN :
-        {
-          if ( novoPdu.contemCampo( ServerCodes.SERVIDOR_NOME ) && novoPdu.contemCampo( ServerCodes.SERVIDOR_PONTOS)){
-            CampoPdu campoNome = novoPdu.popCampo();
-            CampoPdu campoScore = novoPdu.popCampo();
-            String nomeCliente = campoNome.getCampoString();
-            int score = campoScore.getCampoInt1Byte();
-            System.out.println( "Login efectuado com sucesso:\n\tNome: " + nomeCliente +"\n\tPontos: "+ score);
-            this.logginValido = true;
-          }
-          else{
-            if ( novoPdu.contemCampo( ServerCodes.SERVIDOR_ERRO ) ){
-              CampoPdu campoErro = novoPdu.popCampo();
-              String descricaoErro = campoErro.getCampoString();
-              System.out.println("Erro: " + descricaoErro);
+            else{
+              System.out.println("falha na comunicação ponto a ponto!");
             }
+            break;
           }
-          break;
-        }
-      case ServerCodes.LOGOUT :
-        {
-          if ( novoPdu.contemCampo( ServerCodes.SERVIDOR_OK ) ){
-            System.out.println( "Logout realizado com sucesso:");
-            this.logginValido = false;
-          }
-          else{
-            if ( novoPdu.contemCampo( ServerCodes.SERVIDOR_ERRO ) ){
-              CampoPdu campoErro = novoPdu.popCampo();
-              String descricaoErro = campoErro.getCampoString();
-              System.out.println("Erro: " + descricaoErro);
+        case ServerCodes.REGISTER :
+          {
+            if ( novoPdu.contemCampo( ServerCodes.SERVIDOR_OK ) ){
+              System.out.println( "Utilizador registado com sucesso:");
+              this.logginValido = true;
             }
-          }
-          break;
-        }
-      case ServerCodes.QUIT :
-        {
-          if ( novoPdu.contemCampo( ServerCodes.SERVIDOR_OK ) ){
-            System.out.println( "Passou a pergunta.");
-          }
-          else{
-            if ( novoPdu.contemCampo( ServerCodes.SERVIDOR_ERRO ) ){
-              CampoPdu campoErro = novoPdu.popCampo();
-              String descricaoErro = campoErro.getCampoString();
-              System.out.println("Erro: " + descricaoErro);
+            else{
+              if ( novoPdu.contemCampo( ServerCodes.SERVIDOR_ERRO ) ){
+                CampoPdu campoErro = novoPdu.popCampo();
+                String descricaoErro = campoErro.getCampoString();
+                System.out.println("Erro: " + descricaoErro);
+              }
             }
+            break;
           }
-          break;
-        }
-      case ServerCodes.END :
-        {
-          if ( novoPdu.contemCampo( ServerCodes.SERVIDOR_ALCUNHA ) && novoPdu.contemCampo( ServerCodes.SERVIDOR_SCORE )  ){
-            int numeroCampos = novoPdu.getNumeroCamposSeguintesInt();
-            int campoNumero = 1;
-            System.out.println( "Pontuações do Jogo");
-            while ( campoNumero < numeroCampos ){
-              CampoPdu alcunhaJogador = novoPdu.popCampo();
-              CampoPdu scoreJogador = novoPdu.popCampo();
-              String nome = alcunhaJogador.getCampoString();
-              int score = scoreJogador.getCampoInt2Bytes();
-              System.out.println( "Alcunha: " + nome + "\tScore: "+ score);
-              campoNumero+=2;
+        case ServerCodes.LOGIN :
+          {
+            if ( novoPdu.contemCampo( ServerCodes.SERVIDOR_NOME ) && novoPdu.contemCampo( ServerCodes.SERVIDOR_PONTOS)){
+              CampoPdu campoNome = novoPdu.popCampo();
+              CampoPdu campoScore = novoPdu.popCampo();
+              String nomeCliente = campoNome.getCampoString();
+              int score = campoScore.getCampoInt1Byte();
+              System.out.println( "Login efectuado com sucesso:\n\tNome: " + nomeCliente +"\n\tPontos: "+ score);
+              this.logginValido = true;
             }
-          }
-          else{
-            if ( novoPdu.contemCampo( ServerCodes.SERVIDOR_ERRO ) ){
-              CampoPdu campoErro = novoPdu.popCampo();
-              String descricaoErro = campoErro.getCampoString();
-              System.out.println("Erro: " + descricaoErro);
+            else{
+              if ( novoPdu.contemCampo( ServerCodes.SERVIDOR_ERRO ) ){
+                CampoPdu campoErro = novoPdu.popCampo();
+                String descricaoErro = campoErro.getCampoString();
+                System.out.println("Erro: " + descricaoErro);
+              }
             }
+            break;
           }
-          break;
-        }
-      case ServerCodes.LIST_CHALLENGES :
-        {
-          if ( novoPdu.contemCampo( ServerCodes.SERVIDOR_NOME_DESAFIO ) && novoPdu.contemCampo( ServerCodes.SERVIDOR_DATA_DESAFIO ) && novoPdu.contemCampo( ServerCodes.SERVIDOR_HORA_DESAFIO )  ){
-            int numeroCampos = novoPdu.getNumeroCamposSeguintesInt();
-            int campoNumero = 1;
-            while ( campoNumero < numeroCampos ){
+        case ServerCodes.LOGOUT :
+          {
+            if ( novoPdu.contemCampo( ServerCodes.SERVIDOR_OK ) ){
+              System.out.println( "Logout realizado com sucesso:");
+              this.logginValido = false;
+            }
+            else{
+              if ( novoPdu.contemCampo( ServerCodes.SERVIDOR_ERRO ) ){
+                CampoPdu campoErro = novoPdu.popCampo();
+                String descricaoErro = campoErro.getCampoString();
+                System.out.println("Erro: " + descricaoErro);
+              }
+            }
+            break;
+          }
+        case ServerCodes.QUIT :
+          {
+            if ( novoPdu.contemCampo( ServerCodes.SERVIDOR_OK ) ){
+              System.out.println( "Passou a pergunta.");
+            }
+            else{
+              if ( novoPdu.contemCampo( ServerCodes.SERVIDOR_ERRO ) ){
+                CampoPdu campoErro = novoPdu.popCampo();
+                String descricaoErro = campoErro.getCampoString();
+                System.out.println("Erro: " + descricaoErro);
+              }
+            }
+            break;
+          }
+        case ServerCodes.END :
+          {
+            if ( novoPdu.contemCampo( ServerCodes.SERVIDOR_ALCUNHA ) && novoPdu.contemCampo( ServerCodes.SERVIDOR_SCORE )  ){
+              int numeroCampos = novoPdu.getNumeroCamposSeguintesInt();
+              int campoNumero = 1;
+              System.out.println( "Pontuações do Jogo");
+              while ( campoNumero < numeroCampos ){
+                CampoPdu alcunhaJogador = novoPdu.popCampo();
+                CampoPdu scoreJogador = novoPdu.popCampo();
+                String nome = alcunhaJogador.getCampoString();
+                int score = scoreJogador.getCampoInt2Bytes();
+                System.out.println( "Alcunha: " + nome + "\tScore: "+ score);
+                campoNumero+=2;
+              }
+            }
+            else{
+              if ( novoPdu.contemCampo( ServerCodes.SERVIDOR_ERRO ) ){
+                CampoPdu campoErro = novoPdu.popCampo();
+                String descricaoErro = campoErro.getCampoString();
+                System.out.println("Erro: " + descricaoErro);
+              }
+            }
+            break;
+          }
+        case ServerCodes.LIST_CHALLENGES :
+          {
+            if ( novoPdu.contemCampo( ServerCodes.SERVIDOR_NOME_DESAFIO ) && novoPdu.contemCampo( ServerCodes.SERVIDOR_DATA_DESAFIO ) && novoPdu.contemCampo( ServerCodes.SERVIDOR_HORA_DESAFIO )  ){
+              int numeroCampos = novoPdu.getNumeroCamposSeguintesInt();
+              int campoNumero = 1;
+              while ( campoNumero < numeroCampos ){
+                CampoPdu nomeDesafio = novoPdu.popCampo();
+                CampoPdu dataDesafio = novoPdu.popCampo();
+                CampoPdu horaDesafio = novoPdu.popCampo();
+                String nome = nomeDesafio.getCampoString();
+                int dataAno = dataDesafio.getCampoDataAno();
+                int dataMes = dataDesafio.getCampoDataMes();
+                int dataDia = dataDesafio.getCampoDataDia();
+                int horaHora = horaDesafio.getCampoHoraHora();
+                int horaMinutos = horaDesafio.getCampoHoraMinutos();
+                int horaSegundos = horaDesafio.getCampoHoraSegundos();
+                Date dataDesafioCriado = new Date (dataAno, dataMes, dataDia , horaHora, horaMinutos, horaSegundos );
+                System.out.println( "Desafio: " + nome + "\n\tData: " + dataDesafioCriado);
+                campoNumero+=3;
+              }
+            }
+            else{
+              if ( novoPdu.contemCampo( ServerCodes.SERVIDOR_ERRO ) ){
+                CampoPdu campoErro = novoPdu.popCampo();
+                String descricaoErro = campoErro.getCampoString();
+                System.out.println("Erro: " + descricaoErro);
+              }
+            }
+            break;
+          }
+        case ServerCodes.MAKE_CHALLENGE :
+          {
+            if ( novoPdu.contemCampo( ServerCodes.SERVIDOR_NOME_DESAFIO ) && novoPdu.contemCampo( ServerCodes.SERVIDOR_DATA_DESAFIO ) && novoPdu.contemCampo( ServerCodes.SERVIDOR_HORA_DESAFIO )  ){
               CampoPdu nomeDesafio = novoPdu.popCampo();
               CampoPdu dataDesafio = novoPdu.popCampo();
               CampoPdu horaDesafio = novoPdu.popCampo();
@@ -361,123 +388,96 @@ private void resolvePacote(byte tipoPedido) throws Exception {
               int horaMinutos = horaDesafio.getCampoHoraMinutos();
               int horaSegundos = horaDesafio.getCampoHoraSegundos();
               Date dataDesafioCriado = new Date (dataAno, dataMes, dataDia , horaHora, horaMinutos, horaSegundos );
-              System.out.println( "Desafio: " + nome + "\n\tData: " + dataDesafioCriado);
-              campoNumero+=3;
-            }
-          }
-          else{
-            if ( novoPdu.contemCampo( ServerCodes.SERVIDOR_ERRO ) ){
-              CampoPdu campoErro = novoPdu.popCampo();
-              String descricaoErro = campoErro.getCampoString();
-              System.out.println("Erro: " + descricaoErro);
-            }
-          }
-          break;
-        }
-      case ServerCodes.MAKE_CHALLENGE :
-        {
-          if ( novoPdu.contemCampo( ServerCodes.SERVIDOR_NOME_DESAFIO ) && novoPdu.contemCampo( ServerCodes.SERVIDOR_DATA_DESAFIO ) && novoPdu.contemCampo( ServerCodes.SERVIDOR_HORA_DESAFIO )  ){
-            CampoPdu nomeDesafio = novoPdu.popCampo();
-            CampoPdu dataDesafio = novoPdu.popCampo();
-            CampoPdu horaDesafio = novoPdu.popCampo();
-            String nome = nomeDesafio.getCampoString();
-            int dataAno = dataDesafio.getCampoDataAno();
-            int dataMes = dataDesafio.getCampoDataMes();
-            int dataDia = dataDesafio.getCampoDataDia();
-            int horaHora = horaDesafio.getCampoHoraHora();
-            int horaMinutos = horaDesafio.getCampoHoraMinutos();
-            int horaSegundos = horaDesafio.getCampoHoraSegundos();
-            Date dataDesafioCriado = new Date (dataAno, dataMes, dataDia , horaHora, horaMinutos, horaSegundos );
-            System.out.println( "Desafio Criado: " + nome + "\n\tData: " + dataDesafioCriado);
-            new Thread(new DesafioReceiver ( dataDesafioCriado , this.remoteAddress, this.remotePort )).start();
+              System.out.println( "Desafio Criado: " + nome + "\n\tData: " + dataDesafioCriado);
+              new Thread(new DesafioReceiver ( dataDesafioCriado , this.remoteAddress, this.remotePort )).start();
 
-          }
-          else{
-            if ( novoPdu.contemCampo( ServerCodes.SERVIDOR_ERRO ) ){
-              CampoPdu campoErro = novoPdu.popCampo();
-              String descricaoErro = campoErro.getCampoString();
-              System.out.println("Erro: " + descricaoErro);
             }
-          }
-          break;
-        }
-      case ServerCodes.ACCEPT_CHALLENGE :
-        {
-        	 if ( novoPdu.contemCampo( ServerCodes.SERVIDOR_NOME_DESAFIO ) && novoPdu.contemCampo( ServerCodes.SERVIDOR_DATA_DESAFIO ) && novoPdu.contemCampo( ServerCodes.SERVIDOR_HORA_DESAFIO )  ){
-                 CampoPdu nomeDesafio = novoPdu.popCampo();
-                 CampoPdu dataDesafio = novoPdu.popCampo();
-                 CampoPdu horaDesafio = novoPdu.popCampo();
-                 String nome = nomeDesafio.getCampoString();
-                 int dataAno = dataDesafio.getCampoDataAno();
-                 int dataMes = dataDesafio.getCampoDataMes();
-                 int dataDia = dataDesafio.getCampoDataDia();
-                 int horaHora = horaDesafio.getCampoHoraHora();
-                 int horaMinutos = horaDesafio.getCampoHoraMinutos();
-                 int horaSegundos = horaDesafio.getCampoHoraSegundos();
-                 Date dataDesafioCriado = new Date (dataAno, dataMes, dataDia , horaHora, horaMinutos, horaSegundos );
-                 System.out.println( "Desafio Aceite: " + nome + "\n\tData: " + dataDesafioCriado);
-                 new Thread(new DesafioReceiver ( dataDesafioCriado , this.remoteAddress, this.remotePort )).start();
-               }
-          else{
-            if ( novoPdu.contemCampo( ServerCodes.SERVIDOR_ERRO ) ){
-              CampoPdu campoErro = novoPdu.popCampo();
-              String descricaoErro = campoErro.getCampoString();
-              System.out.println("Erro: " + descricaoErro);
+            else{
+              if ( novoPdu.contemCampo( ServerCodes.SERVIDOR_ERRO ) ){
+                CampoPdu campoErro = novoPdu.popCampo();
+                String descricaoErro = campoErro.getCampoString();
+                System.out.println("Erro: " + descricaoErro);
+              }
             }
+            break;
           }
-          break;
-        }
-      case ServerCodes.DELETE_CHALLENGE :
-        {
-          if ( novoPdu.contemCampo( ServerCodes.SERVIDOR_NOME_DESAFIO ) && novoPdu.contemCampo( ServerCodes.SERVIDOR_DATA_DESAFIO ) && novoPdu.contemCampo( ServerCodes.SERVIDOR_HORA_DESAFIO )  ){
-            CampoPdu nomeDesafio = novoPdu.popCampo();
-            CampoPdu dataDesafio = novoPdu.popCampo();
-            CampoPdu horaDesafio = novoPdu.popCampo();
-            String nome = nomeDesafio.getCampoString();
-            int dataAno = dataDesafio.getCampoDataAno();
-            int dataMes = dataDesafio.getCampoDataMes();
-            int dataDia = dataDesafio.getCampoDataDia();
-            int horaHora = horaDesafio.getCampoHoraHora();
-            int horaMinutos = horaDesafio.getCampoHoraMinutos();
-            int horaSegundos = horaDesafio.getCampoHoraSegundos();
-            Date dataDesafioCriado = new Date (dataAno, dataMes, dataDia , horaHora, horaMinutos, horaSegundos );
-            System.out.println( "Desafio Eliminado: " + nome + "\n\tData: " + dataDesafioCriado);
-          }
-          else{
-            if ( novoPdu.contemCampo( ServerCodes.SERVIDOR_ERRO ) ){
-              CampoPdu campoErro = novoPdu.popCampo();
-              String descricaoErro = campoErro.getCampoString();
-              System.out.println("Erro: " + descricaoErro);
+        case ServerCodes.ACCEPT_CHALLENGE :
+          {
+            if ( novoPdu.contemCampo( ServerCodes.SERVIDOR_NOME_DESAFIO ) && novoPdu.contemCampo( ServerCodes.SERVIDOR_DATA_DESAFIO ) && novoPdu.contemCampo( ServerCodes.SERVIDOR_HORA_DESAFIO )  ){
+              CampoPdu nomeDesafio = novoPdu.popCampo();
+              CampoPdu dataDesafio = novoPdu.popCampo();
+              CampoPdu horaDesafio = novoPdu.popCampo();
+              String nome = nomeDesafio.getCampoString();
+              int dataAno = dataDesafio.getCampoDataAno();
+              int dataMes = dataDesafio.getCampoDataMes();
+              int dataDia = dataDesafio.getCampoDataDia();
+              int horaHora = horaDesafio.getCampoHoraHora();
+              int horaMinutos = horaDesafio.getCampoHoraMinutos();
+              int horaSegundos = horaDesafio.getCampoHoraSegundos();
+              Date dataDesafioCriado = new Date (dataAno, dataMes, dataDia , horaHora, horaMinutos, horaSegundos );
+              System.out.println( "Desafio Aceite: " + nome + "\n\tData: " + dataDesafioCriado);
+              new Thread(new DesafioReceiver ( dataDesafioCriado , this.remoteAddress, this.remotePort )).start();
             }
+            else{
+              if ( novoPdu.contemCampo( ServerCodes.SERVIDOR_ERRO ) ){
+                CampoPdu campoErro = novoPdu.popCampo();
+                String descricaoErro = campoErro.getCampoString();
+                System.out.println("Erro: " + descricaoErro);
+              }
+            }
+            break;
           }
-          break;
-        }
-      case ServerCodes.LIST_RANKING :
-        {
-          if ( novoPdu.contemCampo( ServerCodes.SERVIDOR_NOME )  && novoPdu.contemCampo( ServerCodes.SERVIDOR_ALCUNHA ) && novoPdu.contemCampo( ServerCodes.SERVIDOR_PONTOS )  ){
-            int numeroCampos = novoPdu.getNumeroCamposSeguintesInt();
-            System.out.println("Ranking local de clientes:");
-            int campoNumero = 1;
-            while ( campoNumero < numeroCampos ){
+        case ServerCodes.DELETE_CHALLENGE :
+          {
+            if ( novoPdu.contemCampo( ServerCodes.SERVIDOR_NOME_DESAFIO ) && novoPdu.contemCampo( ServerCodes.SERVIDOR_DATA_DESAFIO ) && novoPdu.contemCampo( ServerCodes.SERVIDOR_HORA_DESAFIO )  ){
+              CampoPdu nomeDesafio = novoPdu.popCampo();
+              CampoPdu dataDesafio = novoPdu.popCampo();
+              CampoPdu horaDesafio = novoPdu.popCampo();
+              String nome = nomeDesafio.getCampoString();
+              int dataAno = dataDesafio.getCampoDataAno();
+              int dataMes = dataDesafio.getCampoDataMes();
+              int dataDia = dataDesafio.getCampoDataDia();
+              int horaHora = horaDesafio.getCampoHoraHora();
+              int horaMinutos = horaDesafio.getCampoHoraMinutos();
+              int horaSegundos = horaDesafio.getCampoHoraSegundos();
+              Date dataDesafioCriado = new Date (dataAno, dataMes, dataDia , horaHora, horaMinutos, horaSegundos );
+              System.out.println( "Desafio Eliminado: " + nome + "\n\tData: " + dataDesafioCriado);
+            }
+            else{
+              if ( novoPdu.contemCampo( ServerCodes.SERVIDOR_ERRO ) ){
+                CampoPdu campoErro = novoPdu.popCampo();
+                String descricaoErro = campoErro.getCampoString();
+                System.out.println("Erro: " + descricaoErro);
+              }
+            }
+            break;
+          }
+        case ServerCodes.LIST_RANKING :
+          {
+            if ( novoPdu.contemCampo( ServerCodes.SERVIDOR_NOME )  && novoPdu.contemCampo( ServerCodes.SERVIDOR_ALCUNHA ) && novoPdu.contemCampo( ServerCodes.SERVIDOR_PONTOS )  ){
+              int numeroCampos = novoPdu.getNumeroCamposSeguintesInt();
+              System.out.println("Ranking local de clientes:");
+              int campoNumero = 1;
+              while ( campoNumero < numeroCampos ){
                 CampoPdu nomeJogador = novoPdu.popCampo();
-              CampoPdu alcunhaJogador = novoPdu.popCampo();
-              CampoPdu scoreJogador = novoPdu.popCampo();
-              String nome = nomeJogador.getCampoString();
-              String alcunha = alcunhaJogador.getCampoString();
-              int score = scoreJogador.getCampoInt1Byte();
-              System.out.println( "Nome: " + nome + "Alcunha: " + alcunha + "\tScore: "+ score);
-              campoNumero+=3;
+                CampoPdu alcunhaJogador = novoPdu.popCampo();
+                CampoPdu scoreJogador = novoPdu.popCampo();
+                String nome = nomeJogador.getCampoString();
+                String alcunha = alcunhaJogador.getCampoString();
+                int score = scoreJogador.getCampoInt1Byte();
+                System.out.println( "Nome: " + nome + "Alcunha: " + alcunha + "\tScore: "+ score);
+                campoNumero+=3;
+              }
             }
-          }
-          else{
-            if ( novoPdu.contemCampo( ServerCodes.SERVIDOR_ERRO ) ){
-              CampoPdu campoErro = novoPdu.popCampo();
-              String descricaoErro = campoErro.getCampoString();
-              System.out.println("Erro: " + descricaoErro);
+            else{
+              if ( novoPdu.contemCampo( ServerCodes.SERVIDOR_ERRO ) ){
+                CampoPdu campoErro = novoPdu.popCampo();
+                String descricaoErro = campoErro.getCampoString();
+                System.out.println("Erro: " + descricaoErro);
+              }
             }
+            break;
           }
-          break;
-        }
+      }
     }
-  }
 }
