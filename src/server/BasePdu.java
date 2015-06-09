@@ -214,7 +214,6 @@ public class BasePdu implements Serializable{
         for (CampoPdu t : ArrayListCamposSeguintes ) {
           s.append("\n\t");
           s.append(t.toString());
-          s.append("\n");
         }
         s.append( "\t-----  FIM  CAMPOS  -----");
       }

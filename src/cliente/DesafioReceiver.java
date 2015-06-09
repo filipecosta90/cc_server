@@ -235,7 +235,7 @@ private void resolveRespostaServer(byte answer) throws UnsupportedEncodingExcept
     case ServerCodes.QUIT :
       {
     	  if (  novoPdu.contemCampo( ServerCodes.SERVIDOR_OK ) ){
-              System.out.println("Passou a questão" );
+              System.out.println("Passou a questão!" );
     	  }
     	  break;
       }

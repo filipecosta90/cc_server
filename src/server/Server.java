@@ -317,10 +317,8 @@ public class Server implements Runnable, Serializable {
   public Desafio getDesafioDecorrerAssociadoCliente(String alcunhaClienteAssociado) {
     Desafio desafioPointer = null;
     for ( DesafioManager desafioMPointer : this.desafiosEmJogo.values() ){
-    	System.out.println("testando" + desafioMPointer.getDesafio().getNomeDesafio());
       if ( desafioMPointer.getDesafio().clienteParticipa(alcunhaClienteAssociado)){
         desafioPointer = desafioMPointer.getDesafio();
-        System.out.println(alcunhaClienteAssociado + "participa");
       }
     }
     return desafioPointer;

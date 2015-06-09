@@ -35,7 +35,7 @@ public class ServerResponder implements Runnable , Serializable {
       Coneccao coneccaoEstabelecida;
       if( this.localServerPointer.isThisSocketBound( receivedSocket , remoteAddress, remotePort)){
         coneccaoEstabelecida = this.localServerPointer.getConeccao( receivedSocket , remoteAddress , remotePort );
-        System.out.println("Alcunha associada: "+ coneccaoEstabelecida.getAlcunhaClienteAssociado());
+        System.out.println("\tAlcunha associada: "+ coneccaoEstabelecida.getAlcunhaClienteAssociado());
         try {
           coneccaoEstabelecida.verificaAlteraSeNecessarioSocket(this.receivedSocket , this.remotePort);
           coneccaoEstabelecida.adicionaPacote(this.receivedPacket);

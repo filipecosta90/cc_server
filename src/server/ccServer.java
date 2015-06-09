@@ -20,14 +20,14 @@ public class ccServer implements Serializable {
 
   public static void navegaServidor( Server servidor ) throws Exception {
     StringBuilder s = new StringBuilder();
-    s.append("--- Gestao Servidor ---\n\n");
-    s.append("\t1 - Gerir users locais ");
-    s.append("\t2 - Gerir jogos ");
-    s.append("\t3 - Listar ranking local ");
-    s.append("\t4 - Gerir Servidores ");
-    s.append("\t5 - Desligar ");
-    s.append("\t6 - Carregar estado ");
-    s.append("\t7 - Guardar estado ");
+    s.append("--- Gestao Servidor ---");
+    s.append("\n\t1 - Gerir users locais ");
+    s.append("\n\t2 - Gerir jogos ");
+    s.append("\n\t3 - Listar ranking local ");
+    s.append("\n\t4 - Gerir Servidores ");
+    s.append("\n\t5 - Desligar ");
+    s.append("\n\t6 - Carregar estado ");
+    s.append("\n\t7 - Guardar estado ");
     s.append("\n-----------------------\n");
     s.append("\nopção:");
     System.out.println(s.toString());

@@ -77,7 +77,6 @@ public class DesafioManager implements Runnable , Serializable {
         for ( Pergunta perguntaActual : desafioAGerir.getPerguntas() ){
           this.updateConeccoes();
           if ( perguntaEnviar <= 10 ){
-            System.out.println("Enviando pergunta " + perguntaEnviar);
             try {
               this.enviaPergunta( this.getNomeDesafioGerir(), perguntaEnviar,  perguntaActual);
               perguntaEnviar++;   
@@ -85,7 +84,6 @@ public class DesafioManager implements Runnable , Serializable {
             } catch (Exception e) {
               e.printStackTrace();
             }
-            System.out.println("Pergunta enviada: " + perguntaActual.toString());
           }
           else {
             System.out.println("Dando o desafio por terminado!");
@@ -106,9 +104,7 @@ public class DesafioManager implements Runnable , Serializable {
     }
 
   private void enviaPergunta(String nomeDesafio , int numeroPergunta , Pergunta perguntaActual) throws Exception {
-    System.out.println("Vai tentar enviar pergunta " + numeroPergunta );
     for ( Coneccao coneccaoActual : mapConeccoes.values() ){
-      System.out.println("Enviando pergunta a: " + coneccaoActual.getAlcunhaClienteAssociado());
       coneccaoActual.enviaPergunta( nomeDesafio , numeroPergunta , perguntaActual);
     }
   }

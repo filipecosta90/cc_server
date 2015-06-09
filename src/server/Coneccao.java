@@ -105,18 +105,15 @@ public class Coneccao implements Serializable {
   private void enviaPacote( BasePdu replyPdu ) throws Exception {
     ArrayList < BasePdu > pdusEnviar = new ArrayList < BasePdu >();
     if ( replyPdu.getTamanhoTotalPdu() > ServerCodes.TAMANHO_MAX_PDU ){
-      System.out.println("\nPDU demasiado grande. vai dividir");
       pdusEnviar = replyPdu.split( ServerCodes.TAMANHO_MAX_PDU );
     }
     else {
       pdusEnviar.add(replyPdu);
     }
-    System.out.println("\nPDU dividido em " + pdusEnviar.size());
     for ( BasePdu pduActual : pdusEnviar ){
       DatagramPacket pacoteEnvio = new DatagramPacket ( pduActual.getBytesEnvio() , pduActual.getBytesEnvio().length , this.enderecoLigacao , this.portaRemota );
       try{
         boundedSocket.send( pacoteEnvio );
-        System.out.println("enviadoPdu: " + pduActual.toString());
       }
       catch ( SocketException e){
         e.printStackTrace();
@@ -400,16 +397,14 @@ public class Coneccao implements Serializable {
             boolean ok = false;
             String descricaoErro = new String();
             if (  pduAResolver.contemCampo( ServerCodes.CLIENTE_NOME_DESAFIO ) && pduAResolver.contemCampo( ServerCodes.CLIENTE_NUM_QUESTAO )  && pduAResolver.contemCampo( ServerCodes.CLIENTE_ESCOLHA )){
-              CampoPdu campoEscolha = pduAResolver.popCampo();
               CampoPdu campoNomeDesafio = pduAResolver.popCampo();
               CampoPdu campoQuestao = pduAResolver.popCampo();
-              int escolha = campoEscolha.getCampoInt1Byte();
+              CampoPdu campoEscolha = pduAResolver.popCampo();
               String nomeDesafio = campoNomeDesafio.getCampoString();
               int numeroQuestao = campoQuestao.getCampoInt1Byte();
-              System.out.println("vai testar se o cliente tem desafios activos!");
+              int escolha = campoEscolha.getCampoInt1Byte();
               Desafio desafioPointer = this.localServerPointer.getDesafioDecorrerAssociadoCliente( this.alcunhaClienteAssociado );
               if(desafioPointer != null){
-                  System.out.println("\t tem desafios activos!");
                 boolean resultadoResposta = false;
                 resultadoResposta = desafioPointer.respondePergunta( this.alcunhaClienteAssociado , numeroQuestao , escolha );
                 if ( resultadoResposta == true ){
@@ -421,8 +416,6 @@ public class Coneccao implements Serializable {
                 ok = true;
               }
               else{
-                  System.out.println("\t Nao existe um desafio activo para este cliente!!");
-
                 descricaoErro = "Nao existe um desafio activo para este cliente!";
               }
             }
