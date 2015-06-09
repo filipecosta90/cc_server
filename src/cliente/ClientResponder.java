@@ -28,6 +28,7 @@ public class ClientResponder implements Serializable{
   private BasePdu replyPdu;
   private transient Scanner sc;
   private Date dataDesafioAceite;
+  private boolean emJogo;
 
   ClientResponder ( ){
     remoteDefinido = false;
@@ -35,6 +36,7 @@ public class ClientResponder implements Serializable{
     numeroLabel=1;
     sc = new Scanner(System.in);
     sc.useDelimiter("\\n");
+    emJogo = false;
   }       
 
   public void navega() throws Exception{
@@ -63,6 +65,7 @@ public class ClientResponder implements Serializable{
         }
       }
       while ( logginValido == true ){
+    	while(emJogo==true){}
         System.out.println("Escolha uma das seguintes opções:" );
         System.out.println("4 - logout " );
         System.out.println("7 - listar desafios " );
@@ -76,6 +79,10 @@ public class ClientResponder implements Serializable{
         resolvePacote ( opcao );
       }
     }
+  }
+  
+  public void offJogo(){
+	  this.emJogo = false;
   }
 
   private void enviaPacote( BasePdu pduActual ) throws Exception  {
@@ -389,8 +396,8 @@ public class ClientResponder implements Serializable{
               int horaSegundos = horaDesafio.getCampoHoraSegundos();
               Date dataDesafioCriado = new Date (dataAno, dataMes, dataDia , horaHora, horaMinutos, horaSegundos );
               System.out.println( "Desafio Criado: " + nome + "\n\tData: " + dataDesafioCriado);
-              new Thread(new DesafioReceiver ( dataDesafioCriado ,  sc , this.serverSocket , this.remoteAddress, this.remotePort )).start();
-
+              emJogo = true;
+              new Thread(new DesafioReceiver ( this , dataDesafioCriado ,  sc , this.serverSocket , this.remoteAddress, this.remotePort )).start();
             }
             else{
               if ( novoPdu.contemCampo( ServerCodes.SERVIDOR_ERRO ) ){
@@ -416,7 +423,8 @@ public class ClientResponder implements Serializable{
               int horaSegundos = horaDesafio.getCampoHoraSegundos();
               Date dataDesafioCriado = new Date (dataAno, dataMes, dataDia , horaHora, horaMinutos, horaSegundos );
               System.out.println( "Desafio Aceite: " + nome + "\n\tData: " + dataDesafioCriado);
-              new Thread(new DesafioReceiver ( dataDesafioCriado ,  sc ,  this.serverSocket , this.remoteAddress, this.remotePort )).start();
+              new Thread(new DesafioReceiver ( this , dataDesafioCriado ,  sc ,  this.serverSocket , this.remoteAddress, this.remotePort )).start();
+              emJogo = true;
             }
             else{
               if ( novoPdu.contemCampo( ServerCodes.SERVIDOR_ERRO ) ){

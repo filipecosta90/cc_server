@@ -17,11 +17,9 @@ import server.Coneccao;
 import server.Desafio;
 import server.ServerCodes;
 
-
 public class DesafioReceiver implements Runnable , Serializable {
 
   private static final long serialVersionUID = -4941720503862447905L;
-
 
   private  Date dataHoraInicio;
   private int portaRemota;
@@ -32,8 +30,9 @@ public class DesafioReceiver implements Runnable , Serializable {
   private ArrayList < BasePdu > stackEspera;
   private int labelNumber;
   private Scanner scannerPergunta;
+  private ClientResponder cliente;
 
-  DesafioReceiver ( Date Inicio , Scanner s , DatagramSocket server , InetAddress enderecoRemoto ,  int porta ){
+  DesafioReceiver ( ClientResponder c1 , Date Inicio , Scanner s , DatagramSocket server , InetAddress enderecoRemoto ,  int porta ){
     this.dataHoraInicio = Inicio;
     this.portaRemota = porta;
     this.serverSocket = server;
@@ -41,6 +40,7 @@ public class DesafioReceiver implements Runnable , Serializable {
     this.stackEspera = new ArrayList < BasePdu > ();
     this.labelNumber = 0;
     this.scannerPergunta = s;
+    this.cliente = c1;
   }
 
   public void adicionaPacote ( DatagramPacket novoPacote ) throws Exception{
@@ -161,7 +161,7 @@ public class DesafioReceiver implements Runnable , Serializable {
         Date now = new Date();
         int opcao = -1;
         //new Thread(new JPGHandler ( campoImagem.getBytes() , nomeDesafio , numeroPergunta )).start();
-        while(( now.before( fimTimer ) && opcao < 1 )){
+        //while(( now.before( fimTimer ) && opcao < 1 )){
           System.out.println("Desafio: " + nomeDesafio);
           System.out.println("Questao #: " + numeroPergunta);
           System.out.println(textoQuestao);
@@ -169,8 +169,9 @@ public class DesafioReceiver implements Runnable , Serializable {
           System.out.println(numeroResposta2 + " - " + textoResposta2);
           System.out.println(numeroResposta3 + " - " + textoResposta3);
           System.out.println("4 - passar pergunta");
-          opcao = Input.lerInt(scannerPergunta);
-        }
+       // }
+        opcao = Input.lerInt(scannerPergunta);
+
         if(opcao >0 && opcao != 4){
           replyPdu.adicionaCampoPdu(campoNomeDesafio);
           replyPdu.adicionaCampoPdu(campoNumeroQuestao);
@@ -221,6 +222,10 @@ private void resolveRespostaServer(byte answer) throws UnsupportedEncodingExcept
               int pontos = campoPontos.getCampoInt1Byte();
               System.out.println("A resposta correcta para a pergunta : " + numeroPergunta + " do desafio :" + nomeDesafio + "era a : " + respostaCerta );
               System.out.println("Pontos desta questão : " + pontos );
+              if ( numeroPergunta == 10 ){
+            	  this.estado = EstadoDesafio.TERMINADO;
+            	  this.cliente.offJogo();
+              }
           }
           
         break;
