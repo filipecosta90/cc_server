@@ -160,7 +160,7 @@ public class DesafioReceiver implements Runnable , Serializable {
         Scanner sc = new Scanner (System.in);
         int opcao = -1;
         //new Thread(new JPGHandler ( campoImagem.getBytes() , nomeDesafio , numeroPergunta )).start();
-        while(( now.after( fimTimer ) )){
+        while(( now.before( fimTimer ) )){
           System.out.println("Desafio: " + nomeDesafio);
           System.out.println("Questao #: " + numeroPergunta);
           System.out.println(textoQuestao);
@@ -177,7 +177,7 @@ public class DesafioReceiver implements Runnable , Serializable {
           campoEscolha.adicionaInteiro1Byte(opcao);
           replyPdu.adicionaCampoPdu(campoEscolha);
         }
-        if ( opcao == 4){
+        else{
           replyPdu.setTipo(ServerCodes.QUIT);
         }
         this.enviaPacote(replyPdu);
