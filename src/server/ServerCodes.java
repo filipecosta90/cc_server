@@ -75,6 +75,6 @@ public class ServerCodes implements Serializable {
   public static final byte INFO_PORTA_SERVIDOR =(byte) 31;
 
   /* tamanho máximo do campo = 49152 - 256 */
-  public static final int  TAMANHO_MAX_CAMPO = 48896;
+  public static final int  TAMANHO_MAX_CAMPO = 30000;
 
 }

@@ -234,32 +234,53 @@ public int getNumeroCamposSeguintesInt() {
     }
 
   /* Métodos auxiliares */
-  public void preparaEnvio() throws IOException {
+  public void preparaEnvio()  {
     ByteArrayOutputStream novoOut = new ByteArrayOutputStream();
     for ( CampoPdu t : ArrayListCamposSeguintes ) {
+    	System.out.println(t.toString());
       novoOut.write(t.getBytes() , 0 , t.getTamanhoTotal());
-      novoOut.flush();
+      try {
+		novoOut.flush();
+	} catch (IOException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
     }
     numeroCamposSeguintesInt = ArrayListCamposSeguintes.size();
     this.numeroCamposSeguintes = CampoPdu.intPara1Byte ( numeroCamposSeguintesInt );
     tamanhoCamposSeguintes = novoOut.size();
     this.tamanhoBytesCamposSeguintes = CampoPdu.intPara2Bytes ( tamanhoCamposSeguintes );
     camposSeguintes = novoOut.toByteArray();
-    novoOut.flush();
-    novoOut.close();
+    try {
+		novoOut.flush();
+	} catch (IOException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
+    try {
+		novoOut.close();
+	} catch (IOException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
     tamanhoPdu = 8 + tamanhoCamposSeguintes;
     ByteArrayOutputStream outBytes = new ByteArrayOutputStream();
-    outBytes.write( this.versao );
-    outBytes.write( this.seguranca );
-    outBytes.write( this.label , 0 ,2 );
-    outBytes.write( this.tipo );
-    outBytes.write( this.numeroCamposSeguintes );
-    outBytes.write( this.tamanhoBytesCamposSeguintes , 0 , 2);
-    outBytes.write( this.camposSeguintes , 0 , tamanhoCamposSeguintes);
-    outBytes.flush();
-    rawData = outBytes.toByteArray();
-    outBytes.flush();
-    outBytes.close();
+    try {
+		outBytes.write( this.versao );
+		outBytes.write( this.seguranca );
+	    outBytes.write( this.label , 0 ,2 );
+	    outBytes.write( this.tipo );
+	    outBytes.write( this.numeroCamposSeguintes );
+	    outBytes.write( this.tamanhoBytesCamposSeguintes , 0 , 2);
+	    outBytes.write( this.camposSeguintes , 0 , tamanhoCamposSeguintes);
+	    outBytes.flush();
+	    rawData = outBytes.toByteArray();
+	    outBytes.flush();
+	    outBytes.close();
+	} catch (IOException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
   }
 
   /* Métodos auxiliares */
@@ -313,6 +334,7 @@ public int getNumeroCamposSeguintesInt() {
 
   public void adicionaCampoPdu(CampoPdu campoInserir) {
     this.tamanhoCamposSeguintes += campoInserir.getTamanhoTotal();
+    this.tamanhoPdu += campoInserir.getTamanhoTotal();
     this.ArrayListCamposSeguintes.add(campoInserir);
   }
 
@@ -387,6 +409,7 @@ public int getNumeroCamposSeguintesInt() {
   }
 
   public void replyPergunta(String nomeDesafio, int numeroQuestao , Pergunta perguntaEnviar) throws Exception {
+	    System.out.println("Iniciando a criação do PDU");
     CampoPdu campoNomeDesafio = new CampoPdu ( ServerCodes.SERVIDOR_NOME_DESAFIO );
     campoNomeDesafio.adicionaString( nomeDesafio );
     this.adicionaCampoPdu(campoNomeDesafio);
@@ -438,6 +461,7 @@ public int getNumeroCamposSeguintesInt() {
       this.adicionaCampoPdu(blocoAudio);
     }
     this.preparaEnvio();
+    System.out.println("PDU preparado para envio");
   }
 
   public void replyRespostaQuestao(String nomeDesafio, int numeroQuestao, int certaErrada , int pontosAmealhados ) throws Exception {
@@ -459,22 +483,29 @@ public int getNumeroCamposSeguintesInt() {
   public ArrayList<BasePdu> split(int tamanhoMaxPdu) throws Exception {
     ArrayList<BasePdu> dividido = new ArrayList <BasePdu> ();
     int campoNumero = 0;
-    CampoPdu continuaNoutroPdu = new CampoPdu ( ServerCodes.SERVIDOR_CONTINUA );
-    continuaNoutroPdu.adicionaByteAZero();
-    while ( campoNumero < this.ArrayListCamposSeguintes.size() ){
-      BasePdu novoPdu = new BasePdu ( this.getVersao() , this.getSeguranca() , this.getLabel() , this.getTipo() ) ;
-      while ( ( novoPdu.tamanhoPdu + this.ArrayListCamposSeguintes.get(campoNumero).getTamanhoTotal() ) <= ( tamanhoMaxPdu - continuaNoutroPdu.getTamanhoTotal() )){
-        CampoPdu campoActual = this.ArrayListCamposSeguintes.get(campoNumero);
-        novoPdu.adicionaCampoPdu(campoActual);
-        campoNumero++;
+    System.out.println("dividindo pdu" + this.numeroCamposSeguintesInt + "::"+ this.ArrayListCamposSeguintes.size());
+    BasePdu novoPdu = new BasePdu ( this.getVersao() , this.getSeguranca() , this.getLabel() , this.getTipo() ) ;
+    while ( campoNumero < this.numeroCamposSeguintesInt ){
+    	System.out.println("campo numero" + campoNumero);
+	      CampoPdu campoActual = this.ArrayListCamposSeguintes.get(campoNumero);
+      if ( (novoPdu.tamanhoPdu + campoActual.getTamanhoTotal() ) > ServerCodes.TAMANHO_MAX_PDU ){  
+    	    if ( campoNumero+1 < this.ArrayListCamposSeguintes.size() ){
+    	    	 CampoPdu continuaNoutroPdu = new CampoPdu ( ServerCodes.SERVIDOR_CONTINUA );
+    	    	    continuaNoutroPdu.adicionaByteAZero();
+    	    	    novoPdu.adicionaCampoPdu(continuaNoutroPdu);
+    	        novoPdu.esperaDadosNovoPacote = true;
+    	      }
+    	      novoPdu.preparaEnvio();
+    	    dividido.add(novoPdu);
+    	    novoPdu = new BasePdu ( this.getVersao() , this.getSeguranca() , this.getLabel() , this.getTipo() ) ;
+    	    System.out.println("novo PDU a " + campoNumero );
       }
-      if ( campoNumero < this.ArrayListCamposSeguintes.size() ){
-        novoPdu.adicionaCampoPdu(continuaNoutroPdu);
-        novoPdu.esperaDadosNovoPacote = true;
-      }
-      novoPdu.preparaEnvio();
-      dividido.add(novoPdu);
+      else {
+    	  novoPdu.adicionaCampoPdu(campoActual);
+    	  campoNumero++;
+      }    
     }
+    System.out.println("numero de pdus criados :" + dividido.size()); 
     return dividido;
   }
 
@@ -483,7 +514,7 @@ public int getNumeroCamposSeguintesInt() {
       boolean resultado = false;
       if (other instanceof BasePdu) {
         BasePdu that = (BasePdu) other;
-        resultado = this.label.equals(that.label) && this.tipo.equals(that.tipo) && this.ArrayListCamposSeguintes.equals(that.ArrayListCamposSeguintes) ;
+        resultado = this.label.equals(that.label) && this.tipo.equals(that.tipo) && this.rawData == that.rawData && this.ArrayListCamposSeguintes.equals(that.ArrayListCamposSeguintes) ;
       }
       return resultado;
     }

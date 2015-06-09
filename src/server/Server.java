@@ -118,9 +118,11 @@ public enum EstadoServidor { INICIANDO_SERVIDOR , SERVIDOR_ACTIVO , PARANDO_SERV
             udpSocket.receive( udpDataPacket );
             new Thread(new ServerResponder( this, udpSocket, udpDataPacket)).start();
           } catch ( Exception e ) {
+              e.printStackTrace();
           }
         }
       } catch ( SocketException e ) {
+          e.printStackTrace();
       }
     }
 

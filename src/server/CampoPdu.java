@@ -49,6 +49,7 @@ public class CampoPdu implements Serializable{
     this.tamanhoDadosBytes = intPara2Bytes(tamanhoDadosCopiar);
     this.blocoNumero= numeroBloco;
     this.dadosParcelados = true;
+    this.dadosCampo = Arrays.copyOf( dados, tamanhoDadosCopiar);
   }
 
   public boolean campoDadosParciais(){
@@ -221,68 +222,45 @@ public class CampoPdu implements Serializable{
 
 
   public static int doisBytesParaInt ( byte[] data){
-    ByteBuffer byteBuffer = ByteBuffer.allocateDirect(4);
-    // by choosing big endian, high order bytes must be put
-    // to the buffer before low order bytes
-    byteBuffer.order(ByteOrder.BIG_ENDIAN);
-    // since ints are 4 bytes (32 bit), you need to put all 4, so put 0
-    // for the high order bytes
-    byteBuffer.put((byte)0x00);
-    byteBuffer.put((byte)0x00);
-    byteBuffer.put((byte)data[1]);
-    byteBuffer.put((byte)data[0]);
-    byteBuffer.flip();
-    int valor = byteBuffer.getInt();
-    return valor;
+	    ByteBuffer byteBuffer = ByteBuffer.allocate(2);
+	    byteBuffer.order(ByteOrder.BIG_ENDIAN);
+	    byteBuffer.put((byte) (data[0] & 0xff));
+	    byteBuffer.put((byte) (data[1]& 0xff));
+	    byteBuffer.flip();
+	    return ( (int) (byteBuffer.getShort() & 0xffff));
   }
 
   public static int doisBytesParaIntStart ( byte[] data , int start ){
-    ByteBuffer byteBuffer = ByteBuffer.allocateDirect(4);
-    // by choosing big endian, high order bytes must be put
-    // to the buffer before low order bytes
+    ByteBuffer byteBuffer = ByteBuffer.allocate(2);
     byteBuffer.order(ByteOrder.BIG_ENDIAN);
-    // since ints are 4 bytes (32 bit), you need to put all 4, so put 0
-    // for the high order bytes
-    byteBuffer.put((byte)0x00);
-    byteBuffer.put((byte)0x00);
-    byteBuffer.put((byte)data[1+start]);
-    byteBuffer.put((byte)data[0+start]);
+    byteBuffer.put((byte) (data[0+start] & 0xff));
+    byteBuffer.put((byte) (data[1+start]& 0xff));
     byteBuffer.flip();
-    int valor = byteBuffer.getInt();
-    return valor;
+    return ( (int) (byteBuffer.getShort() & 0xffff));
   }
+  
+
 
   public static int umByteParaInt ( byte[] data ){
-    ByteBuffer byteBuffer = ByteBuffer.allocateDirect(4);
-    // by choosing big endian, high order bytes must be put
-    // to the buffer before low order bytes
+    ByteBuffer byteBuffer = ByteBuffer.allocate(1);
     byteBuffer.order(ByteOrder.BIG_ENDIAN);
-    // since ints are 4 bytes (32 bit), you need to put all 4, so put 0
-    // for the high order bytes
-    byteBuffer.put((byte)0x00);
-    byteBuffer.put((byte)0x00);
-    byteBuffer.put((byte)0x00);
-    byteBuffer.put((byte) data[0]);
+    byteBuffer.put((byte) (data[0]& 0xff));
     byteBuffer.flip();
-    int valor = byteBuffer.getInt();
-    return valor;
+    return ( (short) (byteBuffer.get() & 0xff));
   }
 
   public static byte[] intPara2Bytes ( int aConverter ){ 
-    ByteBuffer bb = ByteBuffer.allocate(4); 
-    bb.putInt(aConverter); 
-    byte[] arrayR = new byte [2];
-    arrayR[0]=bb.get(3);
-    arrayR[1]=bb.get(2);
-    return arrayR;
+    ByteBuffer bb = ByteBuffer.allocate(2); 
+    bb.order(ByteOrder.BIG_ENDIAN);
+    bb.putShort ( (short) ( aConverter & 0xffff )) ; 
+   return bb.array();
   }
 
   public static byte[] intPara1Byte ( int aConverter ){ 
-    ByteBuffer bb = ByteBuffer.allocate(4); 
-    bb.putInt(aConverter); 
-    byte[] arrayR = new byte [1];
-    arrayR[0]=bb.get(3);
-    return arrayR;
+    ByteBuffer bb = ByteBuffer.allocate(1); 
+    bb.order(ByteOrder.BIG_ENDIAN);
+    bb.put ( (byte) ( aConverter & 0xff )) ; 
+	return bb.array();
   }
 
   public int getCampoInt1Byte (){
@@ -321,7 +299,7 @@ public class CampoPdu implements Serializable{
         if( readNum > 0 ){
           bos.write(bufferNovosCampos, 0, readNum); 
           byte[] dadosCampoNovo = bos.toByteArray();
-          CampoPdu novoCampoBloco = new CampoPdu ( this.tipoCampo , numeroBloco , dadosCampoNovo , bos.size() ); 
+          CampoPdu novoCampoBloco = new CampoPdu ( this.tipoCampo , numeroBloco , dadosCampoNovo , bos.size() );
           blocosFicheiroExtra.add( novoCampoBloco);
         }
       }

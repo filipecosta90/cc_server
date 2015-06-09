@@ -105,20 +105,21 @@ public class Coneccao implements Serializable {
   private void enviaPacote( BasePdu replyPdu ) throws Exception {
     ArrayList < BasePdu > pdusEnviar = new ArrayList < BasePdu >();
     if ( replyPdu.getTamanhoTotalPdu() > ServerCodes.TAMANHO_MAX_PDU ){
+    	System.out.println("\nPDU demasiado grande. vai dividir");
       pdusEnviar = replyPdu.split( ServerCodes.TAMANHO_MAX_PDU );
     }
     else {
       pdusEnviar.add(replyPdu);
     }
+	System.out.println("\nPDU dividido em " + pdusEnviar.size());
     for ( BasePdu pduActual : pdusEnviar ){
       DatagramPacket pacoteEnvio = new DatagramPacket ( pduActual.getBytesEnvio() , pduActual.getBytesEnvio().length , this.enderecoLigacao , this.portaRemota );
       try{
         boundedSocket.send( pacoteEnvio );
+        System.out.println("enviadoPdu: " + pduActual.toString());
       }
       catch ( SocketException e){
-        boundedSocket.connect(this.enderecoLigacao, this.portaRemota);
-        boundedSocket.send( pacoteEnvio );
-
+          e.printStackTrace();
       }
     }
   }
@@ -491,14 +492,11 @@ private void resolvePacote(BasePdu pduAResolver) throws Exception {
   }
 
   public void enviaPergunta( String nomeDesafio , int numeroQuestao , Pergunta perguntaActual) throws Exception {
-
     byte[] labelNumero = new byte[2];
-    labelNumero[0] = (byte) (this.numeroPdu & 0xFF);
-    labelNumero[1] = (byte) ((this.numeroPdu >> 8) & 0xFF);
+    labelNumero = CampoPdu.intPara2Bytes(this.numeroPdu);
     BasePdu replyPdu = new BasePdu ( ServerCodes.REPLY , labelNumero  ); 
     replyPdu.replyPergunta( nomeDesafio, numeroQuestao , perguntaActual );
     enviaPacote(replyPdu);
-    System.out.println("Enviando Pdu: " + replyPdu.toString());
     this.numeroPdu++;
   }
 
