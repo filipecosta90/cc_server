@@ -126,7 +126,6 @@ public class DesafioReceiver implements Runnable , Serializable {
   @SuppressWarnings("deprecation")
     private void resolvePacote(BasePdu pduAResolver) throws Exception {
       System.out.println("Vai resolver pacote ");
-      BasePdu replyPdu = new BasePdu ( ServerCodes.ANSWER , pduAResolver.getLabel() ); 
       if ( pduAResolver.contemCampo( ServerCodes.SERVIDOR_NOME_DESAFIO ) 
           &&  pduAResolver.contemCampo( ServerCodes.SERVIDOR_NUM_QUESTAO ) 
           && pduAResolver.contemCampo( ServerCodes.SERVIDOR_TXT_QUESTAO )
@@ -172,6 +171,7 @@ public class DesafioReceiver implements Runnable , Serializable {
           System.out.println("4 - passar pergunta");
        // }
         opcao = Input.lerInt(scannerPergunta);
+        BasePdu replyPdu = new BasePdu ( ServerCodes.ANSWER , pduAResolver.getLabel() ); 
 
         if(opcao >0 && opcao != 4){
           replyPdu.adicionaCampoPdu(campoNomeDesafio);
@@ -179,6 +179,7 @@ public class DesafioReceiver implements Runnable , Serializable {
           CampoPdu campoEscolha = new CampoPdu ( ServerCodes.CLIENTE_ESCOLHA);
           campoEscolha.adicionaInteiro1Byte(opcao);
           replyPdu.adicionaCampoPdu(campoEscolha);
+          replyPdu.preparaEnvio();
           this.enviaPacote(replyPdu);
           resolveRespostaServer(ServerCodes.ANSWER);
         }
