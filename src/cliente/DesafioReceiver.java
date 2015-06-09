@@ -214,15 +214,20 @@ private void resolveRespostaServer(byte answer) throws UnsupportedEncodingExcept
     case ServerCodes.ANSWER :
       {
           if (  novoPdu.contemCampo( ServerCodes.SERVIDOR_NOME_DESAFIO ) && novoPdu.contemCampo( ServerCodes.SERVIDOR_NUM_QUESTAO )  && novoPdu.contemCampo(ServerCodes.SERVIDOR_RESPOSTA_CERTA ) && novoPdu.contemCampo(ServerCodes.SERVIDOR_PONTOS)){
-        	  CampoPdu campoNomeDesafio = novoPdu.getCampo(ServerCodes.SERVIDOR_NOME_DESAFIO) ;
-              CampoPdu campoNumeroQuestao = novoPdu.getCampo(ServerCodes.SERVIDOR_NUM_QUESTAO) ;
-              CampoPdu campoCerta = novoPdu.getCampo(ServerCodes.SERVIDOR_RESPOSTA_CERTA) ;
-              CampoPdu campoPontos = novoPdu.getCampo(ServerCodes.SERVIDOR_PONTOS) ;
+        	  CampoPdu campoNomeDesafio = novoPdu.popCampo() ;
+              CampoPdu campoNumeroQuestao = novoPdu.popCampo() ;
+              CampoPdu campoCerta = novoPdu.popCampo() ;
+              CampoPdu campoPontos = novoPdu.popCampo() ;
               String nomeDesafio = campoNomeDesafio.getCampoString();
               int numeroPergunta = campoNumeroQuestao.getCampoInt1Byte();
               int respostaCerta = campoCerta.getCampoInt1Byte();
               int pontos = campoPontos.getCampoInt1Byte();
-              System.out.println("A resposta correcta para a pergunta : " + numeroPergunta + " do desafio :" + nomeDesafio + "era a : " + respostaCerta );
+              if (respostaCerta == 1){
+            	  System.out.println("Resposta Correcta!");
+              }
+              else{
+            	  System.out.println("Resposta >>>>>ERRADA<<<<<!");
+              }
               System.out.println("Pontos desta questão : " + pontos );
               if ( numeroPergunta == 10 ){
             	  this.estado = EstadoDesafio.TERMINADO;
