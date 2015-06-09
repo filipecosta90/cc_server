@@ -37,7 +37,7 @@ public class Server implements Runnable, Serializable {
   private HashMap< String , Coneccao > coneccoesActivas;
   private HashMap< String , Coneccao > historicoConeccoes;
   private HashMap< String , DesafioManager > desafiosCriadosEspera;
-  private HashMap< String , DesafioManager > desafiosEmJogo;
+  protected HashMap< String , DesafioManager > desafiosEmJogo;
   private HashMap< String , DesafioManager > desafiosTerminados;
   private HashMap< String , DesafioManager > desafiosEliminados;
   private String ficheiroMainDesafios;
@@ -317,12 +317,15 @@ public class Server implements Runnable, Serializable {
   public Desafio getDesafioDecorrerAssociadoCliente(String alcunhaClienteAssociado) {
     Desafio desafioPointer = null;
     for ( DesafioManager desafioMPointer : this.desafiosEmJogo.values() ){
+    	System.out.println("testando" + desafioMPointer.getDesafio().getNomeDesafio());
       if ( desafioMPointer.getDesafio().clienteParticipa(alcunhaClienteAssociado)){
         desafioPointer = desafioMPointer.getDesafio();
+        System.out.println(alcunhaClienteAssociado + "participa");
       }
     }
     return desafioPointer;
   }
+  
   public void guardaServidor() throws Exception{
     // Write to disk with FileOutputStream
     FileOutputStream f_out = new 	FileOutputStream("servidor.data");
@@ -366,5 +369,14 @@ public class Server implements Runnable, Serializable {
     // TODO Auto-generated method stub
 
   }
+
+public void correDesafio( DesafioManager dm , String nomeDesafio ) {
+	if ( this.desafiosEmJogo.containsKey(nomeDesafio) == false ){
+		this.desafiosEmJogo.put(nomeDesafio , dm);
+	}
+	if ( this.desafiosCriadosEspera.containsKey(nomeDesafio) == true ){
+		this.desafiosEmJogo.remove(nomeDesafio);
+	}
+}
 
 }

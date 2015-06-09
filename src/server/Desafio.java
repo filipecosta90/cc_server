@@ -175,7 +175,6 @@ public class Desafio implements Serializable {
     }
   }
 
-
   /* toString & clone */
   @Override
     public String toString()
@@ -225,7 +224,5 @@ public class Desafio implements Serializable {
   }
 
   public void quitPergunta(String alcunhaClienteAssociado) {
-    // TODO Auto-generated method stub
-
   }
 }

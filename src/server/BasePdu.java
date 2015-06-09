@@ -226,7 +226,6 @@ public class BasePdu implements Serializable{
   public void preparaEnvio()  {
     ByteArrayOutputStream novoOut = new ByteArrayOutputStream();
     for ( CampoPdu t : ArrayListCamposSeguintes ) {
-      System.out.println(t.toString());
       novoOut.write(t.getBytes() , 0 , t.getTamanhoTotal());
       try {
         novoOut.flush();
@@ -470,10 +469,8 @@ public class BasePdu implements Serializable{
   public ArrayList<BasePdu> split(int tamanhoMaxPdu) throws Exception {
     ArrayList<BasePdu> dividido = new ArrayList <BasePdu> ();
     int campoNumero = 0;
-    System.out.println("dividindo pdu" + this.numeroCamposSeguintesInt + "::"+ this.ArrayListCamposSeguintes.size());
     BasePdu novoPdu = new BasePdu ( this.getVersao() , this.getSeguranca() , this.getLabel() , this.getTipo() ) ;
     while ( campoNumero < this.numeroCamposSeguintesInt ){
-      System.out.println("campo numero" + campoNumero);
       CampoPdu campoActual = this.ArrayListCamposSeguintes.get(campoNumero);
       if ( (novoPdu.tamanhoPdu + campoActual.getTamanhoTotal() ) > ServerCodes.TAMANHO_MAX_PDU ){  
         if ( campoNumero+1 < this.ArrayListCamposSeguintes.size() ){
@@ -485,14 +482,12 @@ public class BasePdu implements Serializable{
         novoPdu.preparaEnvio();
         dividido.add(novoPdu);
         novoPdu = new BasePdu ( this.getVersao() , this.getSeguranca() , this.getLabel() , this.getTipo() ) ;
-        System.out.println("novo PDU a " + campoNumero );
       }
       else {
         novoPdu.adicionaCampoPdu(campoActual);
         campoNumero++;
       }    
     }
-    System.out.println("numero de pdus criados :" + dividido.size()); 
     return dividido;
   }
   

@@ -406,8 +406,10 @@ public class Coneccao implements Serializable {
               int escolha = campoEscolha.getCampoInt1Byte();
               String nomeDesafio = campoNomeDesafio.getCampoString();
               int numeroQuestao = campoQuestao.getCampoInt1Byte();
+              System.out.println("vai testar se o cliente tem desafios activos!");
               Desafio desafioPointer = this.localServerPointer.getDesafioDecorrerAssociadoCliente( this.alcunhaClienteAssociado );
               if(desafioPointer != null){
+                  System.out.println("\t tem desafios activos!");
                 boolean resultadoResposta = false;
                 resultadoResposta = desafioPointer.respondePergunta( this.alcunhaClienteAssociado , numeroQuestao , escolha );
                 if ( resultadoResposta == true ){
@@ -419,6 +421,8 @@ public class Coneccao implements Serializable {
                 ok = true;
               }
               else{
+                  System.out.println("\t Nao existe um desafio activo para este cliente!!");
+
                 descricaoErro = "Nao existe um desafio activo para este cliente!";
               }
             }
