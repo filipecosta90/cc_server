@@ -510,8 +510,6 @@ private void resolvePacote(BasePdu pduAResolver) throws Exception {
   public String getKey() {
     String chave = new String ();
     chave += this.getEnderecoRemoto();
-    chave += ":";
-    chave += this.getPortaRemota();
     return chave;
   }
 

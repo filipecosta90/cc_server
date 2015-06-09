@@ -48,6 +48,11 @@ private Server localServerPointer;
       }
       else{
     	  System.out.println("\tO jogador:" + alcunhaJogador + " tem coneccao activa!");
+    	  if (this.mapConeccoes.containsKey(coneccaoRetornada.getKey()) == false ){
+        	  System.out.println("\tA coneccao actual do jogador ainda nao tinha sido inserida no mapa!");
+    		  this.mapConeccoes.put( coneccaoRetornada.getKey() , coneccaoRetornada);
+    		  
+    	  }
       }
     }
   }
@@ -95,6 +100,7 @@ private Server localServerPointer;
     }
 
   private void enviaPergunta(String nomeDesafio , int numeroPergunta , Pergunta perguntaActual) throws Exception {
+  	System.out.println("Vai tentar enviar pergunta " + numeroPergunta );
     for ( Coneccao coneccaoActual : mapConeccoes.values() ){
     	System.out.println("Enviando pergunta a: " + coneccaoActual.getAlcunhaClienteAssociado());
       coneccaoActual.enviaPergunta( nomeDesafio , numeroPergunta , perguntaActual);
