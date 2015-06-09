@@ -218,7 +218,7 @@ public int getNumeroCamposSeguintesInt() {
       s.append( "\nlabel: "+ label[1]+label[0] );
       s.append( "\ttipo: "+ tipo[0] );
       s.append( "\nNum Campos: "+ numeroCamposSeguintes[0] + "int("+ this.numeroCamposSeguintesInt +")" );
-      s.append( "\tTam: "+ this.tamanhoBytesCamposSeguintes[0]+tamanhoBytesCamposSeguintes[1] + "int("+ tamanhoCamposSeguintes +")" );
+      s.append( "\tTam: "+ CampoPdu.doisBytesParaInt(this.tamanhoBytesCamposSeguintes) + "int("+ tamanhoCamposSeguintes +")" );
       s.append( "\ntamanho total: " + tamanhoPdu );
       if ( tamanhoCamposSeguintes > 0){
         s.append( "\n\t----- INICIO CAMPOS -----");

@@ -224,8 +224,8 @@ public class CampoPdu implements Serializable{
   public static int doisBytesParaInt ( byte[] data){
 	    ByteBuffer byteBuffer = ByteBuffer.allocate(2);
 	    byteBuffer.order(ByteOrder.BIG_ENDIAN);
-	    byteBuffer.put((byte) (data[0] & 0xff));
-	    byteBuffer.put((byte) (data[1]& 0xff));
+	    byteBuffer.put((byte) (data[0]));
+	    byteBuffer.put((byte) (data[1]));
 	    byteBuffer.flip();
 	    return ( (int) (byteBuffer.getShort() & 0xffff));
   }
@@ -233,8 +233,8 @@ public class CampoPdu implements Serializable{
   public static int doisBytesParaIntStart ( byte[] data , int start ){
     ByteBuffer byteBuffer = ByteBuffer.allocate(2);
     byteBuffer.order(ByteOrder.BIG_ENDIAN);
-    byteBuffer.put((byte) (data[0+start] & 0xff));
-    byteBuffer.put((byte) (data[1+start]& 0xff));
+    byteBuffer.put((byte) (data[0+start]));
+    byteBuffer.put((byte) (data[1+start]));
     byteBuffer.flip();
     return ( (int) (byteBuffer.getShort() & 0xffff));
   }
@@ -244,7 +244,7 @@ public class CampoPdu implements Serializable{
   public static int umByteParaInt ( byte[] data ){
     ByteBuffer byteBuffer = ByteBuffer.allocate(1);
     byteBuffer.order(ByteOrder.BIG_ENDIAN);
-    byteBuffer.put((byte) (data[0]& 0xff));
+    byteBuffer.put((byte) (data[0]));
     byteBuffer.flip();
     return ( (short) (byteBuffer.get() & 0xff));
   }
