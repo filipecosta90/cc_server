@@ -129,8 +129,9 @@ public class DesafioReceiver implements Runnable , Serializable {
           && pduAResolver.contemCampo( ServerCodes.SERVIDOR_TXT_QUESTAO )
           && pduAResolver.contemCampo( ServerCodes.SERVIDOR_NUM_RESPOSTA )
           && pduAResolver.contemCampo( ServerCodes.SERVIDOR_TXT_RESPOSTA)
-          && pduAResolver.contemCampo( ServerCodes.SERVIDOR_IMAGEM)
-          && pduAResolver.contemCampo( ServerCodes.SERVIDOR_AUDIO)){
+          //&& pduAResolver.contemCampo( ServerCodes.SERVIDOR_IMAGEM)
+          //&& pduAResolver.contemCampo( ServerCodes.SERVIDOR_AUDIO)
+          ){
         System.out.println ("Recebeu nova questão do servidor:");
         CampoPdu campoNomeDesafio = pduAResolver.getCampo(ServerCodes.SERVIDOR_NOME_DESAFIO) ;
         CampoPdu campoNumeroQuestao = pduAResolver.getCampo(ServerCodes.SERVIDOR_NUM_QUESTAO) ;
