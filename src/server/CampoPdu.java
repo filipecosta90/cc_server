@@ -79,7 +79,8 @@ public class CampoPdu implements Serializable{
 
   public void merge(CampoPdu campoCopiar ){
     ByteArrayOutputStream bos_esteCampo = new ByteArrayOutputStream();
-    bos_esteCampo.write(this.dadosCampo, 0, this.tamanhoDados); 
+    System.out.println("merge este campo: " + this.dadosCampo.length + ":" + this.tamanhoDados + "com outro: " + campoCopiar.dadosCampo.length + ":" + campoCopiar.tamanhoDados );
+    bos_esteCampo.write(this.dadosCampo, 0, this.tamanhoDados);
     bos_esteCampo.write(campoCopiar.dadosCampo, 0, campoCopiar.tamanhoDados);
     this.dadosCampo = bos_esteCampo.toByteArray();
     this.tamanhoDados=bos_esteCampo.size();
