@@ -31,9 +31,10 @@ public class DesafioReceiver implements Runnable , Serializable {
   private ArrayList < BasePdu > stackEspera;
   private int labelNumber;
 
-  DesafioReceiver ( Date Inicio , InetAddress enderecoRemoto ,  int porta ){
+  DesafioReceiver ( Date Inicio , DatagramSocket server , InetAddress enderecoRemoto ,  int porta ){
     this.dataHoraInicio = Inicio;
     this.portaRemota = porta;
+    this.serverSocket = server;
     this.estado = EstadoDesafio.EM_ESPERA;
     this.stackEspera = new ArrayList < BasePdu > ();
     this.labelNumber = 0;
@@ -103,23 +104,19 @@ public class DesafioReceiver implements Runnable , Serializable {
       }
       while( this.estado == EstadoDesafio.EM_JOGO ){
         byte[] udpReceber;
-        DatagramSocket udpSocket;
         DatagramPacket udpDataPacket;
 
-        try {
-          udpSocket = new DatagramSocket( portaRemota );
-          System.out.println( "Iniciado o listner do jogo na porta: " + portaRemota +"\n");
+        System.out.println( "Iniciado o listner do jogo na porta: " + portaRemota +"\n");
           while ( true ) {
             try {
               udpReceber = new byte[ ServerCodes.TAMANHO_MAX_PDU ];
               udpDataPacket = new DatagramPacket( udpReceber , udpReceber.length );
-              udpSocket.receive( udpDataPacket );
+              serverSocket.receive( udpDataPacket );
               this.adicionaPacote(udpDataPacket);
             } catch ( Exception e ) {
+                e.printStackTrace();
             }
           }
-        } catch ( SocketException e ) {
-        }
       }
     }
 
