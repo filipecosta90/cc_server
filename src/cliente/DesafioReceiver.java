@@ -31,14 +31,16 @@ public class DesafioReceiver implements Runnable , Serializable {
   private DatagramSocket serverSocket;
   private ArrayList < BasePdu > stackEspera;
   private int labelNumber;
+  private Scanner scannerPergunta;
 
-  DesafioReceiver ( Date Inicio , DatagramSocket server , InetAddress enderecoRemoto ,  int porta ){
+  DesafioReceiver ( Date Inicio , Scanner s , DatagramSocket server , InetAddress enderecoRemoto ,  int porta ){
     this.dataHoraInicio = Inicio;
     this.portaRemota = porta;
     this.serverSocket = server;
     this.estado = EstadoDesafio.EM_ESPERA;
     this.stackEspera = new ArrayList < BasePdu > ();
     this.labelNumber = 0;
+    this.scannerPergunta = s;
   }
 
   public void adicionaPacote ( DatagramPacket novoPacote ) throws Exception{
@@ -157,7 +159,6 @@ public class DesafioReceiver implements Runnable , Serializable {
         long t=fimTimer.getTime();
         fimTimer=new Date(t + (1 * ONE_MINUTE_IN_MILLIS));
         Date now = new Date();
-        Scanner scannerPergunta = new Scanner (System.in);
         int opcao = -1;
         //new Thread(new JPGHandler ( campoImagem.getBytes() , nomeDesafio , numeroPergunta )).start();
         while(( now.before( fimTimer ) && opcao < 1 )){

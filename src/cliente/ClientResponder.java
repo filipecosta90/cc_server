@@ -389,7 +389,7 @@ public class ClientResponder implements Serializable{
               int horaSegundos = horaDesafio.getCampoHoraSegundos();
               Date dataDesafioCriado = new Date (dataAno, dataMes, dataDia , horaHora, horaMinutos, horaSegundos );
               System.out.println( "Desafio Criado: " + nome + "\n\tData: " + dataDesafioCriado);
-              new Thread(new DesafioReceiver ( dataDesafioCriado ,  this.serverSocket , this.remoteAddress, this.remotePort )).start();
+              new Thread(new DesafioReceiver ( dataDesafioCriado ,  sc , this.serverSocket , this.remoteAddress, this.remotePort )).start();
 
             }
             else{
@@ -416,7 +416,7 @@ public class ClientResponder implements Serializable{
               int horaSegundos = horaDesafio.getCampoHoraSegundos();
               Date dataDesafioCriado = new Date (dataAno, dataMes, dataDia , horaHora, horaMinutos, horaSegundos );
               System.out.println( "Desafio Aceite: " + nome + "\n\tData: " + dataDesafioCriado);
-              new Thread(new DesafioReceiver ( dataDesafioCriado ,  this.serverSocket , this.remoteAddress, this.remotePort )).start();
+              new Thread(new DesafioReceiver ( dataDesafioCriado ,  sc ,  this.serverSocket , this.remoteAddress, this.remotePort )).start();
             }
             else{
               if ( novoPdu.contemCampo( ServerCodes.SERVIDOR_ERRO ) ){
