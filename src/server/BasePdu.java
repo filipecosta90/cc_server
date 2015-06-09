@@ -125,33 +125,15 @@ public class BasePdu implements Serializable{
     return this.tipo;
   }
 
+  
   public synchronized void mergePDU ( BasePdu toMerge ){
     this.tamanhoPdu += toMerge.getTamanhoCamposSeguintesPdu();
     int numeroCamposMerge = 0;
     for ( CampoPdu toMergeCampo : toMerge.getArrayListCamposSeguintes() ){
-      if (toMergeCampo.getTipo() == ServerCodes.SERVIDOR_CONTINUA 
-          ||	toMergeCampo.getTipo() == ServerCodes.SERVIDOR_NUM_BLOCO_IMAGEM
-          ||	toMergeCampo.getTipo() == ServerCodes.SERVIDOR_NUM_BLOCO){
-          }
-      else{
-        if (toMergeCampo.getTipo() == ServerCodes.SERVIDOR_AUDIO && this.contemCampo( ServerCodes.SERVIDOR_AUDIO )){
-         CampoPdu audio = this.getCampo(ServerCodes.SERVIDOR_AUDIO );
-         if(audio!=null){
-         audio.merge(toMergeCampo);
-         }
-        }
-        else if (toMergeCampo.getTipo() == ServerCodes.SERVIDOR_IMAGEM && this.contemCampo( ServerCodes.SERVIDOR_IMAGEM )){
-          this.getCampo(ServerCodes.SERVIDOR_IMAGEM ).merge(toMergeCampo);
-          CampoPdu imagem = this.getCampo(ServerCodes.SERVIDOR_IMAGEM );
-          if(imagem!=null){
-          imagem.merge(toMergeCampo);
-          }
-        }
-        else{
-          this.ArrayListCamposSeguintes.add( toMergeCampo);
+      if (toMergeCampo.getTipo() != ServerCodes.SERVIDOR_CONTINUA  &&	toMergeCampo.getTipo() != ServerCodes.SERVIDOR_NUM_BLOCO_IMAGEM &&	toMergeCampo.getTipo() != ServerCodes.SERVIDOR_NUM_BLOCO) {
+    	  this.ArrayListCamposSeguintes.add( toMergeCampo);
           numeroCamposMerge++;
-        }
-      }
+          }
     }
     this.numeroCamposSeguintesInt += numeroCamposMerge;
     if( toMerge.dadosParciais() ){
@@ -416,7 +398,6 @@ public class BasePdu implements Serializable{
   }
 
   public void replyPergunta(String nomeDesafio, int numeroQuestao , Pergunta perguntaEnviar) throws Exception {
-    System.out.println("Iniciando a criação do PDU");
     CampoPdu campoNomeDesafio = new CampoPdu ( ServerCodes.SERVIDOR_NOME_DESAFIO );
     campoNomeDesafio.adicionaString( nomeDesafio );
     this.adicionaCampoPdu(campoNomeDesafio);
@@ -444,7 +425,7 @@ public class BasePdu implements Serializable{
     CampoPdu campoTextoOpcao3 = new CampoPdu ( ServerCodes.SERVIDOR_TXT_RESPOSTA );
     campoTextoOpcao3.adicionaString(perguntaEnviar.getTextoOpcao(2));
     this.adicionaCampoPdu(campoTextoOpcao3);
-    CampoPdu campoImagem = new CampoPdu ( ServerCodes.SERVIDOR_IMAGEM );
+    /*CampoPdu campoImagem = new CampoPdu ( ServerCodes.SERVIDOR_IMAGEM );
     ArrayList <CampoPdu > blocosExtraImagem = new  ArrayList <CampoPdu > ();
     blocosExtraImagem = campoImagem.adicionaFicheiro( perguntaEnviar.get_Imagem() );
     this.adicionaCampoPdu(campoImagem);
@@ -466,9 +447,8 @@ public class BasePdu implements Serializable{
       campoNumeroBlocoMusicaExtra.adicionaInteiro1Byte( blocoAudio.getNumeroBloco());
       this.adicionaCampoPdu(campoNumeroBlocoMusicaExtra);
       this.adicionaCampoPdu(blocoAudio);
-    }
+    }*/
     this.preparaEnvio();
-    System.out.println("PDU preparado para envio");
   }
 
   public void replyRespostaQuestao(String nomeDesafio, int numeroQuestao, int certaErrada , int pontosAmealhados ) throws Exception {
@@ -515,7 +495,7 @@ public class BasePdu implements Serializable{
     System.out.println("numero de pdus criados :" + dividido.size()); 
     return dividido;
   }
-
+  
   @Override 
     public boolean equals ( Object other ){
       boolean resultado = false;
@@ -529,5 +509,20 @@ public class BasePdu implements Serializable{
   public void setTipo(byte tipo) {
     this.tipo[0] = tipo;
   }
+
+  public CampoPdu getCampoNum( byte tipoCampo , int i ) {
+	    CampoPdu retornar = null;
+	    int vezesAparece = 0;
+	    for ( CampoPdu t : this.ArrayListCamposSeguintes ){
+	      if ( t.mesmoTipo( tipoCampo ) )
+	      {
+	    	  vezesAparece++;
+	    	  if (vezesAparece == i ){
+	        retornar = t;
+	    	  }
+	      }
+	    }
+	    return retornar;
+	  }
 
 }

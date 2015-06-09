@@ -127,23 +127,20 @@ public class DesafioReceiver implements Runnable , Serializable {
       if ( pduAResolver.contemCampo( ServerCodes.SERVIDOR_NOME_DESAFIO ) 
           &&  pduAResolver.contemCampo( ServerCodes.SERVIDOR_NUM_QUESTAO ) 
           && pduAResolver.contemCampo( ServerCodes.SERVIDOR_TXT_QUESTAO )
-          && pduAResolver.contemCampo( ServerCodes.SERVIDOR_TXT_QUESTAO )
           && pduAResolver.contemCampo( ServerCodes.SERVIDOR_NUM_RESPOSTA )
           && pduAResolver.contemCampo( ServerCodes.SERVIDOR_TXT_RESPOSTA)
           && pduAResolver.contemCampo( ServerCodes.SERVIDOR_IMAGEM)
           && pduAResolver.contemCampo( ServerCodes.SERVIDOR_AUDIO)){
         System.out.println ("Recebeu nova questão do servidor:");
-        CampoPdu campoNomeDesafio = pduAResolver.popCampo();
-        CampoPdu campoNumeroQuestao = pduAResolver.popCampo();
-        CampoPdu campoTextoQuestao = pduAResolver.popCampo();
-        CampoPdu campoNumResposta1 = pduAResolver.popCampo();
-        CampoPdu campoTextoResposta1 = pduAResolver.popCampo();
-        CampoPdu campoNumResposta2 = pduAResolver.popCampo();
-        CampoPdu campoTextoResposta2 = pduAResolver.popCampo();
-        CampoPdu campoNumResposta3 = pduAResolver.popCampo();
-        CampoPdu campoTextoResposta3 = pduAResolver.popCampo();
-        CampoPdu campoImagem = pduAResolver.popCampo();
-        CampoPdu campoAudio = pduAResolver.popCampo();
+        CampoPdu campoNomeDesafio = pduAResolver.getCampo(ServerCodes.SERVIDOR_NOME_DESAFIO) ;
+        CampoPdu campoNumeroQuestao = pduAResolver.getCampo(ServerCodes.SERVIDOR_NUM_QUESTAO) ;
+        CampoPdu campoTextoQuestao = pduAResolver.getCampo(ServerCodes.SERVIDOR_TXT_QUESTAO) ;
+        CampoPdu campoNumResposta1 = pduAResolver.getCampoNum(ServerCodes.SERVIDOR_NUM_RESPOSTA , 1 ) ;
+        CampoPdu campoTextoResposta1 = pduAResolver.getCampoNum(ServerCodes.SERVIDOR_TXT_RESPOSTA , 1 ) ;
+        CampoPdu campoNumResposta2 = pduAResolver.getCampoNum(ServerCodes.SERVIDOR_NUM_RESPOSTA , 2 ) ;
+        CampoPdu campoTextoResposta2 = pduAResolver.getCampoNum(ServerCodes.SERVIDOR_TXT_RESPOSTA , 2 ) ;
+        CampoPdu campoNumResposta3 = pduAResolver.getCampoNum(ServerCodes.SERVIDOR_NUM_RESPOSTA , 3 ) ;
+        CampoPdu campoTextoResposta3 = pduAResolver.getCampoNum(ServerCodes.SERVIDOR_TXT_RESPOSTA , 3 ) ;
 
         String nomeDesafio = campoNomeDesafio.getCampoString();
         int numeroPergunta = campoNumeroQuestao.getCampoInt1Byte();
@@ -161,7 +158,7 @@ public class DesafioReceiver implements Runnable , Serializable {
         Date now = new Date();
         Scanner sc = new Scanner (System.in);
         int opcao = -1;
-        new Thread(new JPGHandler ( campoImagem.getBytes() , nomeDesafio , numeroPergunta )).start();
+        //new Thread(new JPGHandler ( campoImagem.getBytes() , nomeDesafio , numeroPergunta )).start();
         while(( now.after( fimTimer ) )){
           System.out.println("Desafio: " + nomeDesafio);
           System.out.println("Questao #: " + numeroPergunta);
