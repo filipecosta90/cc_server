@@ -38,17 +38,16 @@ private Server localServerPointer;
   }
 
   public void updateConeccoes(){
-    for ( String nomeJogador : desafioAGerir.getAlcunhasJogadoresActivos() ){
-      Coneccao coneccaoRetornada = this.localServerPointer.getConeccaoCliente(nomeJogador);
+    for ( String alcunhaJogador : desafioAGerir.getAlcunhasJogadoresActivos() ){
+    	System.out.println("Testando se o jogador: " + alcunhaJogador + "está activo!" );
+      Coneccao coneccaoRetornada = this.localServerPointer.getConeccaoCliente(alcunhaJogador);
       if ( coneccaoRetornada == null ){
-        this.desafioAGerir.rageQuit( nomeJogador );
-        this.mapConeccoes.remove( nomeJogador );
+    	  System.out.println("\tO jogador:" + alcunhaJogador + " nao tem uma coneccao activa!");
+        this.desafioAGerir.rageQuit( alcunhaJogador );
+        this.mapConeccoes.remove( alcunhaJogador );
       }
-      Coneccao coneccaoNoDesafio = mapConeccoes.get( nomeJogador );
-      if (  coneccaoRetornada.mesmoEnderecoPortaSocket ( coneccaoNoDesafio ) == false ){
-        coneccaoNoDesafio.copiaEnderecoPortaSocket ( coneccaoRetornada );
-        mapConeccoes.remove( nomeJogador);
-        mapConeccoes.put( nomeJogador , coneccaoNoDesafio );
+      else{
+    	  System.out.println("\tO jogador:" + alcunhaJogador + " tem coneccao activa!");
       }
     }
   }
@@ -78,6 +77,7 @@ private Server localServerPointer;
           	System.out.println("Pergunta enviada: " + perguntaActual.toString());
           }
           else {
+            	System.out.println("Dando o desafio por terminado!");
         	  desafioAGerir.estado = EstadoDesafio.TERMINADO;
           }
         }

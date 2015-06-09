@@ -92,10 +92,10 @@ public enum EstadoServidor { INICIANDO_SERVIDOR , SERVIDOR_ACTIVO , PARANDO_SERV
     return boundTo;
   }
 
-  public Coneccao getConeccaoCliente ( String nomeCliente ){
+  public Coneccao getConeccaoCliente ( String alcunhaCliente ){
     Coneccao coneccaoRetornar = null;
     for ( Coneccao coneccaoPointer : this.coneccoesActivas.values() ){
-      if ( coneccaoPointer.getAlcunhaClienteAssociado().equals(nomeCliente)){
+      if ( coneccaoPointer.getAlcunhaClienteAssociado().equals(alcunhaCliente)){
         coneccaoRetornar = coneccaoPointer;
       }
     }

@@ -50,6 +50,7 @@ public enum EstadoDesafio { EM_ESPERA , EM_JOGO , TERMINADO , ELIMINADO , PASSOU
     this.nomeDesafio= makeCopy.getNomeDesafio();
     this.criadoPor = makeCopy.getCriadoPor();
     this.alcunhasJogadores = makeCopy.getAlcunhasJogadores();
+    this.alcunhasJogadoresActivos = makeCopy.getAlcunhasJogadoresActivos();
     this.pontuacoesJogadores = makeCopy.getPontuacoesJogadores();
     this.dataCriacao = makeCopy.getDataCriacao();
     this.dataHoraInicioDesafio = makeCopy.getDataHoraInicioDesafio();
