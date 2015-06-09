@@ -54,10 +54,10 @@ public class DesafioManager implements Runnable , Serializable {
 
         }
         if ( this.localServerPointer.desafiosEmJogo.containsKey(this.desafioAGerir.getNomeDesafio()) == false ){
-            System.out.println("\tO jogo actual ainda nao tinha sido dado como iniciado");
-            this.localServerPointer.desafiosEmJogo.put( this.desafioAGerir.getNomeDesafio() , this);
+          System.out.println("\tO jogo actual ainda nao tinha sido dado como iniciado");
+          this.localServerPointer.desafiosEmJogo.put( this.desafioAGerir.getNomeDesafio() , this);
 
-          }
+        }
       }
     }
   }
@@ -72,7 +72,7 @@ public class DesafioManager implements Runnable , Serializable {
         desafioAGerir.updateEstadoEsperaIniciaCancela();
       }
       while( desafioAGerir.estado == EstadoDesafio.EM_JOGO ){
-    	  this.localServerPointer.correDesafio( this , desafioAGerir.getNomeDesafio());
+        this.localServerPointer.correDesafio( this , desafioAGerir.getNomeDesafio());
         System.out.println("Desafio " + desafioAGerir.getNomeDesafio() + " iniciado: "+ desafioAGerir.getEstado() );
         for ( Pergunta perguntaActual : desafioAGerir.getPerguntas() ){
           this.updateConeccoes();

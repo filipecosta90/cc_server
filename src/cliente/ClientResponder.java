@@ -8,7 +8,6 @@ import java.util.Scanner;
 
 import server.BasePdu;
 import server.CampoPdu;
-import server.ServerResponder;
 
 import java.util.Date;
 
@@ -65,7 +64,7 @@ public class ClientResponder implements Serializable{
         }
       }
       while ( logginValido == true ){
-    	while(emJogo==true){}
+        while(emJogo==true){}
         System.out.println("Escolha uma das seguintes opções:" );
         System.out.println("4 - logout " );
         System.out.println("7 - listar desafios " );
@@ -80,9 +79,9 @@ public class ClientResponder implements Serializable{
       }
     }
   }
-  
+
   public void offJogo(){
-	  this.emJogo = false;
+    this.emJogo = false;
   }
 
   private void enviaPacote( BasePdu pduActual ) throws Exception  {

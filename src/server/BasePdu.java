@@ -125,15 +125,15 @@ public class BasePdu implements Serializable{
     return this.tipo;
   }
 
-  
+
   public synchronized void mergePDU ( BasePdu toMerge ){
     this.tamanhoPdu += toMerge.getTamanhoCamposSeguintesPdu();
     int numeroCamposMerge = 0;
     for ( CampoPdu toMergeCampo : toMerge.getArrayListCamposSeguintes() ){
       if (toMergeCampo.getTipo() != ServerCodes.SERVIDOR_CONTINUA  &&	toMergeCampo.getTipo() != ServerCodes.SERVIDOR_NUM_BLOCO_IMAGEM &&	toMergeCampo.getTipo() != ServerCodes.SERVIDOR_NUM_BLOCO) {
-    	  this.ArrayListCamposSeguintes.add( toMergeCampo);
-          numeroCamposMerge++;
-          }
+        this.ArrayListCamposSeguintes.add( toMergeCampo);
+        numeroCamposMerge++;
+      }
     }
     this.numeroCamposSeguintesInt += numeroCamposMerge;
     if( toMerge.dadosParciais() ){
@@ -212,7 +212,7 @@ public class BasePdu implements Serializable{
       if ( tamanhoCamposSeguintes > 0){
         s.append( "\n\t----- INICIO CAMPOS -----");
         for (CampoPdu t : ArrayListCamposSeguintes ) {
-          s.append("\n\t");
+          s.append("\n");
           s.append(t.toString());
         }
         s.append( "\t-----  FIM  CAMPOS  -----");
@@ -424,28 +424,28 @@ public class BasePdu implements Serializable{
     campoTextoOpcao3.adicionaString(perguntaEnviar.getTextoOpcao(2));
     this.adicionaCampoPdu(campoTextoOpcao3);
     /*CampoPdu campoImagem = new CampoPdu ( ServerCodes.SERVIDOR_IMAGEM );
-    ArrayList <CampoPdu > blocosExtraImagem = new  ArrayList <CampoPdu > ();
-    blocosExtraImagem = campoImagem.adicionaFicheiro( perguntaEnviar.get_Imagem() );
-    this.adicionaCampoPdu(campoImagem);
-    for ( CampoPdu blocoImagem : blocosExtraImagem ){
+      ArrayList <CampoPdu > blocosExtraImagem = new  ArrayList <CampoPdu > ();
+      blocosExtraImagem = campoImagem.adicionaFicheiro( perguntaEnviar.get_Imagem() );
+      this.adicionaCampoPdu(campoImagem);
+      for ( CampoPdu blocoImagem : blocosExtraImagem ){
       CampoPdu campoNumeroBlocoImagemExtra = new CampoPdu ( ServerCodes.SERVIDOR_NUM_BLOCO_IMAGEM );
       campoNumeroBlocoImagemExtra.adicionaInteiro1Byte( blocoImagem.getNumeroBloco());
       this.adicionaCampoPdu(campoNumeroBlocoImagemExtra);
       this.adicionaCampoPdu(blocoImagem);
-    }
-    CampoPdu campoNumeroBlocoMusica = new CampoPdu ( ServerCodes.SERVIDOR_NUM_BLOCO );
-    campoNumeroBlocoMusica.adicionaInteiro1Byte(1);
-    this.adicionaCampoPdu(campoNumeroBlocoMusica);
-    CampoPdu campoBlocoMusica = new CampoPdu ( ServerCodes.SERVIDOR_AUDIO );
-    ArrayList <CampoPdu > blocosExtraAudio = new  ArrayList <CampoPdu > ();
-    blocosExtraAudio = campoBlocoMusica.adicionaFicheiro( perguntaEnviar.get_Musica());
-    this.adicionaCampoPdu(campoBlocoMusica);
-    for ( CampoPdu blocoAudio : blocosExtraAudio ){
+      }
+      CampoPdu campoNumeroBlocoMusica = new CampoPdu ( ServerCodes.SERVIDOR_NUM_BLOCO );
+      campoNumeroBlocoMusica.adicionaInteiro1Byte(1);
+      this.adicionaCampoPdu(campoNumeroBlocoMusica);
+      CampoPdu campoBlocoMusica = new CampoPdu ( ServerCodes.SERVIDOR_AUDIO );
+      ArrayList <CampoPdu > blocosExtraAudio = new  ArrayList <CampoPdu > ();
+      blocosExtraAudio = campoBlocoMusica.adicionaFicheiro( perguntaEnviar.get_Musica());
+      this.adicionaCampoPdu(campoBlocoMusica);
+      for ( CampoPdu blocoAudio : blocosExtraAudio ){
       CampoPdu campoNumeroBlocoMusicaExtra = new CampoPdu ( ServerCodes.SERVIDOR_NUM_BLOCO );
       campoNumeroBlocoMusicaExtra.adicionaInteiro1Byte( blocoAudio.getNumeroBloco());
       this.adicionaCampoPdu(campoNumeroBlocoMusicaExtra);
       this.adicionaCampoPdu(blocoAudio);
-    }*/
+      }*/
     this.preparaEnvio();
   }
 
@@ -489,7 +489,7 @@ public class BasePdu implements Serializable{
     }
     return dividido;
   }
-  
+
   @Override 
     public boolean equals ( Object other ){
       boolean resultado = false;
@@ -505,18 +505,18 @@ public class BasePdu implements Serializable{
   }
 
   public CampoPdu getCampoNum( byte tipoCampo , int i ) {
-	    CampoPdu retornar = null;
-	    int vezesAparece = 0;
-	    for ( CampoPdu t : this.ArrayListCamposSeguintes ){
-	      if ( t.mesmoTipo( tipoCampo ) )
-	      {
-	    	  vezesAparece++;
-	    	  if (vezesAparece == i ){
-	        retornar = t;
-	    	  }
-	      }
-	    }
-	    return retornar;
-	  }
+    CampoPdu retornar = null;
+    int vezesAparece = 0;
+    for ( CampoPdu t : this.ArrayListCamposSeguintes ){
+      if ( t.mesmoTipo( tipoCampo ) )
+      {
+        vezesAparece++;
+        if (vezesAparece == i ){
+          retornar = t;
+        }
+      }
+    }
+    return retornar;
+  }
 
 }

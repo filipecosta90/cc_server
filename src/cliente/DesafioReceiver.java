@@ -5,16 +5,12 @@ import java.io.UnsupportedEncodingException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Scanner;
 
 import server.BasePdu;
 import server.CampoPdu;
-import server.Coneccao;
-import server.Desafio;
 import server.ServerCodes;
 
 public class DesafioReceiver implements Runnable , Serializable {
@@ -110,141 +106,141 @@ public class DesafioReceiver implements Runnable , Serializable {
         byte[] udpReceber;
         DatagramPacket udpDataPacket;
         System.out.println( "Iniciado o listner do jogo na porta: " + portaRemota +"\n");
-          while ( true ) {
-            try {
-              udpReceber = new byte[ ServerCodes.TAMANHO_MAX_PDU ];
-              udpDataPacket = new DatagramPacket( udpReceber , udpReceber.length );
-              serverSocket.receive( udpDataPacket );
-              this.adicionaPacote(udpDataPacket);
-            } catch ( Exception e ) {
-                e.printStackTrace();
-            }
+        while ( true ) {
+          try {
+            udpReceber = new byte[ ServerCodes.TAMANHO_MAX_PDU ];
+            udpDataPacket = new DatagramPacket( udpReceber , udpReceber.length );
+            serverSocket.receive( udpDataPacket );
+            this.adicionaPacote(udpDataPacket);
+          } catch ( Exception e ) {
+            e.printStackTrace();
           }
+        }
       }
     }
 
-  @SuppressWarnings("deprecation")
-    private void resolvePacote(BasePdu pduAResolver) throws Exception {
-      System.out.println("Vai resolver pacote ");
-      if ( pduAResolver.contemCampo( ServerCodes.SERVIDOR_NOME_DESAFIO ) 
-          &&  pduAResolver.contemCampo( ServerCodes.SERVIDOR_NUM_QUESTAO ) 
-          && pduAResolver.contemCampo( ServerCodes.SERVIDOR_TXT_QUESTAO )
-          && pduAResolver.contemCampo( ServerCodes.SERVIDOR_NUM_RESPOSTA )
-          && pduAResolver.contemCampo( ServerCodes.SERVIDOR_TXT_RESPOSTA)
-          //&& pduAResolver.contemCampo( ServerCodes.SERVIDOR_IMAGEM)
-          //&& pduAResolver.contemCampo( ServerCodes.SERVIDOR_AUDIO)
-          ){
-        System.out.println ("Recebeu nova questão do servidor:");
-        CampoPdu campoNomeDesafio = pduAResolver.getCampo(ServerCodes.SERVIDOR_NOME_DESAFIO) ;
-        CampoPdu campoNumeroQuestao = pduAResolver.getCampo(ServerCodes.SERVIDOR_NUM_QUESTAO) ;
-        CampoPdu campoTextoQuestao = pduAResolver.getCampo(ServerCodes.SERVIDOR_TXT_QUESTAO) ;
-        CampoPdu campoNumResposta1 = pduAResolver.getCampoNum(ServerCodes.SERVIDOR_NUM_RESPOSTA , 1 ) ;
-        CampoPdu campoTextoResposta1 = pduAResolver.getCampoNum(ServerCodes.SERVIDOR_TXT_RESPOSTA , 1 ) ;
-        CampoPdu campoNumResposta2 = pduAResolver.getCampoNum(ServerCodes.SERVIDOR_NUM_RESPOSTA , 2 ) ;
-        CampoPdu campoTextoResposta2 = pduAResolver.getCampoNum(ServerCodes.SERVIDOR_TXT_RESPOSTA , 2 ) ;
-        CampoPdu campoNumResposta3 = pduAResolver.getCampoNum(ServerCodes.SERVIDOR_NUM_RESPOSTA , 3 ) ;
-        CampoPdu campoTextoResposta3 = pduAResolver.getCampoNum(ServerCodes.SERVIDOR_TXT_RESPOSTA , 3 ) ;
+  private void resolvePacote(BasePdu pduAResolver) throws Exception {
+    System.out.println("Vai resolver pacote ");
+    if ( pduAResolver.contemCampo( ServerCodes.SERVIDOR_NOME_DESAFIO ) 
+        &&  pduAResolver.contemCampo( ServerCodes.SERVIDOR_NUM_QUESTAO ) 
+        && pduAResolver.contemCampo( ServerCodes.SERVIDOR_TXT_QUESTAO )
+        && pduAResolver.contemCampo( ServerCodes.SERVIDOR_NUM_RESPOSTA )
+        && pduAResolver.contemCampo( ServerCodes.SERVIDOR_TXT_RESPOSTA)
+        //&& pduAResolver.contemCampo( ServerCodes.SERVIDOR_IMAGEM)
+        //&& pduAResolver.contemCampo( ServerCodes.SERVIDOR_AUDIO)
+       ){
+      System.out.println ("Recebeu nova questão do servidor:");
+      CampoPdu campoNomeDesafio = pduAResolver.getCampo(ServerCodes.SERVIDOR_NOME_DESAFIO) ;
+      CampoPdu campoNumeroQuestao = pduAResolver.getCampo(ServerCodes.SERVIDOR_NUM_QUESTAO) ;
+      CampoPdu campoTextoQuestao = pduAResolver.getCampo(ServerCodes.SERVIDOR_TXT_QUESTAO) ;
+      CampoPdu campoNumResposta1 = pduAResolver.getCampoNum(ServerCodes.SERVIDOR_NUM_RESPOSTA , 1 ) ;
+      CampoPdu campoTextoResposta1 = pduAResolver.getCampoNum(ServerCodes.SERVIDOR_TXT_RESPOSTA , 1 ) ;
+      CampoPdu campoNumResposta2 = pduAResolver.getCampoNum(ServerCodes.SERVIDOR_NUM_RESPOSTA , 2 ) ;
+      CampoPdu campoTextoResposta2 = pduAResolver.getCampoNum(ServerCodes.SERVIDOR_TXT_RESPOSTA , 2 ) ;
+      CampoPdu campoNumResposta3 = pduAResolver.getCampoNum(ServerCodes.SERVIDOR_NUM_RESPOSTA , 3 ) ;
+      CampoPdu campoTextoResposta3 = pduAResolver.getCampoNum(ServerCodes.SERVIDOR_TXT_RESPOSTA , 3 ) ;
 
-        String nomeDesafio = campoNomeDesafio.getCampoString();
-        int numeroPergunta = campoNumeroQuestao.getCampoInt1Byte();
-        String textoQuestao = campoTextoQuestao.getCampoString();
-        int numeroResposta1 = campoNumResposta1.getCampoInt1Byte();
-        String textoResposta1 = campoTextoResposta1.getCampoString();
-        int numeroResposta2 = campoNumResposta2.getCampoInt1Byte();
-        String textoResposta2 = campoTextoResposta2.getCampoString();
-        int numeroResposta3 = campoNumResposta3.getCampoInt1Byte();
-        String textoResposta3 = campoTextoResposta3.getCampoString();
-        final long ONE_MINUTE_IN_MILLIS=60000;//millisecs
-        Date fimTimer = new Date();
-        long t=fimTimer.getTime();
-        fimTimer=new Date(t + (1 * ONE_MINUTE_IN_MILLIS));
-        Date now = new Date();
-        int opcao = -1;
-        //new Thread(new JPGHandler ( campoImagem.getBytes() , nomeDesafio , numeroPergunta )).start();
-        //while(( now.before( fimTimer ) && opcao < 1 )){
-          System.out.println("Desafio: " + nomeDesafio);
-          System.out.println("Questao #: " + numeroPergunta);
-          System.out.println(textoQuestao);
-          System.out.println(numeroResposta1 + " - " + textoResposta1);
-          System.out.println(numeroResposta2 + " - " + textoResposta2);
-          System.out.println(numeroResposta3 + " - " + textoResposta3);
-          System.out.println("4 - passar pergunta");
-       // }
-        opcao = Input.lerInt(scannerPergunta);
-        BasePdu replyPdu = new BasePdu ( ServerCodes.ANSWER , pduAResolver.getLabel() ); 
+      String nomeDesafio = campoNomeDesafio.getCampoString();
+      int numeroPergunta = campoNumeroQuestao.getCampoInt1Byte();
+      String textoQuestao = campoTextoQuestao.getCampoString();
+      int numeroResposta1 = campoNumResposta1.getCampoInt1Byte();
+      String textoResposta1 = campoTextoResposta1.getCampoString();
+      int numeroResposta2 = campoNumResposta2.getCampoInt1Byte();
+      String textoResposta2 = campoTextoResposta2.getCampoString();
+      int numeroResposta3 = campoNumResposta3.getCampoInt1Byte();
+      String textoResposta3 = campoTextoResposta3.getCampoString();
+      final long ONE_MINUTE_IN_MILLIS=60000;//millisecs
+      Date fimTimer = new Date();
+      long t=fimTimer.getTime();
+      fimTimer=new Date(t + (1 * ONE_MINUTE_IN_MILLIS));
+      Date now = new Date();
+      int opcao = -1;
+      //new Thread(new JPGHandler ( campoImagem.getBytes() , nomeDesafio , numeroPergunta )).start();
+      //while(( now.before( fimTimer ) && opcao < 1 )){
+      System.out.println("Desafio: " + nomeDesafio);
+      System.out.println("Questao #: " + numeroPergunta);
+      System.out.println(textoQuestao);
+      System.out.println(numeroResposta1 + " - " + textoResposta1);
+      System.out.println(numeroResposta2 + " - " + textoResposta2);
+      System.out.println(numeroResposta3 + " - " + textoResposta3);
+      System.out.println("4 - passar pergunta");
+      // }
+      opcao = Input.lerInt(scannerPergunta);
+      BasePdu replyPdu = new BasePdu ( ServerCodes.ANSWER , pduAResolver.getLabel() ); 
 
-        if(opcao >0 && opcao != 4){
-          replyPdu.adicionaCampoPdu(campoNomeDesafio);
-          replyPdu.adicionaCampoPdu(campoNumeroQuestao);
-          CampoPdu campoEscolha = new CampoPdu ( ServerCodes.CLIENTE_ESCOLHA);
-          campoEscolha.adicionaInteiro1Byte(opcao);
-          replyPdu.adicionaCampoPdu(campoEscolha);
-          replyPdu.preparaEnvio();
-          this.enviaPacote(replyPdu);
-          resolveRespostaServer(ServerCodes.ANSWER);
-        }
-        else{
-          replyPdu.setTipo(ServerCodes.QUIT);
-          this.enviaPacote(replyPdu);
-          resolveRespostaServer(ServerCodes.QUIT);
-        }
+      if(opcao >0 && opcao != 4){
+        replyPdu.adicionaCampoPdu(campoNomeDesafio);
+        replyPdu.adicionaCampoPdu(campoNumeroQuestao);
+        CampoPdu campoEscolha = new CampoPdu ( ServerCodes.CLIENTE_ESCOLHA);
+        campoEscolha.adicionaInteiro1Byte(opcao);
+        replyPdu.adicionaCampoPdu(campoEscolha);
+        replyPdu.preparaEnvio();
+        this.enviaPacote(replyPdu);
+        resolveRespostaServer(ServerCodes.ANSWER);
+      }
+      else{
+        replyPdu.setTipo(ServerCodes.QUIT);
+        this.enviaPacote(replyPdu);
+        resolveRespostaServer(ServerCodes.QUIT);
+      }
 
-        if ( this.stackEspera.contains( pduAResolver) ){
-          this.stackEspera.remove( pduAResolver);
-        }
-        this.labelNumber++;
-          }
-    }
+      if ( this.stackEspera.contains( pduAResolver) ){
+        this.stackEspera.remove( pduAResolver);
+      }
+      this.labelNumber++;
+       }
+  }
 
-private void resolveRespostaServer(byte answer) throws UnsupportedEncodingException {
-	byte[] udpReceber;
+  private void resolveRespostaServer(byte answer) throws UnsupportedEncodingException {
+    byte[] udpReceber;
     udpReceber = new byte[ ServerCodes.TAMANHO_MAX_PDU ];
     DatagramPacket udpDataPacket = null;
     System.out.println( "Esperando resultado do servidor\n");
-        try {
-          udpDataPacket = new DatagramPacket( udpReceber , udpReceber.length );
-          serverSocket.receive( udpDataPacket );
-        } catch ( Exception e ) {
-            e.printStackTrace();
-        }
-        BasePdu novoPdu = new BasePdu ( udpDataPacket );
-        novoPdu.parseCabecalho();
-        novoPdu.parseCampos();
-	switch( answer ){
-    case ServerCodes.ANSWER :
-      {
+    try {
+      udpDataPacket = new DatagramPacket( udpReceber , udpReceber.length );
+      serverSocket.receive( udpDataPacket );
+    } catch ( Exception e ) {
+      e.printStackTrace();
+    }
+    BasePdu novoPdu = new BasePdu ( udpDataPacket );
+    novoPdu.parseCabecalho();
+    novoPdu.parseCampos();
+    switch( answer ){
+      case ServerCodes.ANSWER :
+        {
           if (  novoPdu.contemCampo( ServerCodes.SERVIDOR_NOME_DESAFIO ) && novoPdu.contemCampo( ServerCodes.SERVIDOR_NUM_QUESTAO )  && novoPdu.contemCampo(ServerCodes.SERVIDOR_RESPOSTA_CERTA ) && novoPdu.contemCampo(ServerCodes.SERVIDOR_PONTOS)){
-        	  CampoPdu campoNomeDesafio = novoPdu.popCampo() ;
-              CampoPdu campoNumeroQuestao = novoPdu.popCampo() ;
-              CampoPdu campoCerta = novoPdu.popCampo() ;
-              CampoPdu campoPontos = novoPdu.popCampo() ;
-              String nomeDesafio = campoNomeDesafio.getCampoString();
-              int numeroPergunta = campoNumeroQuestao.getCampoInt1Byte();
-              int respostaCerta = campoCerta.getCampoInt1Byte();
-              int pontos = campoPontos.getCampoInt1Byte();
-              if (respostaCerta == 1){
-            	  System.out.println("Resposta Correcta!");
-              }
-              else{
-            	  System.out.println("Resposta >>>>>ERRADA<<<<<!");
-              }
-              System.out.println("Pontos desta questão : " + pontos );
-              if ( numeroPergunta == 10 ){
-            	  this.estado = EstadoDesafio.TERMINADO;
-            	  this.cliente.offJogo();
-              }
+            CampoPdu campoNomeDesafio = novoPdu.popCampo() ;
+            CampoPdu campoNumeroQuestao = novoPdu.popCampo() ;
+            CampoPdu campoCerta = novoPdu.popCampo() ;
+            CampoPdu campoPontos = novoPdu.popCampo() ;
+            String nomeDesafio = campoNomeDesafio.getCampoString();
+            int numeroPergunta = campoNumeroQuestao.getCampoInt1Byte();
+            int respostaCerta = campoCerta.getCampoInt1Byte();
+            int pontos = campoPontos.getCampoInt1Byte();
+            if (respostaCerta == 1){
+              System.out.println("Resposta Correcta!");
+            }
+            else{
+              System.out.println("Resposta >>>>>ERRADA<<<<<!");
+            }
+            if(pontos == 255 ){pontos = -1;}
+            System.out.println("Pontos desta questão : " + pontos );
+            if ( numeroPergunta == 10 ){
+              this.estado = EstadoDesafio.TERMINADO;
+              this.cliente.offJogo();
+            }
           }
-          
-        break;
-      }
-    case ServerCodes.QUIT :
-      {
-    	  if (  novoPdu.contemCampo( ServerCodes.SERVIDOR_OK ) ){
-              System.out.println("Passou a questão!" );
-    	  }
-    	  break;
-      }
-}
-}
+
+          break;
+        }
+      case ServerCodes.QUIT :
+        {
+          if (  novoPdu.contemCampo( ServerCodes.SERVIDOR_OK ) ){
+            System.out.println("Passou a questão!" );
+          }
+          break;
+        }
+    }
+  }
 
 }

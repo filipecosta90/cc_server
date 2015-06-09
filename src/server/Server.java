@@ -323,7 +323,7 @@ public class Server implements Runnable, Serializable {
     }
     return desafioPointer;
   }
-  
+
   public void guardaServidor() throws Exception{
     // Write to disk with FileOutputStream
     FileOutputStream f_out = new 	FileOutputStream("servidor.data");
@@ -368,13 +368,13 @@ public class Server implements Runnable, Serializable {
 
   }
 
-public void correDesafio( DesafioManager dm , String nomeDesafio ) {
-	if ( this.desafiosEmJogo.containsKey(nomeDesafio) == false ){
-		this.desafiosEmJogo.put(nomeDesafio , dm);
-	}
-	if ( this.desafiosCriadosEspera.containsKey(nomeDesafio) == true ){
-		this.desafiosEmJogo.remove(nomeDesafio);
-	}
-}
+  public void correDesafio( DesafioManager dm , String nomeDesafio ) {
+    if ( this.desafiosEmJogo.containsKey(nomeDesafio) == false ){
+      this.desafiosEmJogo.put(nomeDesafio , dm);
+    }
+    if ( this.desafiosCriadosEspera.containsKey(nomeDesafio) == true ){
+      this.desafiosEmJogo.remove(nomeDesafio);
+    }
+  }
 
 }
