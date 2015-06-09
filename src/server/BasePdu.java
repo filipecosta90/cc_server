@@ -212,10 +212,10 @@ public class BasePdu implements Serializable{
       if ( tamanhoCamposSeguintes > 0){
         s.append( "\n\t----- INICIO CAMPOS -----");
         for (CampoPdu t : ArrayListCamposSeguintes ) {
-          s.append("\n");
           s.append(t.toString());
+          s.append("\n");
         }
-        s.append( "\t-----  FIM  CAMPOS  -----");
+        s.append( "\n\t-----  FIM  CAMPOS  -----");
       }
       s.append( "\n********** FIM PDU Base **********");
       return s.toString();
