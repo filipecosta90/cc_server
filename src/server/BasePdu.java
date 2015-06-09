@@ -135,10 +135,17 @@ public class BasePdu implements Serializable{
           }
       else{
         if (toMergeCampo.getTipo() == ServerCodes.SERVIDOR_AUDIO && this.contemCampo( ServerCodes.SERVIDOR_AUDIO )){
-          this.getCampo(ServerCodes.SERVIDOR_AUDIO ).merge(toMergeCampo);
+         CampoPdu audio = this.getCampo(ServerCodes.SERVIDOR_AUDIO );
+         if(audio!=null){
+         audio.merge(toMergeCampo);
+         }
         }
         else if (toMergeCampo.getTipo() == ServerCodes.SERVIDOR_IMAGEM && this.contemCampo( ServerCodes.SERVIDOR_IMAGEM )){
           this.getCampo(ServerCodes.SERVIDOR_IMAGEM ).merge(toMergeCampo);
+          CampoPdu imagem = this.getCampo(ServerCodes.SERVIDOR_IMAGEM );
+          if(imagem!=null){
+          imagem.merge(toMergeCampo);
+          }
         }
         else{
           this.ArrayListCamposSeguintes.add( toMergeCampo);

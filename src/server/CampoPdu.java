@@ -81,9 +81,9 @@ public class CampoPdu implements Serializable{
     ByteArrayOutputStream bos_esteCampo = new ByteArrayOutputStream();
     bos_esteCampo.write(this.dadosCampo, 0, this.tamanhoDados); 
     bos_esteCampo.write(campoCopiar.dadosCampo, 0, campoCopiar.tamanhoDados);
-    dadosCampo = bos_esteCampo.toByteArray();
-    tamanhoDados=bos_esteCampo.size();
-    tamanhoTotal+=tamanhoDados;
+    this.dadosCampo = bos_esteCampo.toByteArray();
+    this.tamanhoDados=bos_esteCampo.size();
+    this.tamanhoTotal+=tamanhoDados;
   }
 
   @SuppressWarnings("deprecation")
