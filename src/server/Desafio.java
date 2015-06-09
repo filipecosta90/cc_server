@@ -34,7 +34,9 @@ public enum EstadoDesafio { EM_ESPERA , EM_JOGO , TERMINADO , ELIMINADO , PASSOU
     this.nomeDesafio=game_name;
     this.criadoPor = alcunhaJogadorCriador;
     this.alcunhasJogadores = new TreeSet < String > ();
+    this.alcunhasJogadores.add(alcunhaJogadorCriador);
     this.alcunhasJogadoresActivos = new TreeSet <String>();
+    this.alcunhasJogadoresActivos.add(alcunhaJogadorCriador);
     this.pontuacoesJogadores = new TreeMap < String, Integer > ();
     this.alcunhasJogadores.add( alcunhaJogadorCriador );
     this.pontuacoesJogadores.put( alcunhaJogadorCriador, 0);
